@@ -10,6 +10,7 @@ import Array exposing (Array)
 import Html.Events.Extra.Mouse as Mouse
 import Regex
 
+import Vec2 exposing (Vec2)
 
 main = Browser.sandbox { init = init, update = update, view = view }
 
@@ -56,54 +57,41 @@ type Node
   | Repeated { expression : Maybe NodeId, count : Int  }
   | IfFollowedBy { expression : Maybe NodeId, successor : Maybe NodeId }
 
+type alias Prototype =
+  { name : String
+  , node : Node
+  }
+
+prototypes : List Prototype
+prototypes = 
+  [ Prototype typeNames.whitespace    Whitespace
+  , Prototype typeNames.charset       (CharSet ",.?!:")
+  , Prototype typeNames.optional      (Optional Nothing)
+  , Prototype typeNames.set           (Set [])
+  , Prototype typeNames.flags         (Flags { expression = Nothing, flags = defaultFlags })
+  , Prototype typeNames.repeated      (Repeated { expression = Nothing, count = 3 })
+  , Prototype typeNames.ifFollowedBy  (IfFollowedBy { expression = Nothing, successor = Nothing })
+  ]
+
+typeNames = 
+  { whitespace = "Whitespace Char"
+  , charset = "Char Set"
+  , optional = "Optional"
+  , set = "Any Of"
+  , flags = "Flagged Expression"
+  , repeated = "Repeated"
+  , ifFollowedBy = "If Followed By"
+  }
+
 type alias RegexFlags =
   { multiple : Bool
   , caseSensitive : Bool
   , multiline : Bool
   }
 
-type alias Vec2 =
-  { x : Float
-  , y : Float
-  }
 
 
-justOkOrErr : x -> Maybe a -> Result x a
-justOkOrErr error maybe = case maybe of
-    Just value -> Ok value
-    Nothing -> Err error
 
-
-addVec2 : Vec2 -> Vec2 -> Vec2
-addVec2 a b = Vec2 (a.x + b.x) (a.y + b.y)
-
-subVec2 : Vec2 -> Vec2 -> Vec2
-subVec2 a b = Vec2 (a.x - b.x) (a.y - b.y)
-
-tupleToVec2 : (Float, Float) -> Vec2
-tupleToVec2 value = Vec2 (Tuple.first value) (Tuple.second value)
-
-
-prototypes : List Node
-prototypes = 
-  [ Whitespace
-  , CharSet ",.?!:"
-  , Optional Nothing
-  , Set []
-  , Flags { expression = Nothing, flags = defaultFlags }
-  , Repeated { expression = Nothing, count = 3 }
-  , IfFollowedBy { expression = Nothing, successor = Nothing }
-  ]
-
-typeName : Node -> String
-typeName node = case node of
-  Whitespace -> "Whitespace Char"
-  CharSet _ -> "Char Set"
-  Optional _ -> "Optional"
-  Set _ -> "Any Of"
-  Flags _ -> "Flags"
-  Repeated _ -> "Repeated"
-  IfFollowedBy _ -> "If Followed By"
 
 buildNodeExpression : Nodes -> Node -> String
 buildNodeExpression nodes node = 
@@ -132,10 +120,15 @@ addNode nodes node =
   , nextId = nodes.nextId + 1
   }
 
+updateNode : Nodes -> NodeId -> Node -> Nodes
+updateNode nodes id node = 
+  let updateNodeContents nodeview = Maybe.map (\n -> { n | node = node }) nodeview
+  in { nodes | values = Dict.update id updateNodeContents nodes.values }
+
 
 moveNode : Nodes -> NodeId -> Vec2 -> Nodes
 moveNode nodes nodeId movement = 
-  let updateNodePosition node = Maybe.map (\n -> { n | position = addVec2 n.position movement }) node
+  let updateNodePosition node = Maybe.map (\n -> { n | position = Vec2.add n.position movement }) node
   in { nodes | values = Dict.update nodeId updateNodePosition nodes.values }
 
 
@@ -163,6 +156,12 @@ compileRegex build =
 defaultFlags = RegexFlags True True True
 
 
+justOkOrErr : x -> Maybe a -> Result x a
+justOkOrErr error maybe = case maybe of
+    Just value -> Ok value
+    Nothing -> Err error
+
+
 
 
 
@@ -171,6 +170,7 @@ defaultFlags = RegexFlags True True True
 type Message
   = SearchMessage SearchMessage
   | DragModeMessage DragModeMessage
+  | UpdateNodeMessage NodeId Node
 
 type SearchMessage
   = UpdateSearch String
@@ -187,6 +187,9 @@ type DragModeMessage
 update : Message -> Model -> Model
 update message model =
   case message of
+    UpdateNodeMessage id value ->
+      { model | nodes = updateNode model.nodes id value }
+
     SearchMessage searchMessage ->
       case searchMessage of
         UpdateSearch query -> { model | search = Just query }
@@ -205,7 +208,7 @@ update message model =
         UpdateDrag { newMouse } ->
           case model.dragMode of 
             Just (MoveNodeDrag { node, mouse }) -> 
-              let delta = subVec2 newMouse mouse in 
+              let delta = Vec2.sub newMouse mouse in 
               { model | 
                 nodes = moveNode model.nodes node delta
               , dragMode = Just (MoveNodeDrag { node = node, mouse = newMouse })
@@ -228,10 +231,11 @@ update message model =
 view : Model -> Html Message
 view model =
   div 
-    ([  Mouse.onMove (\event -> DragModeMessage (UpdateDrag { newMouse = tupleToVec2 event.clientPos })) 
+    ([ Mouse.onMove (\event -> DragModeMessage (UpdateDrag { newMouse = Vec2.fromTuple event.clientPos })) 
     , Mouse.onUp (\event -> DragModeMessage FinishDrag) 
     , Mouse.onLeave (\event -> DragModeMessage FinishDrag) 
-    ] ++ layer) 
+    , class "fullscreen"
+    ]) 
 
     [ nav []
       [ text "Regex Nodes"
@@ -249,7 +253,6 @@ view model =
       ]
     , div
         [] -- (overflowing ++ [style "transform" ("translate(" ++ model.view.offset.x ++ "px " ++ model.view.offset.y ++ "px)")]) 
-        -- (List.map viewNode (Dict.values model.graph.nodes))
         (List.map viewNode (Dict.toList model.nodes.values))
     ]
 
@@ -260,58 +263,99 @@ viewSearch query =
   let 
     regex = Maybe.withDefault Regex.never (Regex.fromString query)
     test name = (String.isEmpty query) || (Regex.contains regex name)
-    filter prototype = test (typeName prototype)
+    filter prototype = test prototype.name
     position = Vec2 (400) (300)
     render prototype = div 
       ( [ Mouse.onWithOptions
         "mousedown"
         { stopPropagation = False, preventDefault = False } -- do not prevent blurring the textbox on selecting a result
-        (\_ -> SearchMessage (FinishSearch (Just (NodeView position prototype))))
-      , buttonCursor
+        (\_ -> SearchMessage (FinishSearch (Just (NodeView position prototype.node))))
+      --, buttonCursor
       ] ) -- [ Mouse.onDown (\_ -> SearchMessage (FinishSearch (Just (NodeView position prototype)))) ] -- TODO do not prevent default, unfocusing the textbox
-      [ text (typeName prototype) ]
+      [ text prototype.name ]
   in prototypes |> List.filter filter |> List.map render
+
+
 
 viewNode : (NodeId, NodeView) -> Html Message
 viewNode (nodeId, node) =
   div
-    (  Mouse.onDown (\event -> DragModeMessage (StartNodeMove { node = nodeId, mouse = tupleToVec2 event.clientPos }))
-    :: (translateHTML node.position) :: unpositioned
+    (  Mouse.onDown (\event -> DragModeMessage (StartNodeMove { node = nodeId, mouse = Vec2.fromTuple event.clientPos }))
+    :: (class "graph-node") :: [translateHTML node.position] --unpositioned
     ) 
-    [(case node.node of
-      Whitespace -> viewProperty { name = "Whitespace Char", isOutput = True, input = None }
-      Optional input -> viewProperty { name = "Optional", isOutput = True, input = Connected input }
-      _ -> viewProperty { name = "[Unknown]", isOutput = False, input = None }
-    )]
+
+    (case node.node of
+      Whitespace -> viewWhitespaceProperties
+      CharSet chars -> viewCharSetProperties chars
+      Optional option -> viewOptionalProperties option
+      Set options -> viewSetProperties options
+      Flags flags -> viewFlagsProperties flags
+      _ -> [ viewProperty { name = "Unimplemented", isOutput = False, input = NoInput } ]
+    )
+
+
+viewWhitespaceProperties : List (Html Message)
+viewWhitespaceProperties = [ viewProperty { name = typeNames.whitespace, isOutput = True, input = NoInput } ]
+
+viewCharSetProperties : String -> List (Html Message)
+viewCharSetProperties chars = [ viewProperty { name = typeNames.charset, isOutput = True, input = Characters chars }  ]
+
+viewOptionalProperties : Maybe NodeId -> List (Html Message)
+viewOptionalProperties option = [ viewProperty { name = typeNames.optional, isOutput = True, input = Connected option } ]
+
+viewSetProperties : List NodeId -> List (Html Message)
+viewSetProperties options = 
+  [ viewProperty { name = typeNames.set, isOutput = True, input = NoInput } ]
+  ++ viewAutoListProperties "Option" options
+
+viewFlagsProperties : { expression : Maybe NodeId, flags : RegexFlags } -> List (Html Message)
+viewFlagsProperties options = 
+  [ viewProperty { name = typeNames.flags, isOutput = False, input = Connected options.expression }
+  , viewProperty { name = "Multiple Matches", isOutput = False, input = Boolean options.flags.multiple }
+  , viewProperty { name = "Case Sensitive", isOutput = False, input = Boolean options.flags.caseSensitive }
+  , viewProperty 
+    { name = "Multiline Matches"
+    , input = Boolean options.flags.multiline
+    -- , onInput = \value -> UpdateNodeMessage id (Flags { expression = expression, flags = { options.flags | multiline = value } })
+    , isOutput = False
+    }
+  ] 
+  
+
+viewAutoListProperties : String -> List NodeId -> List (Html Message)
+viewAutoListProperties name connectedNodes = 
+  let 
+    connected = List.map
+      (\node -> viewProperty { name = name, isOutput = False, input = Connected (Just node) } )
+      connectedNodes
+  in connected ++ [ viewProperty { name = name, isOutput = False, input = Connected Nothing } ]
 
 viewProperty : { name : String, isOutput : Bool, input : InputView } -> Html Message
 viewProperty property = div 
   [] 
   [ text property.name, viewInput property.input ]
 
+
 type InputView
   = Characters String
   | Character Char
   | Integer Int
+  | Boolean Bool
   | Connected (Maybe NodeId)
-  | None -- for `Title Properties`
+  | NoInput -- for `Title Properties`
 
 viewInput : InputView -> Html Message
 viewInput inputView = case inputView of
-  Characters chars -> input [ placeholder "Characters" ] []
+  Characters chars -> input 
+    [ placeholder "Add Nodes"
+    , value chars
+    , onInput (\text -> SearchMessage (UpdateSearch text))
+    ]
+    []
+
   _ -> div [] []
 
-
-layer = unpositioned ++ fullsized ++ noSpacing
-unpositioned = [ style "position" "absolute", style "top" "0", style "left" "0" ]
-overflowing = style "overflow" "visible" 
-fullsized = [ style "width" "100vw", style "height" "100vh", style "overflow" "hidden" ]
-noSpacing = [ noMargin, noPadding ] 
-noMargin = style "margin" "0" 
-noPadding = style "padding" "0" 
 
 translateHTML = translate "px"  
 translateSVG = translate ""  
 translate unit position = style "transform" ("translate(" ++ (String.fromFloat position.x) ++ unit ++ "," ++ (String.fromFloat position.y) ++ unit ++ ")") 
-
-buttonCursor =  style "cursor" "pointer" 

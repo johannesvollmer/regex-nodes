@@ -1,0 +1,137 @@
+* {
+  font-family: 'Roboto Condensed', "Roboto", "Ubuntu", "Cantarell", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+*::selection {
+	background: teal;
+	color: #fff;
+}
+
+* {
+	transition: color 100ms, background-color 100ms, 
+	opacity 100ms, stroke 100ms, fill 100ms;
+}
+
+code {
+  font-family: 'Ubuntu Mono', source-code-pro, Menlo, Monaco, Consolas, monospace;
+}
+
+textarea:focus, input:focus {
+  outline: none;
+}
+
+body {
+	caret-color: teal;
+  background-color: #222;
+}
+
+
+#background-example-text {
+	color: #333;
+	opacity: 0.8;
+}
+#background-example-text .match {
+	color: #444;
+}
+
+.connection {
+	stroke: teal;
+	stroke-width: 2;
+	stroke-linecap: round;
+	fill: none;
+}
+
+
+.graph-node {
+	background-color: #ddd;
+	box-shadow: 2px 2px 0 0 #00000022;
+}
+.graph-node {
+	cursor: pointer;
+}
+.dragged.graph-node {
+	cursor: grabbing;
+}
+.connect-dragging * {
+	cursor: pointer;
+}
+
+
+.property:hover {
+	background-color: #eee;
+}
+.connect-dragging .property:hover {
+	background-color: #eeeeee22;
+}
+
+.property input {
+	border: 1px solid transparent;
+	background-color: #22222222;
+	font-family: 'Ubuntu Mono', source-code-pro, Menlo, Monaco, Consolas, "Courier New",
+    monospace;
+}
+.property input:focus {
+	border: 1px solid #333;
+	background-color: transparent;
+}
+
+.connector {
+	background-color: teal;
+}
+.inactive.connector {
+	opacity: 0;
+}
+
+.graph-node {
+	color: #333;
+}
+.graph-node input {
+	color: inherit;
+}
+
+
+.connect-dragging .graph-node:not(.connecting) .property.connectable-input {
+	background-color: #ddd;
+}
+.connect-dragging .graph-node {
+	background-color: #444;
+}
+
+.connect-dragging .property:not(.connectable-input) {
+	opacity: 0.25;
+	color: #fff;
+}
+.connect-dragging .main:not(.connectable-input) {
+	opacity: 0.6;
+}
+
+.connecting.graph-node .main.property {
+	background-color: teal; /* partially enable transition */ 
+	background-image: url("background.svg");
+	background-repeat: no-repeat;
+	background-position: 0% 0%; 
+	background-size: 100% 100%;
+	opacity: 1;
+	color: #fff;
+}
+
+.connect-dragging .connector {
+	background-color: #555;
+}
+.connect-dragging .connectable-input.property .connector {
+	background-color: transparent;
+}
+.connect-dragging .graph-node:not(.connecting) .connectable-input.property .left.connector {
+	background-color: teal;
+}
+
+.connecting.graph-node .main.property .connector {
+	opacity: 0;
+}
+
+.connect-dragging .connection:not(.prototype) {
+	stroke: #555;
+}
+
