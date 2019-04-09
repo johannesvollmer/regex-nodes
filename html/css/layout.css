@@ -10,23 +10,16 @@
 }
 
 
-body, .fullscreen {
+body, #main, #overlay, #node-graph {
 	position: fixed;
+	top:0; left:0;
 	width: 100vw;
 	height: 100vh;
-}
-
-.fill-block {
-	position: absolute;
-	display: block;
-	top:0; left:0;
-
-	width: 100%;
-	height: 100%;
 	overflow: hidden;
 }
 
-.transform-wrapper {
+
+#transform-wrapper {
 	position: absolute;
 	display: block;
 
@@ -41,7 +34,9 @@ body, .fullscreen {
 #overlay {
 	pointer-events: none;
 }
-
+#overlay > * {
+  pointer-events: all;
+}
 
 
 

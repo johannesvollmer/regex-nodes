@@ -2,11 +2,9 @@ module Main exposing (..)
 
 import Browser
 import Html exposing (..)
-import Css exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onInput, onBlur, onFocus)
 import Dict exposing (Dict)
-import Array exposing (Array)
 import Html.Events.Extra.Mouse as Mouse
 import Regex
 
@@ -101,7 +99,7 @@ buildNodeExpression nodes node =
     CharSet chars -> "[" ++ chars ++ "]"
     Optional maybeInput -> (build maybeInput) ++ "?"
     Set options -> List.map (\option -> build (Just option)) options |> String.join "|" 
-    Flags { expression, flags } -> build expression -- we use flags directly at topmost level 
+    Flags { expression } -> build expression -- we use flags directly at topmost level
     Repeated { expression, count } -> (build expression) ++ "{" ++ (String.fromInt count) ++ "}"
     IfFollowedBy { expression, successor } -> (build expression) ++ "(?=" ++ (build successor) ++ ")"
 
@@ -137,15 +135,25 @@ type alias RegexBuild =
   , flags: RegexFlags
   }
 
-buildRegex : Nodes -> Maybe NodeId -> RegexBuild
+
+buildRegex : Nodes -> NodeId -> RegexBuild
 buildRegex nodes id =
   let
-    expression = buildExpression nodes id
-    nodeView = Maybe.andThen (\i -> Dict.get i nodes.values) id
+    expression = buildExpression nodes (Just id)
+    nodeView = Dict.get id nodes.values
     options = case Maybe.map .node nodeView of
       Just (Flags { flags }) -> flags
       _ -> defaultFlags
+
   in RegexBuild expression options
+
+
+constructRegexLiteral : RegexBuild -> String
+constructRegexLiteral regex =
+  "/" ++ regex.expression ++ "/"
+     ++ (if regex.flags.multiple then "g" else "")
+     ++ (if regex.flags.caseSensitive then "" else "i")
+     ++ (if regex.flags.multiline then "m" else "")
 
 compileRegex : RegexBuild -> Regex.Regex 
 compileRegex build = 
@@ -154,14 +162,6 @@ compileRegex build =
 
 
 defaultFlags = RegexFlags True True True
-
-
-justOkOrErr : x -> Maybe a -> Result x a
-justOkOrErr error maybe = case maybe of
-    Just value -> Ok value
-    Nothing -> Err error
-
-
 
 
 
@@ -200,7 +200,13 @@ update message model =
     DragModeMessage modeMessage ->
       case modeMessage of
         StartNodeMove { node, mouse } ->
-          { model | dragMode = Just (MoveNodeDrag { node = node, mouse = mouse }) }
+          { model | dragMode = Just (MoveNodeDrag { node = node, mouse = mouse })
+
+          -- set result node if the node type is 'Flags'
+          , result = case Dict.get node model.nodes.values |> Maybe.map .node of
+               Just (Flags _) -> Just node
+               _ -> model.result
+          }
 
         StartPrototypeConnect { supplier, mouse } ->
           { model | dragMode = Just (PrototypeConnectionDrag { supplier = supplier, openEnd = mouse }) }
@@ -230,31 +236,63 @@ update message model =
 
 view : Model -> Html Message
 view model =
-  div 
-    ([ Mouse.onMove (\event -> DragModeMessage (UpdateDrag { newMouse = Vec2.fromTuple event.clientPos })) 
-    , Mouse.onUp (\event -> DragModeMessage FinishDrag) 
-    , Mouse.onLeave (\event -> DragModeMessage FinishDrag) 
-    , class "fullscreen"
-    ]) 
+  let
+    expressionResult = Maybe.map
+      (\id -> buildRegex model.nodes id |> constructRegexLiteral)
+      model.result
 
-    [ nav []
-      [ text "Regex Nodes"
+  in div
+    [ Mouse.onMove (\event -> DragModeMessage (UpdateDrag { newMouse = Vec2.fromTuple event.clientPos }))
+    , Mouse.onUp (\_ -> DragModeMessage FinishDrag)
+    , Mouse.onLeave (\_ -> DragModeMessage FinishDrag)
+    , id "main"
+    ]
 
-      , div []
-        [ input 
-            [ placeholder "Add Nodes"
-            , value (Maybe.withDefault "" model.search)
-            , onFocus (SearchMessage (UpdateSearch ""))
-            , onInput (\text -> SearchMessage (UpdateSearch text))
-            , onBlur (SearchMessage (FinishSearch Nothing))
-            ] []
-        , div [] (Maybe.withDefault [] (Maybe.map viewSearch model.search) )
+    [ div [ id "node-graph" ]
+      [ div [ id "transform-wrapper" ]
+        (List.map viewNode (Dict.toList model.nodes.values))
+      ]
+
+    , div [ id "connection-graph" ]
+      [ div [ id "transform-wrapper" ]
+        [] -- TODO (List.map viewConnection (Dict.toList model.nodes.values))
+      ]
+
+    , div [ id "overlay" ]
+      [ nav
+        [ ]
+        [ text "Regex Nodes"
+
+        , div [ id "search" ]
+          [ viewSearchBar model.search
+          , viewSearchResults model.search
+          ]
+        ]
+
+        , div [ id "expression-result" ]
+        [
+          code []
+          (viewExpressionResult expressionResult)
         ]
       ]
-    , div
-        [] -- (overflowing ++ [style "transform" ("translate(" ++ model.view.offset.x ++ "px " ++ model.view.offset.y ++ "px)")]) 
-        (List.map viewNode (Dict.toList model.nodes.values))
     ]
+
+
+viewExpressionResult literal = case literal of
+  Just result -> [ text ("const regex = " ++ result) ]
+  Nothing -> []
+
+viewSearchResults search =
+  div [] (Maybe.withDefault [] (Maybe.map viewSearch search) )
+
+viewSearchBar search = input
+  [ class "search"
+  , placeholder "Add Nodes"
+  , value (Maybe.withDefault "" search)
+  , onFocus (SearchMessage (UpdateSearch ""))
+  , onInput (\text -> SearchMessage (UpdateSearch text))
+  , onBlur (SearchMessage (FinishSearch Nothing))
+  ] []
 
 
 
