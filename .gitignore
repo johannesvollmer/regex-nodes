@@ -3,3 +3,10 @@ elm-stuff
 
 # elm-repl generated files
 repl-temp-*
+
+# intellij project files
+regex-nodes.iml
+.idea
+
+# file save watcher
+modd.exe
