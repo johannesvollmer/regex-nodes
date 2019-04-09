@@ -164,6 +164,17 @@ compileRegex build =
 defaultFlags = RegexFlags True True True
 
 
+prependListIf: List a -> a -> Bool -> List a
+prependListIf list element condition =
+    if condition then element :: list
+    else list
+
+prependStringIf: String -> String -> Bool -> String
+prependStringIf existing conditional condition =
+    if condition then conditional ++ existing
+    else existing
+
+
 
 -- UPDATE
 
@@ -319,7 +330,7 @@ viewNode : (NodeId, NodeView) -> Html Message
 viewNode (nodeId, node) =
   div
     (  Mouse.onDown (\event -> DragModeMessage (StartNodeMove { node = nodeId, mouse = Vec2.fromTuple event.clientPos }))
-    :: (class "graph-node") :: [translateHTML node.position] --unpositioned
+    :: (class "graph-node") :: (style "width" "200px") :: [translateHTML node.position] --unpositioned
     ) 
 
     (case node.node of
@@ -328,50 +339,53 @@ viewNode (nodeId, node) =
       Optional option -> viewOptionalProperties option
       Set options -> viewSetProperties options
       Flags flags -> viewFlagsProperties flags
-      _ -> [ viewProperty { name = "Unimplemented", isOutput = False, input = NoInput } ]
+      _ -> [ viewProperty "Unimplemented" NoInput False ]
     )
 
 
 viewWhitespaceProperties : List (Html Message)
-viewWhitespaceProperties = [ viewProperty { name = typeNames.whitespace, isOutput = True, input = NoInput } ]
+viewWhitespaceProperties = [ viewProperty typeNames.whitespace NoInput  True]
 
 viewCharSetProperties : String -> List (Html Message)
-viewCharSetProperties chars = [ viewProperty { name = typeNames.charset, isOutput = True, input = Characters chars }  ]
+viewCharSetProperties chars = [ viewProperty typeNames.charset (Characters chars) True ]
 
 viewOptionalProperties : Maybe NodeId -> List (Html Message)
-viewOptionalProperties option = [ viewProperty { name = typeNames.optional, isOutput = True, input = Connected option } ]
+viewOptionalProperties option = [ viewProperty typeNames.optional (Connected option) True ]
 
 viewSetProperties : List NodeId -> List (Html Message)
 viewSetProperties options = 
-  [ viewProperty { name = typeNames.set, isOutput = True, input = NoInput } ]
+  [ viewProperty typeNames.set NoInput True ]
   ++ viewAutoListProperties "Option" options
 
 viewFlagsProperties : { expression : Maybe NodeId, flags : RegexFlags } -> List (Html Message)
 viewFlagsProperties options = 
-  [ viewProperty { name = typeNames.flags, isOutput = False, input = Connected options.expression }
-  , viewProperty { name = "Multiple Matches", isOutput = False, input = Boolean options.flags.multiple }
-  , viewProperty { name = "Case Sensitive", isOutput = False, input = Boolean options.flags.caseSensitive }
+  [ viewProperty typeNames.flags  (Connected options.expression) False
+  , viewProperty "Multiple Matches"  (Boolean options.flags.multiple) False
+  , viewProperty "Case Sensitive"  (Boolean options.flags.caseSensitive) False
   , viewProperty 
-    { name = "Multiline Matches"
-    , input = Boolean options.flags.multiline
+    "Multiline Matches"
+    (Boolean options.flags.multiline)
     -- , onInput = \value -> UpdateNodeMessage id (Flags { expression = expression, flags = { options.flags | multiline = value } })
-    , isOutput = False
-    }
-  ] 
+    False
+  ]
   
 
 viewAutoListProperties : String -> List NodeId -> List (Html Message)
 viewAutoListProperties name connectedNodes = 
   let 
     connected = List.map
-      (\node -> viewProperty { name = name, isOutput = False, input = Connected (Just node) } )
+      (\node -> viewProperty name (Connected (Just node)) False)
       connectedNodes
-  in connected ++ [ viewProperty { name = name, isOutput = False, input = Connected Nothing } ]
+  in connected ++ [ viewProperty name (Connected Nothing) False ]
 
-viewProperty : { name : String, isOutput : Bool, input : InputView } -> Html Message
-viewProperty property = div 
-  [] 
-  [ text property.name, viewInput property.input ]
+viewProperty : String -> InputView -> Bool -> Html Message -- : { name : String, isOutput : Bool, input : InputView } -> Html Message
+viewProperty name input isOutput = div
+  [ class (prependStringIf "property" "main " (isOutput && input == NoInput)) ]
+  [ div [ class "left connector" ] []
+  , span [ class "title" ] [ text name ]
+  , viewInput input
+  , div [ class (prependStringIf "right connector" "inactive " (not isOutput)) ] []
+  ]
 
 
 type InputView
@@ -384,10 +398,11 @@ type InputView
 
 viewInput : InputView -> Html Message
 viewInput inputView = case inputView of
-  Characters chars -> input 
+  Characters chars -> input
     [ placeholder "Add Nodes"
     , value chars
     , onInput (\text -> SearchMessage (UpdateSearch text))
+    , class "chars input"
     ]
     []
 

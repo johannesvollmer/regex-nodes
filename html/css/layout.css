@@ -54,6 +54,7 @@ body, #main, #overlay, #node-graph {
 
 
 .property {
+	height: 25px;
 	display: flex;
 	flex-direction: row;
 	align-items: center;
