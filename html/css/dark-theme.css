@@ -15,7 +15,7 @@
 }
 
 code {
-  font-family: 'Ubuntu Mono', source-code-pro, Menlo, Monaco, Consolas, monospace;
+  font-family: 'Ubuntu Mono', source-code-pro, Consolas, monospace;
 }
 
 textarea:focus, input:focus {
@@ -25,6 +25,27 @@ textarea:focus, input:focus {
 body {
 	caret-color: teal;
   background-color: #222;
+  color: #ddd;
+}
+
+header a {
+  color: #555;
+  text-decoration: none;
+}
+header a:hover {
+  color: #666;
+}
+nav {
+  background-color: #333;
+}
+
+#search #results {
+  background-color: #444;
+  color: #bbb;
+}
+#search #results > *:hover {
+  background-color: #555;
+  color: #ddd;
 }
 
 
@@ -35,6 +56,7 @@ body {
 #background-example-text .match {
 	color: #444;
 }
+
 
 .connection {
 	stroke: teal;

@@ -110,7 +110,7 @@ buildExpression nodes nodeId = case nodeId of
   Nothing -> "(nothing)"
   Just id -> Maybe.map .node (Dict.get id nodes.values)
     |> Maybe.map (buildNodeExpression nodes) 
-    |> Maybe.withDefault "(INTERNAL ERROR)"
+    |> Maybe.withDefault "(error)"
 
 addNode : Nodes -> NodeView -> Nodes
 addNode nodes node = 
@@ -119,8 +119,8 @@ addNode nodes node =
   }
 
 updateNode : Nodes -> NodeId -> Node -> Nodes
-updateNode nodes id node = 
-  let updateNodeContents nodeview = Maybe.map (\n -> { n | node = node }) nodeview
+updateNode nodes id newNode =
+  let updateNodeContents nodeview = Maybe.map (\n -> { n | node = newNode }) nodeview
   in { nodes | values = Dict.update id updateNodeContents nodes.values }
 
 
@@ -166,13 +166,11 @@ defaultFlags = RegexFlags True True True
 
 prependListIf: List a -> a -> Bool -> List a
 prependListIf list element condition =
-    if condition then element :: list
-    else list
+    if condition then element :: list else list
 
 prependStringIf: String -> String -> Bool -> String
 prependStringIf existing conditional condition =
-    if condition then conditional ++ existing
-    else existing
+    if condition then conditional ++ existing else existing
 
 
 
@@ -270,22 +268,26 @@ view model =
       ]
 
     , div [ id "overlay" ]
-      [ nav
-        [ ]
-        [ text "Regex Nodes"
+      [ nav [ ]
+        [ header []
+          [ img [ src "img/logo.svg" ] []
+          , h1 [] [ text "Regex Nodes" ]
+          , a
+            [ href "https://github.com/johannesvollmer/regex-nodes", target "_blank", rel "noopener noreferrer" ]
+            [ text "by johannes vollmer" ]
+          ]
+        ]
 
         , div [ id "search" ]
           [ viewSearchBar model.search
           , viewSearchResults model.search
           ]
-        ]
 
         , div [ id "expression-result" ]
-        [
-          code []
-          (viewExpressionResult expressionResult)
-        ]
+          [ code [] (viewExpressionResult expressionResult) ]
       ]
+
+
     ]
 
 
@@ -294,11 +296,10 @@ viewExpressionResult literal = case literal of
   Nothing -> []
 
 viewSearchResults search =
-  div [] (Maybe.withDefault [] (Maybe.map viewSearch search) )
+  div [ id "results" ] (Maybe.withDefault [] (Maybe.map viewSearch search) )
 
 viewSearchBar search = input
-  [ class "search"
-  , placeholder "Add Nodes"
+  [ placeholder "Add Nodes"
   , value (Maybe.withDefault "" search)
   , onFocus (SearchMessage (UpdateSearch ""))
   , onInput (\text -> SearchMessage (UpdateSearch text))
@@ -312,7 +313,7 @@ viewSearch query =
   let 
     regex = Maybe.withDefault Regex.never (Regex.fromString query)
     test name = (String.isEmpty query) || (Regex.contains regex name)
-    filter prototype = test prototype.name
+    matches prototype = test prototype.name
     position = Vec2 (400) (300)
     render prototype = div 
       ( [ Mouse.onWithOptions
@@ -322,91 +323,136 @@ viewSearch query =
       --, buttonCursor
       ] ) -- [ Mouse.onDown (\_ -> SearchMessage (FinishSearch (Just (NodeView position prototype)))) ] -- TODO do not prevent default, unfocusing the textbox
       [ text prototype.name ]
-  in prototypes |> List.filter filter |> List.map render
+  in prototypes |> List.filter matches |> List.map render
 
 
 
 viewNode : (NodeId, NodeView) -> Html Message
-viewNode (nodeId, node) =
-  div
-    (  Mouse.onDown (\event -> DragModeMessage (StartNodeMove { node = nodeId, mouse = Vec2.fromTuple event.clientPos }))
-    :: (class "graph-node") :: (style "width" "200px") :: [translateHTML node.position] --unpositioned
-    ) 
+viewNode (nodeId, node) = case node.node of
+  Whitespace -> viewNodeWithProperties nodeId node.position 80 viewWhitespaceProperties
+  CharSet chars -> viewNodeWithProperties nodeId node.position 170 (viewCharSetProperties nodeId chars)
+  Optional option -> viewNodeWithProperties nodeId node.position 100 (viewOptionalProperties option)
+  Set options -> viewNodeWithProperties nodeId node.position 80 (viewSetProperties options)
+  Flags flags -> viewNodeWithProperties nodeId node.position 140 (viewFlagsProperties nodeId flags)
+  _ -> viewNodeWithProperties nodeId node.position 80 [viewInputProperty "Unimplemented" noInputView False]
 
-    (case node.node of
-      Whitespace -> viewWhitespaceProperties
-      CharSet chars -> viewCharSetProperties chars
-      Optional option -> viewOptionalProperties option
-      Set options -> viewSetProperties options
-      Flags flags -> viewFlagsProperties flags
-      _ -> [ viewProperty "Unimplemented" NoInput False ]
-    )
+viewNodeWithProperties nodeId position width properties =  div
+  [ Mouse.onDown (\event -> DragModeMessage (StartNodeMove { node = nodeId, mouse = Vec2.fromTuple event.clientPos }))
+  , class "graph-node"
+  , style "width" ((String.fromFloat width) ++ "px")
+  , translateHTML position
+  ]
 
+  properties
+
+noInputView = div[][]
 
 viewWhitespaceProperties : List (Html Message)
-viewWhitespaceProperties = [ viewProperty typeNames.whitespace NoInput  True]
+viewWhitespaceProperties = [ viewConstantProperty typeNames.whitespace ]
 
-viewCharSetProperties : String -> List (Html Message)
-viewCharSetProperties chars = [ viewProperty typeNames.charset (Characters chars) True ]
+viewCharSetProperties : NodeId -> String -> List (Html Message)
+viewCharSetProperties self chars = [ viewCharsProperty typeNames.charset chars (\newChars -> UpdateNodeMessage self (CharSet newChars)) True ]
 
 viewOptionalProperties : Maybe NodeId -> List (Html Message)
-viewOptionalProperties option = [ viewProperty typeNames.optional (Connected option) True ]
+viewOptionalProperties option = [ viewConnectProperty typeNames.optional True ]
 
 viewSetProperties : List NodeId -> List (Html Message)
 viewSetProperties options = 
-  [ viewProperty typeNames.set NoInput True ]
+  [ viewTitleProperty typeNames.set ]
   ++ viewAutoListProperties "Option" options
 
-viewFlagsProperties : { expression : Maybe NodeId, flags : RegexFlags } -> List (Html Message)
-viewFlagsProperties options = 
-  [ viewProperty typeNames.flags  (Connected options.expression) False
-  , viewProperty "Multiple Matches"  (Boolean options.flags.multiple) False
-  , viewProperty "Case Sensitive"  (Boolean options.flags.caseSensitive) False
-  , viewProperty 
-    "Multiline Matches"
-    (Boolean options.flags.multiline)
-    -- , onInput = \value -> UpdateNodeMessage id (Flags { expression = expression, flags = { options.flags | multiline = value } })
-    False
+viewFlagsProperties : NodeId -> { expression : Maybe NodeId, flags : RegexFlags } -> List (Html Message)
+viewFlagsProperties self { expression, flags } =
+  let setFlags newFlags = UpdateNodeMessage self (Flags { expression = expression, flags = newFlags }) in
+
+  [ viewConnectProperty typeNames.flags False
+
+  , viewBoolProperty
+      "Multiple Matches" flags.multiple
+      (setFlags { flags | multiple = not flags.multiple })
+      False
+
+  , viewBoolProperty
+      "Case Sensitive" flags.caseSensitive
+      (setFlags { flags | caseSensitive = not flags.caseSensitive })
+      False
+
+  , viewBoolProperty
+      "Multiline Matches" flags.multiline
+      (setFlags { flags | multiline = not flags.multiline })
+      False
   ]
-  
+
 
 viewAutoListProperties : String -> List NodeId -> List (Html Message)
 viewAutoListProperties name connectedNodes = 
   let 
     connected = List.map
-      (\node -> viewProperty name (Connected (Just node)) False)
+      (\_ -> viewConnectProperty name False)
       connectedNodes
-  in connected ++ [ viewProperty name (Connected Nothing) False ]
+  in
+    connected ++ [ viewConnectProperty name False ]
 
-viewProperty : String -> InputView -> Bool -> Html Message -- : { name : String, isOutput : Bool, input : InputView } -> Html Message
-viewProperty name input isOutput = div
-  [ class (prependStringIf "property" "main " (isOutput && input == NoInput)) ]
+
+
+viewTitleProperty : String -> Html Message
+viewTitleProperty name = viewInputProperty name noInputView True
+
+viewConstantProperty : String -> Html Message
+viewConstantProperty name = viewConnectProperty name True
+
+viewBoolProperty : String -> Bool -> Message -> Bool -> Html Message
+viewBoolProperty name value onChange isOutput =
+  viewInputProperty name (viewBoolInput value onChange) isOutput
+
+viewBoolInput : Bool -> Message -> Html Message
+viewBoolInput value onToggle = input
+  [ type_ "checkbox"
+  , checked value
+  , Mouse.onClick (\_ -> onToggle)
+  ]
+  []
+
+
+viewCharsProperty : String -> String -> (String -> Message) -> Bool -> Html Message
+viewCharsProperty name value onChange isOutput =
+  viewInputProperty name (viewCharsInput value onChange) isOutput
+
+viewCharsInput : String -> (String -> Message) -> Html Message
+viewCharsInput chars onChange = input
+  [ type_ "text"
+  , placeholder "!?:;aeiou"
+  , value chars
+  , onInput onChange
+  , class "chars input"
+  ]
+  []
+
+
+-- property whose input cannot be connected
+viewInputProperty : String -> Html Message -> Bool -> Html Message -- : { name : String, isOutput : Bool, input : InputView } -> Html Message
+viewInputProperty name inputView connectOutput = div
+  [ class (prependStringIf "property" "main " connectOutput) ]
+
+  [ div [ class "inactive left connector" ] []
+  , span [ class "title" ] [ text name ]
+  , inputView
+  , div [ class (prependStringIf "right connector" "inactive " (not connectOutput)) ] []
+  ]
+
+-- property whose input can be connected
+viewConnectProperty : String -> Bool -> Html Message -- : { name : String, isOutput : Bool, input : InputView } -> Html Message
+viewConnectProperty name connectOutput = div
+  [ class (prependStringIf "property" "main " connectOutput) ]
+
   [ div [ class "left connector" ] []
   , span [ class "title" ] [ text name ]
-  , viewInput input
-  , div [ class (prependStringIf "right connector" "inactive " (not isOutput)) ] []
+  -- , div[][]
+  , div [ class (prependStringIf "right connector" "inactive " (not connectOutput)) ] []
   ]
 
 
-type InputView
-  = Characters String
-  | Character Char
-  | Integer Int
-  | Boolean Bool
-  | Connected (Maybe NodeId)
-  | NoInput -- for `Title Properties`
 
-viewInput : InputView -> Html Message
-viewInput inputView = case inputView of
-  Characters chars -> input
-    [ placeholder "Add Nodes"
-    , value chars
-    , onInput (\text -> SearchMessage (UpdateSearch text))
-    , class "chars input"
-    ]
-    []
-
-  _ -> div [] []
 
 
 translateHTML = translate "px"  
