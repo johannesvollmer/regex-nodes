@@ -81,7 +81,7 @@ header img {
 
 #search {
   position: fixed;
-  top: 12px;
+  top: 8px;
   left: 33vw;
   width: 33vw;
 
@@ -93,7 +93,7 @@ header img {
 
 #search input {
   font-size: 18px;
-  padding: 4px;
+  padding: 8px;
   box-sizing: border-box;
 }
 
@@ -107,6 +107,9 @@ header img {
 }
 
 #expression-result {
+  text-align: center;
+  font-size: 28px;
+  padding: 12px;
 }
 
 

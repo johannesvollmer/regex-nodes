@@ -14,7 +14,7 @@
 	opacity 100ms, stroke 100ms, fill 100ms;
 }
 
-code {
+code, #search #results #parse-regex {
   font-family: 'Ubuntu Mono', source-code-pro, Consolas, monospace;
 }
 
@@ -39,6 +39,9 @@ nav {
   background-color: #333;
 }
 
+#search, #search input {
+  text-align: center;
+}
 #search #results {
   background-color: #444;
   color: #bbb;
@@ -46,6 +49,21 @@ nav {
 #search #results > *:hover {
   background-color: #555;
   color: #ddd;
+}
+#search input {
+  background: #444;
+  border: 2px solid #444;
+  color: #ddd;
+}
+#search input:focus {
+  background: transparent;
+  border: 2px solid #444;
+}
+#search #results #parse-regex {
+  color: teal;
+}
+#expression-result {
+  background: #1b1b1b;
 }
 
 
