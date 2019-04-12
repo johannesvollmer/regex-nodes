@@ -1,0 +1,28 @@
+<svg 
+	xmlns='http://www.w3.org/2000/svg' 
+	width='100px' height='10px' viewBox='0 0 10 1'
+>
+	<defs>
+		<linearGradient id="background-gradient" x1="-100%" y1="0%" x2="100%" y2="0%">
+			<stop offset="0%" style="stop-color: #4FC195; stop-opacity: 1"/>
+			<stop offset="100%" style="stop-color: #008080; stop-opacity: 1" />
+		</linearGradient>
+	</defs>
+	
+    <rect fill="url(#background-gradient)" x="0" y="-1" width="10" height="4" />
+
+	<circle cx="-15" cy="8" r="0" fill="#4FC195">
+		<animate attributeName="r" begin="1s" dur="6.6s" from="14" to="32" repeatCount="indefinite" />
+		<animate attributeName="opacity" begin="1s" dur="6.6s" from="0.4" to="0" repeatCount="indefinite" />
+	</circle>
+
+	<circle cx="-5" cy="2" r="0" fill="#4FC195">
+		<animate attributeName="r" dur="3.2s" from="3" to="12" repeatCount="indefinite" />
+		<animate attributeName="opacity" dur="3.2s" from="0.5" to="0" repeatCount="indefinite" />
+	</circle>
+
+	<circle cx="-5" cy="4" r="0" fill="#4FC195">
+		<animate attributeName="r" begin="2s" dur="6.4s" from="3" to="30" repeatCount="indefinite" />
+		<animate attributeName="opacity" begin="2s" dur="6.4s" from="0.3" to="0" repeatCount="indefinite" />
+	</circle>
+</svg>
