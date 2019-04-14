@@ -5,12 +5,70 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (onInput, onBlur, onFocus)
 import Dict exposing (Dict)
 import Html.Events.Extra.Mouse as Mouse
+import Svg exposing (Svg, svg, line)
+import Svg.Attributes exposing (x1, x2, y1, y2)
 import Regex
 
 import Vec2 exposing (Vec2)
 import Model exposing (..)
 import Build exposing (..)
 import Update exposing (..)
+
+
+
+type alias PropertyView =
+  { name : String
+  , contents : PropertyViewContents
+  , connectOutput : Bool
+  }
+
+type alias OnChange a = a -> Message
+
+type PropertyViewContents
+  = BoolProperty Bool (OnChange Bool)
+  | CharsProperty String (OnChange String)
+  | CharProperty Char (OnChange (Maybe Char))
+  | IntProperty Int (OnChange Int)
+  | ConnectingProperty (Maybe NodeId) (OnChange (Maybe NodeId))
+  | ConnectingProperties (List NodeId) (OnChange (List NodeId))
+  | TitleProperty
+
+type alias NodeView =
+  { node: Html Message
+  , connections: List (Svg Message)
+  }
+
+properties : NodeId -> Node -> List PropertyView
+properties nodeId node =
+  let
+    updateCharSetChars newChars = UpdateNodeMessage nodeId (CharSet newChars)
+    updateOptionalInput newInput = UpdateNodeMessage nodeId (Optional newInput)
+    updateSetOptions options = UpdateNodeMessage nodeId (Set options)
+
+    updateFlagsExpression flags newInput = UpdateNodeMessage nodeId (Flags { flags | expression = newInput })
+    updateFlags expression newFlags = UpdateNodeMessage nodeId (Flags { expression = expression, flags = newFlags })
+    updateFlagsMultiple { expression, flags } multiple = updateFlags expression { flags | multiple = multiple }
+    updateFlagsInsensitivity { expression, flags } caseSensitive = updateFlags expression { flags | caseSensitive = caseSensitive }
+    updateFlagsMultiline { expression, flags } multiline = updateFlags expression { flags | multiline = multiline }
+
+  in case node of
+    Whitespace -> [ PropertyView typeNames.whitespace TitleProperty True ]
+    CharSet chars -> [ PropertyView typeNames.charset (CharsProperty chars updateCharSetChars) True ]
+    Optional option -> [ PropertyView typeNames.optional (ConnectingProperty option updateOptionalInput) True ]
+
+    Set options ->
+      [ PropertyView typeNames.optional TitleProperty True
+      , PropertyView "Option" (ConnectingProperties options updateSetOptions) True
+      ]
+
+    Flags flags ->
+      [ PropertyView typeNames.flags (ConnectingProperty flags.expression (updateFlagsExpression flags)) True
+      , PropertyView "Multiple Matches" (BoolProperty flags.flags.multiple (updateFlagsMultiple flags)) True
+      , PropertyView "Case Insensitive" (BoolProperty flags.flags.caseSensitive (updateFlagsInsensitivity flags)) True
+      , PropertyView "Multiline Matches" (BoolProperty flags.flags.multiline (updateFlagsMultiline flags)) True
+      ]
+
+    _ -> [ PropertyView "Unimplemented" TitleProperty False ]
 
 
 -- VIEW
@@ -22,6 +80,8 @@ view model =
       (\id -> buildRegex model.nodes id |> constructRegexLiteral)
       model.result
 
+    nodeViews = (List.map (viewNode model.nodes) (Dict.toList model.nodes.values))
+
   in div
     [ Mouse.onMove (\event -> DragModeMessage (UpdateDrag { newMouse = Vec2.fromTuple event.clientPos }))
     , Mouse.onUp (\_ -> DragModeMessage FinishDrag)
@@ -29,14 +89,14 @@ view model =
     , id "main"
     ]
 
-    [ div [ id "node-graph" ]
-      [ div [ id "transform-wrapper" ]
-        (List.map viewNode (Dict.toList model.nodes.values))
+    [ div [ id "connection-graph" ]
+      [ svg [ id "transform-wrapper" ]
+        (flattenList (List.map .connections nodeViews))
       ]
 
-    , div [ id "connection-graph" ]
+    , div [ id "node-graph" ]
       [ div [ id "transform-wrapper" ]
-        [] -- TODO (List.map viewConnection (Dict.toList model.nodes.values))
+        (List.map .node nodeViews)
       ]
 
     , div [ id "overlay" ]
@@ -86,7 +146,7 @@ viewSearch query =
       [ Mouse.onWithOptions
         "mousedown"
         { stopPropagation = False, preventDefault = False } -- do not prevent blurring the textbox on selecting a result
-        (\_ -> SearchMessage (FinishSearch (InsertPrototype (NodeView position prototype.node))))
+        (\_ -> SearchMessage (FinishSearch (InsertPrototype (Model.NodeView position prototype.node))))
       --, buttonCursor
       ]  -- [ Mouse.onDown (\_ -> SearchMessage (FinishSearch (Just (NodeView position prototype)))) ] -- TODO do not prevent default, unfocusing the textbox
       [ text prototype.name ]
@@ -109,83 +169,84 @@ viewSearch query =
 
 
 
-viewNode : (NodeId, NodeView) -> Html Message
-viewNode (nodeId, node) = case node.node of
-  Whitespace -> viewNodeWithProperties nodeId node.position 160 viewWhitespaceProperties
-  CharSet chars -> viewNodeWithProperties nodeId node.position 170 (viewCharSetProperties nodeId chars)
-  Optional option -> viewNodeWithProperties nodeId node.position 100 (viewOptionalProperties option)
-  Set options -> viewNodeWithProperties nodeId node.position 80 (viewSetProperties options)
-  Flags flags -> viewNodeWithProperties nodeId node.position 140 (viewFlagsProperties nodeId flags)
-  _ -> viewNodeWithProperties nodeId node.position 80 [viewInputProperty "Unimplemented" noInputView False]
 
-viewNodeWithProperties nodeId position width properties =  div
+flattenList list = List.foldr (++) [] list
+viewNode : Nodes -> (NodeId, Model.NodeView) -> NodeView
+viewNode nodes (nodeId, nodeView) =
+  let
+    props = properties nodeId nodeView.node
+  in
+  NodeView (viewNodeContent nodeId props nodeView) (viewNodeConnections nodes props nodeView)
+
+
+viewNodeConnections : Nodes -> List PropertyView -> Model.NodeView -> List (Svg Message)
+viewNodeConnections nodes props nodeView =
+  let
+    toConnections (index, property) connections = case property.contents of
+      ConnectingProperty id _ -> Maybe.map (\i -> (index, i) :: connections) id |> Maybe.withDefault connections
+      ConnectingProperties ids _ -> List.map (Tuple.pair index) ids ++ connections
+      _ -> connections
+
+    indexed = List.indexedMap (\index property -> (index, property)) props
+    filtered = List.foldr toConnections [] indexed
+
+  in
+    List.map
+      (\(index, input) ->
+        let node = Dict.get input nodes.values
+        in line
+          [ x1 (String.fromFloat nodeView.position.x)
+          , y1 (String.fromFloat (nodeView.position.y + ((toFloat index) + 0.5) * 25))
+          , x2 (String.fromFloat (node |> Maybe.map (\nd -> nd.position.x + nodeWidth nd.node) |> Maybe.withDefault 0))
+          , y2 (String.fromFloat ((node |> Maybe.map (.position >> .y) |> Maybe.withDefault 0) + 0.5 * 25))
+          ]
+          []
+      )
+      filtered
+
+
+viewNodeContent : NodeId -> List PropertyView -> Model.NodeView -> Html Message
+viewNodeContent nodeId props nodeView =  div
   [ Mouse.onDown (\event -> DragModeMessage (StartNodeMove { node = nodeId, mouse = Vec2.fromTuple event.clientPos }))
   , class "graph-node"
-  , style "width" ((String.fromFloat width) ++ "px")
-  , translateHTML position
+  , style "width" ((String.fromFloat (nodeWidth nodeView.node)) ++ "px")
+  , translateHTML nodeView.position
   ]
 
-  properties
+  (List.map viewProperty props)
 
-noInputView = div[][]
-
-viewWhitespaceProperties : List (Html Message)
-viewWhitespaceProperties = [ viewConstantProperty typeNames.whitespace ]
-
-viewCharSetProperties : NodeId -> String -> List (Html Message)
-viewCharSetProperties self chars = [ viewCharsProperty typeNames.charset chars (\newChars -> UpdateNodeMessage self (CharSet newChars)) True ]
-
-viewOptionalProperties : Maybe NodeId -> List (Html Message)
-viewOptionalProperties option = [ viewConnectProperty typeNames.optional True ]
-
-viewSetProperties : List NodeId -> List (Html Message)
-viewSetProperties options =
-  [ viewTitleProperty typeNames.set ]
-  ++ viewAutoListProperties "Option" options
-
-viewFlagsProperties : NodeId -> { expression : Maybe NodeId, flags : RegexFlags } -> List (Html Message)
-viewFlagsProperties self { expression, flags } =
-  let setFlags newFlags = UpdateNodeMessage self (Flags { expression = expression, flags = newFlags }) in
-
-  [ viewConnectProperty typeNames.flags False
-
-  , viewBoolProperty
-      "Multiple Matches" flags.multiple
-      (setFlags { flags | multiple = not flags.multiple })
-      False
-
-  , viewBoolProperty
-      "Case Sensitive" flags.caseSensitive
-      (setFlags { flags | caseSensitive = not flags.caseSensitive })
-      False
-
-  , viewBoolProperty
-      "Multiline Matches" flags.multiline
-      (setFlags { flags | multiline = not flags.multiline })
-      False
-  ]
+nodeWidth node = case node of
+  Whitespace -> 160
+  CharSet _ -> 170
+  Optional _ -> 100
+  Set _ -> 80
+  Flags _ -> 140
+  _ -> 80
 
 
-viewAutoListProperties : String -> List NodeId -> List (Html Message)
-viewAutoListProperties name connectedNodes =
-  let
-    connected = List.map
-      (\_ -> viewConnectProperty name False)
-      connectedNodes
-  in
-    connected ++ [ viewConnectProperty name False ]
+viewProperty : PropertyView -> Html Message
+viewProperty property = div
+  [ class (prependStringIf property.connectOutput "main " "property") ]
+
+   [ div [ class "inactive left connector" ] []
+   , span [ class "title" ] [ text property.name ]
+
+   , case property.contents of
+       BoolProperty value onChange -> viewBoolInput value (onChange (not value))
+       CharsProperty chars onChange -> viewCharsInput chars onChange
+       CharProperty char onChange -> viewCharInput char onChange
+       IntProperty number onChange -> viewIntInput number onChange
+       ConnectingProperty _ _ -> div [] [] -- TODO not instantiate a div
+       ConnectingProperties _ _ -> div [][] -- FIXME needs multiple names, not multiple inputs
+       TitleProperty -> div [] [] -- TODO not instantiate a div
+
+   , div [ class (prependStringIf (not property.connectOutput) "inactive " "right connector" ) ] []
+   ]
 
 
+-- viewAutoListProperties name connectedNodes = connected ++ [ viewConnectProperty name False ]
 
-viewTitleProperty : String -> Html Message
-viewTitleProperty name = viewInputProperty name noInputView True
 
-viewConstantProperty : String -> Html Message
-viewConstantProperty name = viewConnectProperty name True
-
-viewBoolProperty : String -> Bool -> Message -> Bool -> Html Message
-viewBoolProperty name value onChange isOutput =
-  viewInputProperty name (viewBoolInput value onChange) isOutput
 
 viewBoolInput : Bool -> Message -> Html Message
 viewBoolInput value onToggle = input
@@ -195,10 +256,6 @@ viewBoolInput value onToggle = input
   ]
   []
 
-
-viewCharsProperty : String -> String -> (String -> Message) -> Bool -> Html Message
-viewCharsProperty name value onChange isOutput =
-  viewInputProperty name (viewCharsInput value onChange) isOutput
 
 viewCharsInput : String -> (String -> Message) -> Html Message
 viewCharsInput chars onChange = input
@@ -210,28 +267,24 @@ viewCharsInput chars onChange = input
   ]
   []
 
-
--- property whose input cannot be connected
-viewInputProperty : String -> Html Message -> Bool -> Html Message -- : { name : String, isOutput : Bool, input : InputView } -> Html Message
-viewInputProperty name inputView connectOutput = div
-  [ class (prependStringIf connectOutput "main " "property") ]
-
-  [ div [ class "inactive left connector" ] []
-  , span [ class "title" ] [ text name ]
-  , inputView
-  , div [ class (prependStringIf (not connectOutput) "inactive " "right connector" ) ] []
+viewCharInput : Char -> (Maybe Char -> Message) -> Html Message
+viewCharInput char onChange = input
+  [ type_ "text"
+  , placeholder "a"
+  , value (String.fromChar char)
+  , onInput (\chars -> onChange (chars |> String.uncons |> Maybe.map Tuple.first))
+  , class "char input"
   ]
+  []
 
--- property whose input can be connected
-viewConnectProperty : String -> Bool -> Html Message -- : { name : String, isOutput : Bool, input : InputView } -> Html Message
-viewConnectProperty name connectOutput = div
-  [ class (prependStringIf connectOutput "main " "property") ]
-
-  [ div [ class "left connector" ] []
-  , span [ class "title" ] [ text name ]
-  , div [ class (prependStringIf (not connectOutput) "inactive " "right connector") ] []
+viewIntInput : Int -> (Int -> Message) -> Html Message
+viewIntInput number onChange = input
+  [ type_ "number"
+  , value (String.fromInt number)
+  , onInput (\newValue -> onChange (newValue |> String.toInt |> Maybe.withDefault 0))
+  , class "int input"
   ]
-
+  []
 
 
 

@@ -85,7 +85,7 @@ nav {
 
 
 .graph-node {
-	background-color: #ddd;
+	background-color: #eee;
 	box-shadow: 2px 2px 0 0 #00000022;
 }
 .graph-node {
@@ -100,7 +100,7 @@ nav {
 
 
 .property:hover {
-	background-color: #eee;
+	background-color: #fff;
 }
 .connect-dragging .property:hover {
 	background-color: #eeeeee22;
