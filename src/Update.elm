@@ -89,3 +89,23 @@ update message model =
 
         FinishDrag ->
           { model | dragMode = Nothing }
+
+
+
+
+
+updateCharSetChars nodeId newChars = UpdateNodeMessage nodeId (CharSet newChars)
+updateOptionalOption nodeId newInput = UpdateNodeMessage nodeId (Optional newInput)
+updateSetOptions nodeId options = UpdateNodeMessage nodeId (Set options)
+
+updateFollowedByExpression nodeId followed expression = UpdateNodeMessage nodeId (IfFollowedBy { followed | expression = expression })
+updateFollowedBySuccessor nodeId followed successor = UpdateNodeMessage nodeId (IfFollowedBy { followed | successor = successor })
+
+updateRepetitionExpression nodeId repetition expression = UpdateNodeMessage nodeId (Repeated { repetition | expression = expression })
+updateRepetitionCount nodeId repetition count = UpdateNodeMessage nodeId (Repeated { repetition | count = count })
+
+updateFlagsExpression nodeId flags newInput = UpdateNodeMessage nodeId (Flags { flags | expression = newInput })
+updateFlags nodeId expression newFlags = UpdateNodeMessage nodeId (Flags { expression = expression, flags = newFlags })
+updateFlagsMultiple nodeId { expression, flags } multiple = updateFlags nodeId expression { flags | multiple = multiple }
+updateFlagsInsensitivity nodeId { expression, flags } caseSensitive = updateFlags nodeId expression { flags | caseSensitive = caseSensitive }
+updateFlagsMultiline nodeId { expression, flags } multiline = updateFlags nodeId expression { flags | multiline = multiline }

@@ -60,3 +60,16 @@ compileRegex build =
   let options = { caseInsensitive = not build.flags.caseSensitive, multiline = build.flags.multiline }
   in Regex.fromStringWith options build.expression |> Maybe.withDefault Regex.never
 
+
+precedence node = case node of
+    Whitespace -> 5
+    CharSet _ -> 5
+    -- literal _ -> 2
+    Optional _ -> 4 -- at least one ...
+    Set _ -> 1
+    -- sequence _ -> 2
+    Flags _ -> 0
+    Repeated _ -> 4
+    IfFollowedBy _ -> 3
+
+

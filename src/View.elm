@@ -40,35 +40,36 @@ type alias NodeView =
 
 properties : NodeId -> Node -> List PropertyView
 properties nodeId node =
-  let
-    updateCharSetChars newChars = UpdateNodeMessage nodeId (CharSet newChars)
-    updateOptionalInput newInput = UpdateNodeMessage nodeId (Optional newInput)
-    updateSetOptions options = UpdateNodeMessage nodeId (Set options)
-
-    updateFlagsExpression flags newInput = UpdateNodeMessage nodeId (Flags { flags | expression = newInput })
-    updateFlags expression newFlags = UpdateNodeMessage nodeId (Flags { expression = expression, flags = newFlags })
-    updateFlagsMultiple { expression, flags } multiple = updateFlags expression { flags | multiple = multiple }
-    updateFlagsInsensitivity { expression, flags } caseSensitive = updateFlags expression { flags | caseSensitive = caseSensitive }
-    updateFlagsMultiline { expression, flags } multiline = updateFlags expression { flags | multiline = multiline }
-
-  in case node of
+  case node of
     Whitespace -> [ PropertyView typeNames.whitespace TitleProperty True ]
-    CharSet chars -> [ PropertyView typeNames.charset (CharsProperty chars updateCharSetChars) True ]
-    Optional option -> [ PropertyView typeNames.optional (ConnectingProperty option updateOptionalInput) True ]
+    CharSet chars -> [ PropertyView typeNames.charset (CharsProperty chars (updateCharSetChars nodeId)) True ]
+    Optional option -> [ PropertyView typeNames.optional (ConnectingProperty option (updateOptionalOption nodeId)) True ]
 
     Set options ->
-      [ PropertyView typeNames.optional TitleProperty True
-      , PropertyView "Option" (ConnectingProperties options updateSetOptions) True
+      [ PropertyView typeNames.set TitleProperty True
+      , PropertyView "Option" (ConnectingProperties options (updateSetOptions nodeId)) False
       ]
 
-    Flags flags ->
-      [ PropertyView typeNames.flags (ConnectingProperty flags.expression (updateFlagsExpression flags)) True
-      , PropertyView "Multiple Matches" (BoolProperty flags.flags.multiple (updateFlagsMultiple flags)) True
-      , PropertyView "Case Insensitive" (BoolProperty flags.flags.caseSensitive (updateFlagsInsensitivity flags)) True
-      , PropertyView "Multiline Matches" (BoolProperty flags.flags.multiline (updateFlagsMultiline flags)) True
+    Flags flagsNode ->
+      [ PropertyView typeNames.flags (ConnectingProperty flagsNode.expression (updateFlagsExpression nodeId flagsNode)) True
+      , PropertyView "Multiple Matches" (BoolProperty flagsNode.flags.multiple (updateFlagsMultiple nodeId flagsNode)) False
+      , PropertyView "Case Insensitive" (BoolProperty flagsNode.flags.caseSensitive (updateFlagsInsensitivity nodeId flagsNode)) False
+      , PropertyView "Multiline Matches" (BoolProperty flagsNode.flags.multiline (updateFlagsMultiline nodeId flagsNode)) False
       ]
 
-    _ -> [ PropertyView "Unimplemented" TitleProperty False ]
+    Repeated repetition ->
+      [ PropertyView typeNames.repeated (ConnectingProperty repetition.expression (updateRepetitionExpression nodeId repetition)) True
+      , PropertyView "Multiline Matches" (IntProperty repetition.count (updateRepetitionCount nodeId repetition)) False
+      ]
+
+
+    IfFollowedBy followed ->
+      [ PropertyView typeNames.ifFollowedBy (ConnectingProperty followed.expression (updateFollowedByExpression nodeId followed)) True
+      , PropertyView "Successor" (ConnectingProperty followed.successor (updateFollowedBySuccessor nodeId followed)) False
+      ]
+
+
+
 
 
 -- VIEW
@@ -173,9 +174,7 @@ viewSearch query =
 flattenList list = List.foldr (++) [] list
 viewNode : Nodes -> (NodeId, Model.NodeView) -> NodeView
 viewNode nodes (nodeId, nodeView) =
-  let
-    props = properties nodeId nodeView.node
-  in
+  let props = properties nodeId nodeView.node in
   NodeView (viewNodeContent nodeId props nodeView) (viewNodeConnections nodes props nodeView)
 
 
@@ -184,6 +183,8 @@ viewNodeConnections nodes props nodeView =
   let
     toConnections (index, property) connections = case property.contents of
       ConnectingProperty id _ -> Maybe.map (\i -> (index, i) :: connections) id |> Maybe.withDefault connections
+
+      -- FIXME needs to increment index actually, not the same index every property!
       ConnectingProperties ids _ -> List.map (Tuple.pair index) ids ++ connections
       _ -> connections
 
@@ -213,7 +214,7 @@ viewNodeContent nodeId props nodeView =  div
   , translateHTML nodeView.position
   ]
 
-  (List.map viewProperty props)
+  (viewProperties props)
 
 nodeWidth node = case node of
   Whitespace -> 160
@@ -224,28 +225,45 @@ nodeWidth node = case node of
   _ -> 80
 
 
-viewProperty : PropertyView -> Html Message
-viewProperty property = div
-  [ class (prependStringIf property.connectOutput "main " "property") ]
+viewProperties : List PropertyView -> List (Html Message)
+viewProperties props =
+  let
+      viewSingleProperty : Bool -> PropertyView -> Html Message
+      viewSingleProperty input property = div
+          [ class (prependStringIf property.connectOutput "main " "property") ]
 
-   [ div [ class "inactive left connector" ] []
-   , span [ class "title" ] [ text property.name ]
+            [ div [ class (prependStringIf (not input) "inactive " "left connector") ] []
+            , span [ class "title" ] [ text property.name ]
 
-   , case property.contents of
-       BoolProperty value onChange -> viewBoolInput value (onChange (not value))
-       CharsProperty chars onChange -> viewCharsInput chars onChange
-       CharProperty char onChange -> viewCharInput char onChange
-       IntProperty number onChange -> viewIntInput number onChange
-       ConnectingProperty _ _ -> div [] [] -- TODO not instantiate a div
-       ConnectingProperties _ _ -> div [][] -- FIXME needs multiple names, not multiple inputs
-       TitleProperty -> div [] [] -- TODO not instantiate a div
+            , case property.contents of
+                BoolProperty value onChange -> viewBoolInput value (onChange (not value))
+                CharsProperty chars onChange -> viewCharsInput chars onChange
+                CharProperty char onChange -> viewCharInput char onChange
+                IntProperty number onChange -> viewIntInput number onChange
+                ConnectingProperty _ onChange -> div [] [] -- TODO not instantiate a div
+                ConnectingProperties _ onChange -> div [][] -- FIXME needs multiple names, not multiple inputs
+                TitleProperty -> div [] [] -- TODO not instantiate a div
 
-   , div [ class (prependStringIf (not property.connectOutput) "inactive " "right connector" ) ] []
-   ]
+            , div [ class (prependStringIf (not property.connectOutput) "inactive " "right connector" ) ] []
+          ]
+
+      viewProperty : PropertyView -> List (Html Message)
+      viewProperty prop = case prop.contents of
+        ConnectingProperty _ onChange -> [ viewSingleProperty True prop ]
+        ConnectingProperties inputs onChange -> (viewSingleProperty True prop) :: (List.map (\_ -> viewSingleProperty True prop) inputs)
+        _ -> [ viewSingleProperty False prop ]
+
+
+
+
+  in
+    flattenList (List.map viewProperty props)
+
+
+
 
 
 -- viewAutoListProperties name connectedNodes = connected ++ [ viewConnectProperty name False ]
-
 
 
 viewBoolInput : Bool -> Message -> Html Message
