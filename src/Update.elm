@@ -18,9 +18,12 @@ updateNode nodes id newNode =
   in { nodes | values = Dict.update id updateNodeContents nodes.values }
 
 
-moveNode : Nodes -> NodeId -> Vec2 -> Nodes
-moveNode nodes nodeId movement =
-  let updateNodePosition node = Maybe.map (\n -> { n | position = Vec2.add n.position movement }) node
+moveNode : View -> Nodes -> NodeId -> Vec2 -> Nodes
+moveNode view nodes nodeId movement =
+  let
+    transform = viewTransform view
+    viewMovement = Vec2.scale movement (1 / transform.scale)
+    updateNodePosition node = Maybe.map (\n -> { n | position = Vec2.add n.position viewMovement }) node
   in { nodes | values = Dict.update nodeId updateNodePosition nodes.values }
 
 
@@ -31,6 +34,7 @@ type Message
   = SearchMessage SearchMessage
   | DragModeMessage DragModeMessage
   | UpdateNodeMessage NodeId Node
+  | UpdateView ViewMessage
 
 type SearchMessage
   = UpdateSearch String
@@ -40,6 +44,9 @@ type SearchResult
   = InsertPrototype NodeView
   | ParseRegex String
   | NoResult
+
+type ViewMessage
+  = MagnifyView { amount: Float, focus: Vec2 }
 
 type DragModeMessage
   = StartNodeMove { node : NodeId, mouse : Vec2 }
@@ -52,6 +59,24 @@ type DragModeMessage
 update : Message -> Model -> Model
 update message model =
   case message of
+    UpdateView viewMessage -> case viewMessage of
+      MagnifyView { amount, focus } ->
+        let
+          magnification = model.view.magnification + amount
+          transform = viewTransform { magnification = magnification, offset = model.view.offset }
+
+          oldTransform = viewTransform model.view
+          deltaScale = transform.scale / oldTransform.scale
+
+          newView = if magnification < 0.001 || magnification > 20 then model.view else
+            { magnification = magnification
+            , offset =
+              { x = (model.view.offset.x - focus.x) * deltaScale + focus.x
+              , y = (model.view.offset.y - focus.y) * deltaScale + focus.y
+              }
+            }
+        in { model | view = newView }
+
     UpdateNodeMessage id value ->
       { model | nodes = updateNode model.nodes id value }
 
@@ -77,7 +102,7 @@ update message model =
           case model.dragMode of
             Just (MoveNodeDrag { node, mouse }) ->
               let delta = Vec2.sub newMouse mouse in
-              { model | nodes = moveNode model.nodes node delta
+              { model | nodes = moveNode model.view model.nodes node delta
               , dragMode = Just (MoveNodeDrag { node = node, mouse = newMouse })
               }
 

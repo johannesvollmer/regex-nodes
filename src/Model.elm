@@ -12,6 +12,8 @@ type alias Model =
 
   , search : Maybe String
   , dragMode : Maybe DragMode
+
+  , view : View
   }
 
 init : Model
@@ -20,6 +22,12 @@ init =
   , result = Nothing
   , dragMode = Nothing
   , search = Nothing
+  , view = View 0 (Vec2 0 0)
+  }
+
+type alias View =
+  { magnification : Float
+  , offset : Vec2
   }
 
 type DragMode
@@ -79,5 +87,10 @@ type alias RegexFlags =
   , multiline : Bool
   }
 
+
+viewTransform { magnification, offset} =
+  { translate = offset
+  , scale = 2 ^ (magnification * 0.4)
+  }
 
 defaultFlags = RegexFlags True True True

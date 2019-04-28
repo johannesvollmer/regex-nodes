@@ -17,7 +17,7 @@ body, #main, #overlay, #node-graph {
 }
 
 
-#transform-wrapper {
+.transform-wrapper {
 	position: absolute;
 	display: block;
 

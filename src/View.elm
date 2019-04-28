@@ -2,11 +2,12 @@ module View exposing (..)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing (onInput, onBlur, onFocus)
+import Html.Events exposing (onInput, onBlur, onFocus, on)
 import Dict exposing (Dict)
 import Html.Events.Extra.Mouse as Mouse
+import Html.Events.Extra.Wheel as Wheel
 import Json.Decode as Decode
-import Svg exposing (Svg, svg, line)
+import Svg exposing (Svg, svg, line, g)
 import Svg.Attributes exposing (x1, x2, y1, y2)
 import Regex
 
@@ -95,18 +96,22 @@ view model =
     [ Mouse.onMove (\event -> DragModeMessage (UpdateDrag { newMouse = Vec2.fromTuple event.clientPos }))
     , Mouse.onUp (\_ -> DragModeMessage FinishDrag)
     , Mouse.onLeave (\_ -> DragModeMessage FinishDrag)
-    , onWithOptions "contextmenu" { preventDefault = True, stopPropagation = False } (DragModeMessage FinishDrag)
+    , Mouse.onWithOptions "contextmenu" { preventDefault = True, stopPropagation = False } (\_ -> DragModeMessage FinishDrag)
+    , Wheel.onWheel (\event -> UpdateView (MagnifyView
+      { amount = (if event.deltaY < 0 then 1 else -1)
+      , focus = (Vec2.fromTuple event.mouseEvent.clientPos)
+      }))
 
     , id "main"
     ]
 
-    [ div [ id "connection-graph" ]
-      [ svg [ id "transform-wrapper" ]
+    [ svg [ id "connection-graph" ]
+      [ g [ magnifyAndOffsetSVG model.view ]
         (flattenList (List.map .connections nodeViews))
       ]
 
     , div [ id "node-graph" ]
-      [ div [ id "transform-wrapper" ]
+      [ div [ class "transform-wrapper", magnifyAndOffsetHTML model.view ]
         (List.map .node nodeViews)
       ]
 
@@ -216,10 +221,6 @@ viewNodeConnections nodes props nodeView =
       filtered
 
 
-
-onWithOptions : String -> { preventDefault : Bool, stopPropagation: Bool } -> msg -> Html.Attribute msg
-onWithOptions name { preventDefault, stopPropagation } message = Html.Events.custom
-  name (Decode.succeed { message = message, stopPropagation = stopPropagation, preventDefault = preventDefault })
 
 viewNodeContent : NodeId -> List PropertyView -> Model.NodeView -> Html Message
 viewNodeContent nodeId props nodeView =  div
@@ -334,6 +335,14 @@ prependStringIf condition conditional existing =
 
 
 translateHTML = translate "px"
-translateSVG = translate ""
 translate unit position = style "transform" ("translate(" ++ (String.fromFloat position.x) ++ unit ++ "," ++ (String.fromFloat position.y) ++ unit ++ ")")
+
+magnifyAndOffsetHTML = magnifyAndOffset "px"
+magnifyAndOffsetSVG = magnifyAndOffset ""
+magnifyAndOffset unit transformView =
+  let transform = viewTransform transformView
+  in style "transform"
+    (  "translate(" ++ (String.fromFloat transform.translate.x) ++ unit ++ "," ++ (String.fromFloat transform.translate.y) ++ unit ++ ") "
+    ++ "scale(" ++ (String.fromFloat transform.scale) ++ ")"
+    )
 
