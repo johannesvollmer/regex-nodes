@@ -5,6 +5,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (onInput, onBlur, onFocus)
 import Dict exposing (Dict)
 import Html.Events.Extra.Mouse as Mouse
+import Json.Decode as Decode
 import Svg exposing (Svg, svg, line)
 import Svg.Attributes exposing (x1, x2, y1, y2)
 import Regex
@@ -59,9 +60,8 @@ properties nodeId node =
 
     Repeated repetition ->
       [ PropertyView typeNames.repeated (ConnectingProperty repetition.expression (updateRepetitionExpression nodeId repetition)) True
-      , PropertyView "Multiline Matches" (IntProperty repetition.count (updateRepetitionCount nodeId repetition)) False
+      , PropertyView "Count" (IntProperty repetition.count (updateRepetitionCount nodeId repetition)) False
       ]
-
 
     IfFollowedBy followed ->
       [ PropertyView typeNames.ifFollowedBy (ConnectingProperty followed.expression (updateFollowedByExpression nodeId followed)) True
@@ -69,6 +69,14 @@ properties nodeId node =
       ]
 
 
+nodeWidth node = case node of
+  Whitespace -> 160
+  CharSet _ -> 170
+  Optional _ -> 100
+  Set _ -> 80
+  Flags _ -> 140
+  IfFollowedBy _ -> 120
+  Repeated _ -> 100
 
 
 
@@ -87,6 +95,8 @@ view model =
     [ Mouse.onMove (\event -> DragModeMessage (UpdateDrag { newMouse = Vec2.fromTuple event.clientPos }))
     , Mouse.onUp (\_ -> DragModeMessage FinishDrag)
     , Mouse.onLeave (\_ -> DragModeMessage FinishDrag)
+    , onWithOptions "contextmenu" { preventDefault = True, stopPropagation = False } (DragModeMessage FinishDrag)
+
     , id "main"
     ]
 
@@ -101,7 +111,7 @@ view model =
       ]
 
     , div [ id "overlay" ]
-      [ nav [ ]
+      [ nav []
         [ header []
           [ img [ src "img/logo.svg" ] []
           , h1 [] [ text "Regex Nodes" ]
@@ -206,9 +216,24 @@ viewNodeConnections nodes props nodeView =
       filtered
 
 
+
+onWithOptions : String -> { preventDefault : Bool, stopPropagation: Bool } -> msg -> Html.Attribute msg
+onWithOptions name { preventDefault, stopPropagation } message = Html.Events.custom
+  name (Decode.succeed { message = message, stopPropagation = stopPropagation, preventDefault = preventDefault })
+
 viewNodeContent : NodeId -> List PropertyView -> Model.NodeView -> Html Message
 viewNodeContent nodeId props nodeView =  div
-  [ Mouse.onDown (\event -> DragModeMessage (StartNodeMove { node = nodeId, mouse = Vec2.fromTuple event.clientPos }))
+  [ -- Mouse.onDown (\event -> DragModeMessage (StartNodeMove { node = nodeId, mouse = Vec2.fromTuple event.clientPos }))
+    Mouse.onDown
+      (\event ->
+        if event.button == Mouse.SecondButton then
+          DragModeMessage (StartPrototypeConnect { supplier = nodeId, mouse = Vec2.fromTuple event.clientPos })
+
+        else DragModeMessage (StartNodeMove { node = nodeId, mouse = Vec2.fromTuple event.clientPos })
+      )
+
+
+  -- TODO right click start drag and prevent default
   , class "graph-node"
   , style "width" ((String.fromFloat (nodeWidth nodeView.node)) ++ "px")
   , translateHTML nodeView.position
@@ -216,13 +241,6 @@ viewNodeContent nodeId props nodeView =  div
 
   (viewProperties props)
 
-nodeWidth node = case node of
-  Whitespace -> 160
-  CharSet _ -> 170
-  Optional _ -> 100
-  Set _ -> 80
-  Flags _ -> 140
-  _ -> 80
 
 
 viewProperties : List PropertyView -> List (Html Message)
