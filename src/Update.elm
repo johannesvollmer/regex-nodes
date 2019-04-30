@@ -22,7 +22,7 @@ moveNode : View -> Nodes -> NodeId -> Vec2 -> Nodes
 moveNode view nodes nodeId movement =
   let
     transform = viewTransform view
-    viewMovement = Vec2.scale movement (1 / transform.scale)
+    viewMovement = Vec2.scale (1 / transform.scale) movement
     updateNodePosition node = Maybe.map (\n -> { n | position = Vec2.add n.position viewMovement }) node
   in { nodes | values = Dict.update nodeId updateNodePosition nodes.values }
 
@@ -52,7 +52,7 @@ type DragModeMessage
   = StartNodeMove { node : NodeId, mouse : Vec2 }
   | StartPrototypeConnect { supplier : NodeId, mouse : Vec2 }
   | UpdateDrag { newMouse : Vec2 }
---| DragEntered { node : NodeId, property : Int } TODO??ß
+--  | DragEntered { node : NodeId, property : Int } TODO??ß
   | FinishDrag
 
 
@@ -68,7 +68,7 @@ update message model =
           oldTransform = viewTransform model.view
           deltaScale = transform.scale / oldTransform.scale
 
-          newView = if magnification < 0.001 || magnification > 20 then model.view else
+          newView = if transform.scale < 0.1 || transform.scale > 16 then model.view else
             { magnification = magnification
             , offset =
               { x = (model.view.offset.x - focus.x) * deltaScale + focus.x
@@ -100,17 +100,18 @@ update message model =
 
         UpdateDrag { newMouse } ->
           case model.dragMode of
+            Nothing -> model
+
             Just (MoveNodeDrag { node, mouse }) ->
               let delta = Vec2.sub newMouse mouse in
               { model | nodes = moveNode model.view model.nodes node delta
               , dragMode = Just (MoveNodeDrag { node = node, mouse = newMouse })
               }
 
-            Just (PrototypeConnectionDrag { supplier, openEnd }) ->
-              let mode = PrototypeConnectionDrag { supplier = supplier, openEnd = openEnd } in
+            Just (PrototypeConnectionDrag { supplier }) ->
+              let mode = PrototypeConnectionDrag { supplier = supplier, openEnd = newMouse } in
               { model | dragMode = Just mode }
 
-            Nothing -> model
 
         FinishDrag ->
           { model | dragMode = Nothing }

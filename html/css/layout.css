@@ -8,7 +8,7 @@
 }
 
 
-body, #main, #overlay, #node-graph {
+body, #main, #overlay, #node-graph, #connection-graph {
 	position: fixed;
 	top:0; left:0;
 	width: 100vw;

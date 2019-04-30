@@ -82,7 +82,7 @@ nav {
 
 .connection {
 	stroke: teal;
-	stroke-width: 2;
+	stroke-width: 3;
 	stroke-linecap: round;
 	fill: none;
 }
@@ -95,7 +95,7 @@ nav {
 .graph-node {
 	cursor: pointer;
 }
-.dragged.graph-node {
+.move-dragging * {
 	cursor: grabbing;
 }
 .connect-dragging * {
