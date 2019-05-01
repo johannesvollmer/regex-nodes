@@ -1,5 +1,6 @@
 module Build exposing (..)
 
+import Array
 import Dict exposing (Dict)
 import Regex
 
@@ -15,7 +16,7 @@ buildNodeExpression nodes node =
     Whitespace -> "\\w"
     CharSet chars -> "[" ++ chars ++ "]"
     Optional maybeInput -> (build maybeInput) ++ "?"
-    Set options -> List.map (\option -> build (Just option)) options |> String.join "|"
+    Set options -> Array.map (\option -> build (Just option)) options |> Array.toList |> String.join "|"
     Flags { expression } -> build expression -- we use flags directly at topmost level
     Repeated { expression, count } -> (build expression) ++ "{" ++ (String.fromInt count) ++ "}"
     IfFollowedBy { expression, successor } -> (build expression) ++ "(?=" ++ (build successor) ++ ")"

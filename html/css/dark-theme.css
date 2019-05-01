@@ -147,11 +147,11 @@ nav {
 	opacity: 0.25;
 	color: #fff;
 }
-.connect-dragging .main:not(.connectable-input) {
+.connect-dragging .property:first-child:not(.connectable-input) {
 	opacity: 0.6;
 }
 
-.connecting.graph-node .main.property {
+.connecting.graph-node .property:first-child {
 	background-color: teal; /* partially enable transition */ 
 	background-image: url("background.svg");
 	background-repeat: no-repeat;
@@ -171,7 +171,7 @@ nav {
 	background-color: teal;
 }
 
-.connecting.graph-node .main.property .connector {
+.connecting.graph-node .property:first-child .connector {
 	opacity: 0;
 }
 

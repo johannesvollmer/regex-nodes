@@ -1,5 +1,6 @@
 module Model exposing (..)
 
+import Array exposing (Array)
 import Dict exposing (Dict)
 import Vec2 exposing (Vec2)
 
@@ -50,7 +51,7 @@ type Node
   = Whitespace
   | CharSet String
   | Optional (Maybe NodeId)
-  | Set (List NodeId)
+  | Set (Array NodeId)
   | Flags { expression : Maybe NodeId, flags : RegexFlags }
   | Repeated { expression : Maybe NodeId, count : Int  }
   | IfFollowedBy { expression : Maybe NodeId, successor : Maybe NodeId }
@@ -65,7 +66,7 @@ prototypes =
   [ Prototype typeNames.whitespace    Whitespace
   , Prototype typeNames.charset       (CharSet ",.?!:")
   , Prototype typeNames.optional      (Optional Nothing)
-  , Prototype typeNames.set           (Set [])
+  , Prototype typeNames.set           (Set (Array.fromList []))
   , Prototype typeNames.flags         (Flags { expression = Nothing, flags = defaultFlags })
   , Prototype typeNames.repeated      (Repeated { expression = Nothing, count = 3 })
   , Prototype typeNames.ifFollowedBy  (IfFollowedBy { expression = Nothing, successor = Nothing })

@@ -139,8 +139,9 @@ header img {
 	flex-grow: 1;
 }
 
-.property.main > .title {
+/*.property.main*/ .property:first-child > .title {
 	text-align: center;
+	font-weight: 700;
 }
 
 /* override priority, maximise text input size */
@@ -148,9 +149,6 @@ header img {
 	flex-grow: 100;
 }
 
-.main.property > .title {
-	font-weight: 700;
-}
 
 .property input {
 	font-size: 0.7em;

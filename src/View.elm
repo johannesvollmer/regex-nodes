@@ -1,5 +1,6 @@
 module View exposing (..)
 
+import Array exposing (Array)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onInput, onBlur, onFocus)
@@ -31,7 +32,7 @@ type PropertyViewContents
   | CharProperty Char (OnChange (Maybe Char))
   | IntProperty Int (OnChange Int)
   | ConnectingProperty (Maybe NodeId) (OnChange (Maybe NodeId))
-  | ConnectingProperties (List NodeId) (OnChange (List NodeId))
+  | ConnectingProperties (Array NodeId) (OnChange (Array NodeId))
   | TitleProperty
 
 type alias NodeView =
@@ -52,7 +53,7 @@ properties nodeId node =
       ]
 
     Flags flagsNode ->
-      [ PropertyView typeNames.flags (ConnectingProperty flagsNode.expression (updateFlagsExpression nodeId flagsNode)) True
+      [ PropertyView typeNames.flags (ConnectingProperty flagsNode.expression (updateFlagsExpression nodeId flagsNode)) False
       , PropertyView "Multiple Matches" (BoolProperty flagsNode.flags.multiple (updateFlagsMultiple nodeId flagsNode)) False
       , PropertyView "Case Insensitive" (BoolProperty flagsNode.flags.caseSensitive (updateFlagsInsensitivity nodeId flagsNode)) False
       , PropertyView "Multiline Matches" (BoolProperty flagsNode.flags.multiline (updateFlagsMultiline nodeId flagsNode)) False
@@ -70,7 +71,7 @@ properties nodeId node =
 
 
 nodeWidth node = case node of
-  Whitespace -> 160
+  Whitespace -> 150
   CharSet _ -> 170
   Optional _ -> 100
   Set _ -> 80
@@ -218,7 +219,7 @@ viewNodeConnections nodes props nodeView =
       ConnectingProperty id _ -> Maybe.map (\i -> (index, i) :: connections) id |> Maybe.withDefault connections
 
       -- FIXME needs to increment index actually, not the same index every property!
-      ConnectingProperties ids _ -> List.map (Tuple.pair index) ids ++ connections
+      ConnectingProperties ids _ -> (Array.map (Tuple.pair index) ids |> Array.toList) ++ connections
       _ -> connections
 
     indexed = List.indexedMap (\index property -> (index, property)) props
@@ -263,7 +264,7 @@ viewNodeContent : Maybe NodeId -> Bool -> NodeId -> List PropertyView -> Model.N
 viewNodeContent draggedId isConnecting nodeId props nodeView =  div
   [ -- Mouse.onDown (\event -> DragModeMessage (StartNodeMove { node = nodeId, mouse = Vec2.fromTuple event.clientPos }))
     Mouse.onDown
-      (\event ->
+      (\event -> -- FIXME only if the first property has output
         if event.button == Mouse.SecondButton then
           DragModeMessage (StartPrototypeConnect { supplier = nodeId, mouse = Vec2.fromTuple event.clientPos })
 
@@ -321,7 +322,7 @@ viewProperties draggedId props =
 
     propertyHTML: List (Attribute Message) -> Html Message -> String -> Bool -> Bool -> Html Message
     propertyHTML attributes directInput name isInput isOutput = div
-      ((classes "property" [(isOutput, "main")]) :: attributes)
+      ((classes "property" [(isInput, "connectable-input")]) :: attributes)
 
       [ div [ classes "left connector" [(not isInput, "inactive")] ] []
       , span [ class "title" ] [ text name ]
@@ -332,9 +333,13 @@ viewProperties draggedId props =
     simpleInputProperty property directInput = propertyHTML
       [] directInput property.name False property.connectOutput
 
-    connectInputProperty property onChange = propertyHTML
-      let handler = Mouse.onEnter (\_ -> onChange draggedId) in
-      [ handler ] (div[][]) property.name True property.connectOutput
+    connectInputProperty property onChange =
+      let
+        handlers = case draggedId of
+          Just id -> [ Mouse.onEnter (\_ -> onChange (Just id)) ]
+          Nothing -> []
+
+      in propertyHTML handlers (div[][]) property.name True property.connectOutput
 
     singleProperty property = case property.contents of
       BoolProperty value onChange -> [ simpleInputProperty property (viewBoolInput value (onChange (not value))) ]
@@ -342,17 +347,22 @@ viewProperties draggedId props =
       CharProperty char onChange -> [ simpleInputProperty property (viewCharInput char onChange) ]
       IntProperty number onChange -> [ simpleInputProperty property (viewIntInput number onChange) ]
       ConnectingProperty _ onChange -> [ connectInputProperty property onChange ]
-      ConnectingProperties connectedProps onChange -> List.indexedMap
-        (\index _ -> connectInputProperty property (\newInput -> onChange (List.set index newInput connectedProps)))
-        connectedProps
+
+      ConnectingProperties connectedProps onChange ->
+        let
+          onChangeProperty index newInput = case newInput of
+             Just newInputId -> onChange (Array.set index newInputId connectedProps)
+             Nothing -> onChange connectedProps
+
+
+        in Array.toList <| Array.indexedMap
+          (\index _ -> connectInputProperty property (onChangeProperty index))
+          connectedProps
 
       TitleProperty -> [ propertyHTML [] (div[][]) property.name False property.connectOutput ]
 
   in
     flattenList (List.map singleProperty props)
-
-
-
 
 
 -- viewAutoListProperties name connectedNodes = connected ++ [ viewConnectProperty name False ]
