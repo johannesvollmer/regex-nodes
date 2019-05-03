@@ -52,7 +52,7 @@ type DragModeMessage
   = StartNodeMove { node : NodeId, mouse : Vec2 }
   | StartPrototypeConnect { supplier : NodeId, mouse : Vec2 }
   | UpdateDrag { newMouse : Vec2 }
---  | DragEntered { node : NodeId, property : Int } TODO??ß
+  | ConnectPrototype { nodeId: NodeId, newNode: Node }
   | FinishDrag
 
 
@@ -100,8 +100,6 @@ update message model =
 
         UpdateDrag { newMouse } ->
           case model.dragMode of
-            Nothing -> model
-
             Just (MoveNodeDrag { node, mouse }) ->
               let delta = Vec2.sub newMouse mouse in
               { model | nodes = moveNode model.view model.nodes node delta
@@ -112,6 +110,14 @@ update message model =
               let mode = PrototypeConnectionDrag { supplier = supplier, openEnd = newMouse } in
               { model | dragMode = Just mode }
 
+            _ -> model
+
+        -- when a connection is established, update the drag mode of the model,
+        -- but also already make the connection real
+        ConnectPrototype { nodeId, newNode } ->
+          { model | nodes = updateNode model.nodes nodeId newNode
+          , dragMode = Just (ConnectionIsPrototyped { previousNodeValue = Dict.get nodeId model.nodes.values |> Maybe.map .node })
+          }
 
         FinishDrag ->
           { model | dragMode = Nothing }
@@ -120,18 +126,18 @@ update message model =
 
 
 
-updateCharSetChars nodeId newChars = UpdateNodeMessage nodeId (CharSet newChars)
-updateOptionalOption nodeId newInput = UpdateNodeMessage nodeId (Optional newInput)
-updateSetOptions nodeId options = UpdateNodeMessage nodeId (Set options)
+updateCharSetChars newChars = CharSet newChars
+updateOptionalOption newInput = Optional newInput
+updateSetOptions options = Set options
 
-updateFollowedByExpression nodeId followed expression = UpdateNodeMessage nodeId (IfFollowedBy { followed | expression = expression })
-updateFollowedBySuccessor nodeId followed successor = UpdateNodeMessage nodeId (IfFollowedBy { followed | successor = successor })
+updateFollowedByExpression followed expression = IfFollowedBy { followed | expression = expression }
+updateFollowedBySuccessor followed successor = IfFollowedBy { followed | successor = successor }
 
-updateRepetitionExpression nodeId repetition expression = UpdateNodeMessage nodeId (Repeated { repetition | expression = expression })
-updateRepetitionCount nodeId repetition count = UpdateNodeMessage nodeId (Repeated { repetition | count = count })
+updateRepetitionExpression repetition expression = Repeated { repetition | expression = expression }
+updateRepetitionCount repetition count = Repeated { repetition | count = count }
 
-updateFlagsExpression nodeId flags newInput = UpdateNodeMessage nodeId (Flags { flags | expression = newInput })
-updateFlags nodeId expression newFlags = UpdateNodeMessage nodeId (Flags { expression = expression, flags = newFlags })
-updateFlagsMultiple nodeId { expression, flags } multiple = updateFlags nodeId expression { flags | multiple = multiple }
-updateFlagsInsensitivity nodeId { expression, flags } caseSensitive = updateFlags nodeId expression { flags | caseSensitive = caseSensitive }
-updateFlagsMultiline nodeId { expression, flags } multiline = updateFlags nodeId expression { flags | multiline = multiline }
+updateFlagsExpression flags newInput = Flags { flags | expression = newInput }
+updateFlags expression newFlags = Flags { expression = expression, flags = newFlags }
+updateFlagsMultiple { expression, flags } multiple = updateFlags expression { flags | multiple = multiple }
+updateFlagsInsensitivity { expression, flags } caseSensitive = updateFlags expression { flags | caseSensitive = caseSensitive }
+updateFlagsMultiline { expression, flags } multiline = updateFlags expression { flags | multiline = multiline }

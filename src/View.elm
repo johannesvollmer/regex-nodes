@@ -24,7 +24,8 @@ type alias PropertyView =
   , connectOutput : Bool
   }
 
-type alias OnChange a = a -> Message
+-- if a property must be updated, return the whole new node
+type alias OnChange a = a -> Node
 
 type PropertyViewContents
   = BoolProperty Bool (OnChange Bool)
@@ -40,33 +41,33 @@ type alias NodeView =
   , connections: List (Svg Message)
   }
 
-properties : NodeId -> Node -> List PropertyView
-properties nodeId node =
+properties : Node -> List PropertyView
+properties node =
   case node of
     Whitespace -> [ PropertyView typeNames.whitespace TitleProperty True ]
-    CharSet chars -> [ PropertyView typeNames.charset (CharsProperty chars (updateCharSetChars nodeId)) True ]
-    Optional option -> [ PropertyView typeNames.optional (ConnectingProperty option (updateOptionalOption nodeId)) True ]
+    CharSet chars -> [ PropertyView typeNames.charset (CharsProperty chars (updateCharSetChars)) True ]
+    Optional option -> [ PropertyView typeNames.optional (ConnectingProperty option (updateOptionalOption)) True ]
 
     Set options ->
       [ PropertyView typeNames.set TitleProperty True
-      , PropertyView "Option" (ConnectingProperties options (updateSetOptions nodeId)) False
+      , PropertyView "Option" (ConnectingProperties options (updateSetOptions)) False
       ]
 
     Flags flagsNode ->
-      [ PropertyView typeNames.flags (ConnectingProperty flagsNode.expression (updateFlagsExpression nodeId flagsNode)) False
-      , PropertyView "Multiple Matches" (BoolProperty flagsNode.flags.multiple (updateFlagsMultiple nodeId flagsNode)) False
-      , PropertyView "Case Insensitive" (BoolProperty flagsNode.flags.caseSensitive (updateFlagsInsensitivity nodeId flagsNode)) False
-      , PropertyView "Multiline Matches" (BoolProperty flagsNode.flags.multiline (updateFlagsMultiline nodeId flagsNode)) False
+      [ PropertyView typeNames.flags (ConnectingProperty flagsNode.expression (updateFlagsExpression flagsNode)) False
+      , PropertyView "Multiple Matches" (BoolProperty flagsNode.flags.multiple (updateFlagsMultiple flagsNode)) False
+      , PropertyView "Case Insensitive" (BoolProperty flagsNode.flags.caseSensitive (updateFlagsInsensitivity flagsNode)) False
+      , PropertyView "Multiline Matches" (BoolProperty flagsNode.flags.multiline (updateFlagsMultiline flagsNode)) False
       ]
 
     Repeated repetition ->
-      [ PropertyView typeNames.repeated (ConnectingProperty repetition.expression (updateRepetitionExpression nodeId repetition)) True
-      , PropertyView "Count" (IntProperty repetition.count (updateRepetitionCount nodeId repetition)) False
+      [ PropertyView typeNames.repeated (ConnectingProperty repetition.expression (updateRepetitionExpression repetition)) True
+      , PropertyView "Count" (IntProperty repetition.count (updateRepetitionCount repetition)) False
       ]
 
     IfFollowedBy followed ->
-      [ PropertyView typeNames.ifFollowedBy (ConnectingProperty followed.expression (updateFollowedByExpression nodeId followed)) True
-      , PropertyView "Successor" (ConnectingProperty followed.successor (updateFollowedBySuccessor nodeId followed)) False
+      [ PropertyView typeNames.ifFollowedBy (ConnectingProperty followed.expression (updateFollowedByExpression followed)) True
+      , PropertyView "Successor" (ConnectingProperty followed.successor (updateFollowedBySuccessor followed)) False
       ]
 
 
@@ -208,7 +209,7 @@ viewSearch query =
 flattenList list = List.foldr (++) [] list
 viewNode : Maybe NodeId -> Maybe NodeId -> Nodes -> (NodeId, Model.NodeView) -> NodeView
 viewNode draggedId connectingId nodes (nodeId, nodeView) =
-  let props = properties nodeId nodeView.node in
+  let props = properties nodeView.node in
   NodeView (viewNodeContent draggedId (Just nodeId == connectingId) nodeId props nodeView) (viewNodeConnections nodes props nodeView)
 
 
@@ -277,49 +278,14 @@ viewNodeContent draggedId isConnecting nodeId props nodeView =  div
   , translateHTML nodeView.position
   ]
 
-  (viewProperties draggedId props)
+  (viewProperties nodeId draggedId props)
 
 
 -- TODO pattern match only once inside this function
 
-viewProperties : Maybe NodeId -> List PropertyView -> List (Html Message)
-viewProperties draggedId props =
+viewProperties : NodeId -> Maybe NodeId -> List PropertyView -> List (Html Message)
+viewProperties nodeId draggedId props =
   let
-    {-
-
-    viewSingleProperty : Bool -> PropertyView -> Html Message
-    viewSingleProperty input property = div
-      [ classes "property" [(property.connectOutput, "main")]
-      , Mouse.onEnter (\event -> case property.contents of
-         ConnectingProperty _ onChange -> onChange draggedId -- TODO not instantiate a div
-         ConnectingProperties _ onChange -> onChange draggedId -- FIXME needs multiple names, not multiple inputs
-         _ -> DragModeMessage (UpdateDrag { newMouse = Vec2.fromTuple event.clientPos })
-      )
-      ]
-
-      [ div [ classes "left connector" [(not input, "inactive")] ] []
-      , span [ class "title" ] [ text property.name ]
-
-      , case property.contents of
-          BoolProperty value onChange -> viewBoolInput value (onChange (not value))
-          CharsProperty chars onChange -> viewCharsInput chars onChange
-          CharProperty char onChange -> viewCharInput char onChange
-          IntProperty number onChange -> viewIntInput number onChange
-          ConnectingProperty _ onChange -> div [] [] -- TODO not instantiate a div
-          ConnectingProperties _ onChange -> div [][] -- FIXME needs multiple names, not multiple inputs
-          TitleProperty -> div [] [] -- TODO not instantiate a div
-
-      , div [ classes "right connector" [(not property.connectOutput, "inactive")] ] []
-      ]
-
-    viewProperty : PropertyView -> List (Html Message)
-    viewProperty prop = case prop.contents of
-      ConnectingProperty _ onChange -> [ viewSingleProperty True prop ]
-      ConnectingProperties inputs onChange -> (viewSingleProperty True prop) :: (List.map (\_ -> viewSingleProperty True prop) inputs)
-      _ -> [ viewSingleProperty False prop ]
-
-      -}
-
     propertyHTML: List (Attribute Message) -> Html Message -> String -> Bool -> Bool -> Html Message
     propertyHTML attributes directInput name isInput isOutput = div
       ((classes "property" [(isInput, "connectable-input")]) :: attributes)
@@ -330,29 +296,33 @@ viewProperties draggedId props =
       , div [ classes "right connector" [(not isOutput, "inactive")] ] []
       ]
 
+    updateNode = UpdateNodeMessage nodeId
+
     simpleInputProperty property directInput = propertyHTML
       [] directInput property.name False property.connectOutput
 
     connectInputProperty property onChange =
       let
         handlers = case draggedId of
-          Just id -> [ Mouse.onEnter (\_ -> onChange (Just id)) ]
+          Just id -> -- FIXME make everything like this
+            [ Mouse.onEnter (\_ -> DragModeMessage (ConnectPrototype { nodeId = nodeId, newNode = onChange (Just id) })) ]
+          -- [ Mouse.onEnter (\_ -> onChange (Just id)) ]
           Nothing -> []
 
       in propertyHTML handlers (div[][]) property.name True property.connectOutput
 
     singleProperty property = case property.contents of
-      BoolProperty value onChange -> [ simpleInputProperty property (viewBoolInput value (onChange (not value))) ]
-      CharsProperty chars onChange -> [ simpleInputProperty property (viewCharsInput chars onChange) ]
-      CharProperty char onChange -> [ simpleInputProperty property (viewCharInput char onChange) ]
-      IntProperty number onChange -> [ simpleInputProperty property (viewIntInput number onChange) ]
+      BoolProperty value onChange -> [ simpleInputProperty property (viewBoolInput value (onChange (not value) |> updateNode)) ]
+      CharsProperty chars onChange -> [ simpleInputProperty property (viewCharsInput chars (onChange >> updateNode)) ]
+      CharProperty char onChange -> [ simpleInputProperty property (viewCharInput char (onChange >> updateNode)) ]
+      IntProperty number onChange -> [ simpleInputProperty property (viewIntInput number (onChange >> updateNode)) ]
       ConnectingProperty _ onChange -> [ connectInputProperty property onChange ]
 
       ConnectingProperties connectedProps onChange ->
         let
           onChangeProperty index newInput = case newInput of
              Just newInputId -> onChange (Array.set index newInputId connectedProps)
-             Nothing -> onChange connectedProps
+             Nothing -> onChange connectedProps -- FIXME remove element on mouse leave
 
 
         in Array.toList <| Array.indexedMap
@@ -363,9 +333,6 @@ viewProperties draggedId props =
 
   in
     flattenList (List.map singleProperty props)
-
-
--- viewAutoListProperties name connectedNodes = connected ++ [ viewConnectProperty name False ]
 
 
 viewBoolInput : Bool -> Message -> Html Message
