@@ -50,7 +50,7 @@ type ViewMessage
 
 type DragModeMessage
   = StartNodeMove { node : NodeId, mouse : Vec2 }
-  | StartCreateOrRemoveConnection { node: NodeId }
+  | StartCreateOrRemoveConnection { node: NodeId, mouse: Vec2 }
   | EditConnection { nodeId: NodeId, node: Node, supplier : Maybe NodeId, mouse : Vec2 }
   | StartPrototypeConnect { supplier : NodeId, mouse : Vec2 }
   | UpdateDrag { newMouse : Vec2 }
@@ -99,6 +99,8 @@ update message model =
 
         -- update the subject node (disconnecting the input)
         -- and then start editing the connection of the old supplier
+
+        -- TODO if current drag mode is retain, then reconnect to old node?
         EditConnection { nodeId, node, supplier, mouse } ->
           Maybe.withDefault model <| Maybe.map
             (\oldSupplier ->
@@ -112,8 +114,8 @@ update message model =
         StartPrototypeConnect { supplier, mouse } ->
           { model | dragMode = Just (CreatePrototypeConnectionDrag { supplier = supplier, openEnd = mouse }) }
 
-        StartCreateOrRemoveConnection { node } ->
-          { model | dragMode = Just (CreateOrRemoveConnection { node = node }) }
+        StartCreateOrRemoveConnection { node, mouse } ->
+          { model | dragMode = Just (CreateOrRemoveConnection { node = node, mouse = mouse }) }
 
         UpdateDrag { newMouse } ->
           case model.dragMode of

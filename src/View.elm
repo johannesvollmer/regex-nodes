@@ -272,7 +272,7 @@ viewNodeContent dragMode nodeId props nodeView =
 
     onClick event =
       if event.button == Mouse.SecondButton then
-        DragModeMessage (StartCreateOrRemoveConnection { node = nodeId })
+        DragModeMessage (StartCreateOrRemoveConnection { node = nodeId, mouse = Vec2.fromTuple event.clientPos })
         -- DragModeMessage (StartPrototypeConnect { supplier = nodeId, mouse = Vec2.fromTuple event.clientPos })
 
       else DragModeMessage (StartNodeMove { node = nodeId, mouse = Vec2.fromTuple event.clientPos })
@@ -299,20 +299,39 @@ viewProperties nodeId dragMode props =
         Just (RetainPrototypedConnection { node }) -> nodeId == node
         _ -> False
 
-    leftConnector attributes active = div
-      ((classes "left connector" [(not active, "inactive")]) :: attributes)
+    enableDisconnect = case dragMode of
+       Just (CreateOrRemoveConnection _) -> True
+       Just (RetainPrototypedConnection _) -> True
+       _ -> False
+
+    onLeave : Maybe { supplier: Maybe NodeId, onChange: OnChange (Maybe NodeId) } -> Mouse.Event -> Message
+    onLeave input event = DragModeMessage (
+        case dragMode of
+          Just (CreateOrRemoveConnection { mouse }) ->
+            case input of
+              Just { supplier, onChange } ->
+                if (Tuple.first event.clientPos) < mouse.x then
+                   EditConnection { supplier = supplier, node = onChange Nothing, nodeId = nodeId, mouse = Vec2.fromTuple event.clientPos }
+
+                else StartPrototypeConnect { supplier = nodeId, mouse = Vec2.fromTuple event.clientPos }
+
+              Nothing -> StartPrototypeConnect { supplier = nodeId, mouse = Vec2.fromTuple event.clientPos }
+          _ -> UpdateDrag { newMouse = Vec2.fromTuple event.clientPos }
+      )
+
+    leftConnector active = div
+      [ (classes "left connector" [(not active, "inactive")]) ]
       []
 
     rightConnector active = div
-      (prependListIf (active && mayStartConnectDrag)
-        (Mouse.onLeave (\event -> DragModeMessage (StartPrototypeConnect { supplier = nodeId, mouse = Vec2.fromTuple event.clientPos })))
-        [  classes "right connector" [(not active, "inactive")] ]
-      )
+      [ (classes "right connector" [(not active, "inactive")]) ]
       []
+
 
     propertyHTML: List (Attribute Message) -> Html Message -> String -> Bool -> Html Message -> Html Message -> Html Message
     propertyHTML attributes directInput name connectableInput left right = div
-      ((classes "property" [(connectableInput, "connectable-input")]) :: attributes)
+      ((classes "property" [(connectableInput, "connectable-input")]) :: attributes) -- FIXME only on leave if property.connectoutput
+
       [ left
       , span [ class "title" ] [ text name ]
       , directInput
@@ -322,29 +341,21 @@ viewProperties nodeId dragMode props =
     updateNode = UpdateNodeMessage nodeId
 
     simpleInputProperty property directInput = propertyHTML
-      [] directInput property.name False (leftConnector [] False) (rightConnector property.connectOutput)
+      [ Mouse.onLeave (onLeave Nothing) ] directInput property.name False (leftConnector False) (rightConnector property.connectOutput)
 
     connectInputProperty property currentSupplier onChange =
       let
-        handlers = case dragMode of
+        onEnter = case dragMode of
           Just (CreatePrototypeConnectionDrag { supplier }) ->
             [ Mouse.onEnter (\_ -> DragModeMessage (ConnectPrototype { nodeId = nodeId, newNode = onChange (Just supplier) })) ]
           _ -> []
 
-        onLeave event =
-          DragModeMessage (EditConnection { supplier = currentSupplier, node = onChange Nothing, nodeId = nodeId, mouse = Vec2.fromTuple event.clientPos })
+        onLeaveHandlers = if enableDisconnect && mayStartConnectDrag
+            then [ Mouse.onLeave (onLeave (Just { supplier = currentSupplier, onChange = onChange })) ] else []
 
-        enableDisconnect = case dragMode of
-           Just (CreateOrRemoveConnection _) -> True
-           Just (RetainPrototypedConnection _) -> True
-           _ -> False
+        left = leftConnector True
 
-        events = if enableDisconnect && mayStartConnectDrag
-            then [ Mouse.onLeave onLeave  ] else []
-
-        left = leftConnector events True
-
-      in propertyHTML handlers (div[][]) property.name True left (rightConnector property.connectOutput)
+      in propertyHTML (onEnter ++ onLeaveHandlers) (div[][]) property.name True left (rightConnector property.connectOutput)
 
     singleProperty property = case property.contents of
       BoolProperty value onChange -> [ simpleInputProperty property (viewBoolInput value (onChange (not value) |> updateNode)) ]
@@ -364,7 +375,7 @@ viewProperties nodeId dragMode props =
           (\index currentSupplier -> connectInputProperty property (Just currentSupplier) (onChangeProperty index))
           connectedProps
 
-      TitleProperty -> [ propertyHTML [] (div[][]) property.name False (leftConnector [] False) (rightConnector property.connectOutput) ]
+      TitleProperty -> [ propertyHTML [] (div[][]) property.name False (leftConnector False) (rightConnector property.connectOutput) ]
 
   in
     flattenList (List.map singleProperty props)

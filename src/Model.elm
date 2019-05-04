@@ -35,7 +35,7 @@ type DragMode
   = MoveNodeDrag { node : NodeId, mouse : Vec2 }
   | CreateOrRemoveConnection { node: NodeId, mouse: Vec2 }
   | CreatePrototypeConnectionDrag { supplier : NodeId, openEnd : Vec2 }
-  | RetainPrototypedConnection { node: NodeId, previousNodeValue: Maybe Node }
+  | RetainPrototypedConnection { node: NodeId, previousNodeValue: Maybe Node } -- FIXME same as createOrRemove??
 
 type alias NodeId = Int
 

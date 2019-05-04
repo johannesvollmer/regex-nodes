@@ -179,5 +179,6 @@ nav {
 }
 
 .may-drag-connect .property:hover {
-  background-color: #f3f;
+  background-color: teal;
+  color: #ffffff88;
 }
