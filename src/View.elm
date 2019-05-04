@@ -93,12 +93,12 @@ view model =
 
     (moveDragging, connectDragId, mousePosition) = case model.dragMode of
         Just (MoveNodeDrag { mouse }) -> (True, Nothing, mouse)
-        Just (PrototypeConnectionDrag { supplier, openEnd }) -> (False, Just supplier, openEnd)
+        Just (CreatePrototypeConnectionDrag { supplier, openEnd }) -> (False, Just supplier, openEnd)
         _ -> (False, Nothing, Vec2 0 0)
 
     connectDragging = connectDragId /= Nothing
 
-    nodeViews = (List.map (viewNode connectDragId connectDragId model.nodes) (Dict.toList model.nodes.values))
+    nodeViews = (List.map (viewNode model.dragMode model.nodes) (Dict.toList model.nodes.values))
 
   in div
     [ Mouse.onMove (\event -> DragModeMessage
@@ -207,10 +207,10 @@ viewSearch query =
 
 
 flattenList list = List.foldr (++) [] list
-viewNode : Maybe NodeId -> Maybe NodeId -> Nodes -> (NodeId, Model.NodeView) -> NodeView
-viewNode draggedId connectingId nodes (nodeId, nodeView) =
+viewNode : Maybe DragMode -> Nodes -> (NodeId, Model.NodeView) -> NodeView
+viewNode dragMode nodes (nodeId, nodeView) =
   let props = properties nodeView.node in
-  NodeView (viewNodeContent draggedId (Just nodeId == connectingId) nodeId props nodeView) (viewNodeConnections nodes props nodeView)
+  NodeView (viewNodeContent dragMode nodeId props nodeView) (viewNodeConnections nodes props nodeView)
 
 
 viewNodeConnections : Nodes -> List PropertyView -> Model.NodeView -> List (Svg Message)
@@ -259,64 +259,99 @@ viewConnectDrag viewTransformation nodes dragId mouse =
     ]
     []
 
+hasDragConnectionPrototype dragMode nodeId = case dragMode of
+    Just (CreatePrototypeConnectionDrag { supplier }) -> nodeId == supplier
+    _ -> False
 
+viewNodeContent : Maybe DragMode -> NodeId -> List PropertyView -> Model.NodeView -> Html Message
+viewNodeContent dragMode nodeId props nodeView =
+  let
+    mayDragConnect = case dragMode of
+      Just (CreateOrRemoveConnection { node }) -> nodeId == node
+      _ -> False
 
-viewNodeContent : Maybe NodeId -> Bool -> NodeId -> List PropertyView -> Model.NodeView -> Html Message
-viewNodeContent draggedId isConnecting nodeId props nodeView =  div
-  [ -- Mouse.onDown (\event -> DragModeMessage (StartNodeMove { node = nodeId, mouse = Vec2.fromTuple event.clientPos }))
-    Mouse.onDown
-      (\event -> -- FIXME only if the first property has output
-        if event.button == Mouse.SecondButton then
-          DragModeMessage (StartPrototypeConnect { supplier = nodeId, mouse = Vec2.fromTuple event.clientPos })
+    onClick event =
+      if event.button == Mouse.SecondButton then
+        DragModeMessage (StartCreateOrRemoveConnection { node = nodeId })
+        -- DragModeMessage (StartPrototypeConnect { supplier = nodeId, mouse = Vec2.fromTuple event.clientPos })
 
-        else DragModeMessage (StartNodeMove { node = nodeId, mouse = Vec2.fromTuple event.clientPos })
-      )
+      else DragModeMessage (StartNodeMove { node = nodeId, mouse = Vec2.fromTuple event.clientPos })
 
-  -- TODO right click start drag and prevent default
-  , classes "graph-node" [(isConnecting, "connecting")]
-  , style "width" ((String.fromFloat (nodeWidth nodeView.node)) ++ "px")
-  , translateHTML nodeView.position
-  ]
+  in div
+    [ -- Mouse.onDown (\event -> DragModeMessage (StartNodeMove { node = nodeId, mouse = Vec2.fromTuple event.clientPos }))
+      Mouse.onDown onClick
+    , classes "graph-node" [(hasDragConnectionPrototype dragMode nodeId, "connecting"), (mayDragConnect, "may-drag-connect")]
+    , style "width" ((String.fromFloat (nodeWidth nodeView.node)) ++ "px")
+    , translateHTML nodeView.position
+    ]
 
-  (viewProperties nodeId draggedId props)
+    (viewProperties nodeId dragMode props)
 
 
 -- TODO pattern match only once inside this function
 
-viewProperties : NodeId -> Maybe NodeId -> List PropertyView -> List (Html Message)
-viewProperties nodeId draggedId props =
+viewProperties : NodeId -> Maybe DragMode -> List PropertyView -> List (Html Message)
+viewProperties nodeId dragMode props =
   let
-    propertyHTML: List (Attribute Message) -> Html Message -> String -> Bool -> Bool -> Html Message
-    propertyHTML attributes directInput name isInput isOutput = div
-      ((classes "property" [(isInput, "connectable-input")]) :: attributes)
 
-      [ div [ classes "left connector" [(not isInput, "inactive")] ] []
+    mayStartConnectDrag = case dragMode of
+        Just (CreateOrRemoveConnection { node }) -> nodeId == node
+        Just (RetainPrototypedConnection { node }) -> nodeId == node
+        _ -> False
+
+    leftConnector attributes active = div
+      ((classes "left connector" [(not active, "inactive")]) :: attributes)
+      []
+
+    rightConnector active = div
+      (prependListIf (active && mayStartConnectDrag)
+        (Mouse.onLeave (\event -> DragModeMessage (StartPrototypeConnect { supplier = nodeId, mouse = Vec2.fromTuple event.clientPos })))
+        [  classes "right connector" [(not active, "inactive")] ]
+      )
+      []
+
+    propertyHTML: List (Attribute Message) -> Html Message -> String -> Bool -> Html Message -> Html Message -> Html Message
+    propertyHTML attributes directInput name connectableInput left right = div
+      ((classes "property" [(connectableInput, "connectable-input")]) :: attributes)
+      [ left
       , span [ class "title" ] [ text name ]
       , directInput
-      , div [ classes "right connector" [(not isOutput, "inactive")] ] []
+      , right
       ]
 
     updateNode = UpdateNodeMessage nodeId
 
     simpleInputProperty property directInput = propertyHTML
-      [] directInput property.name False property.connectOutput
+      [] directInput property.name False (leftConnector [] False) (rightConnector property.connectOutput)
 
-    connectInputProperty property onChange =
+    connectInputProperty property currentSupplier onChange =
       let
-        handlers = case draggedId of
-          Just id -> -- FIXME make everything like this
-            [ Mouse.onEnter (\_ -> DragModeMessage (ConnectPrototype { nodeId = nodeId, newNode = onChange (Just id) })) ]
-          -- [ Mouse.onEnter (\_ -> onChange (Just id)) ]
-          Nothing -> []
+        handlers = case dragMode of
+          Just (CreatePrototypeConnectionDrag { supplier }) ->
+            [ Mouse.onEnter (\_ -> DragModeMessage (ConnectPrototype { nodeId = nodeId, newNode = onChange (Just supplier) })) ]
+          _ -> []
 
-      in propertyHTML handlers (div[][]) property.name True property.connectOutput
+        onLeave event =
+          DragModeMessage (EditConnection { supplier = currentSupplier, node = onChange Nothing, nodeId = nodeId, mouse = Vec2.fromTuple event.clientPos })
+
+        enableDisconnect = case dragMode of
+           Just (CreateOrRemoveConnection _) -> True
+           Just (RetainPrototypedConnection _) -> True
+           _ -> False
+
+        events = if enableDisconnect && mayStartConnectDrag
+            then [ Mouse.onLeave onLeave  ] else []
+
+        left = leftConnector events True
+
+      in propertyHTML handlers (div[][]) property.name True left (rightConnector property.connectOutput)
 
     singleProperty property = case property.contents of
       BoolProperty value onChange -> [ simpleInputProperty property (viewBoolInput value (onChange (not value) |> updateNode)) ]
       CharsProperty chars onChange -> [ simpleInputProperty property (viewCharsInput chars (onChange >> updateNode)) ]
       CharProperty char onChange -> [ simpleInputProperty property (viewCharInput char (onChange >> updateNode)) ]
       IntProperty number onChange -> [ simpleInputProperty property (viewIntInput number (onChange >> updateNode)) ]
-      ConnectingProperty _ onChange -> [ connectInputProperty property onChange ]
+      ConnectingProperty currentSupplier onChange -> [ connectInputProperty property currentSupplier onChange ]
 
       ConnectingProperties connectedProps onChange ->
         let
@@ -326,10 +361,10 @@ viewProperties nodeId draggedId props =
 
 
         in Array.toList <| Array.indexedMap
-          (\index _ -> connectInputProperty property (onChangeProperty index))
+          (\index currentSupplier -> connectInputProperty property (Just currentSupplier) (onChangeProperty index))
           connectedProps
 
-      TitleProperty -> [ propertyHTML [] (div[][]) property.name False property.connectOutput ]
+      TitleProperty -> [ propertyHTML [] (div[][]) property.name False (leftConnector [] False) (rightConnector property.connectOutput) ]
 
   in
     flattenList (List.map singleProperty props)

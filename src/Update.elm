@@ -50,6 +50,8 @@ type ViewMessage
 
 type DragModeMessage
   = StartNodeMove { node : NodeId, mouse : Vec2 }
+  | StartCreateOrRemoveConnection { node: NodeId }
+  | EditConnection { nodeId: NodeId, node: Node, supplier : Maybe NodeId, mouse : Vec2 }
   | StartPrototypeConnect { supplier : NodeId, mouse : Vec2 }
   | UpdateDrag { newMouse : Vec2 }
   | ConnectPrototype { nodeId: NodeId, newNode: Node }
@@ -95,8 +97,23 @@ update message model =
           , dragMode = Just (MoveNodeDrag { node = node, mouse = mouse })
           }
 
+        -- update the subject node (disconnecting the input)
+        -- and then start editing the connection of the old supplier
+        EditConnection { nodeId, node, supplier, mouse } ->
+          Maybe.withDefault model <| Maybe.map
+            (\oldSupplier ->
+              { model | nodes = updateNode model.nodes nodeId node
+              , dragMode = Just (CreatePrototypeConnectionDrag { supplier = oldSupplier, openEnd = mouse })
+              }
+            )
+            supplier
+
+
         StartPrototypeConnect { supplier, mouse } ->
-          { model | dragMode = Just (PrototypeConnectionDrag { supplier = supplier, openEnd = mouse }) }
+          { model | dragMode = Just (CreatePrototypeConnectionDrag { supplier = supplier, openEnd = mouse }) }
+
+        StartCreateOrRemoveConnection { node } ->
+          { model | dragMode = Just (CreateOrRemoveConnection { node = node }) }
 
         UpdateDrag { newMouse } ->
           case model.dragMode of
@@ -106,8 +123,8 @@ update message model =
               , dragMode = Just (MoveNodeDrag { node = node, mouse = newMouse })
               }
 
-            Just (PrototypeConnectionDrag { supplier }) ->
-              let mode = PrototypeConnectionDrag { supplier = supplier, openEnd = newMouse } in
+            Just (CreatePrototypeConnectionDrag { supplier }) ->
+              let mode = CreatePrototypeConnectionDrag { supplier = supplier, openEnd = newMouse } in
               { model | dragMode = Just mode }
 
             _ -> model
@@ -116,7 +133,7 @@ update message model =
         -- but also already make the connection real
         ConnectPrototype { nodeId, newNode } ->
           { model | nodes = updateNode model.nodes nodeId newNode
-          , dragMode = Just (ConnectionIsPrototyped { previousNodeValue = Dict.get nodeId model.nodes.values |> Maybe.map .node })
+          , dragMode = Just (RetainPrototypedConnection { node = nodeId, previousNodeValue = Dict.get nodeId model.nodes.values |> Maybe.map .node })
           }
 
         FinishDrag ->

@@ -135,7 +135,6 @@ nav {
 	color: inherit;
 }
 
-
 .connect-dragging .graph-node:not(.connecting) .property.connectable-input {
 	background-color: #ddd;
 }
@@ -179,3 +178,6 @@ nav {
 	stroke: #555;
 }
 
+.may-drag-connect .property:hover {
+  background-color: #f3f;
+}

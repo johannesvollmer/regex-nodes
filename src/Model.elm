@@ -33,8 +33,9 @@ type alias View =
 
 type DragMode
   = MoveNodeDrag { node : NodeId, mouse : Vec2 }
-  | PrototypeConnectionDrag { supplier : NodeId, openEnd : Vec2 }
-  | ConnectionIsPrototyped { previousNodeValue: Maybe Node }
+  | CreateOrRemoveConnection { node: NodeId, mouse: Vec2 }
+  | CreatePrototypeConnectionDrag { supplier : NodeId, openEnd : Vec2 }
+  | RetainPrototypedConnection { node: NodeId, previousNodeValue: Maybe Node }
 
 type alias NodeId = Int
 
