@@ -71,6 +71,8 @@ properties node =
       ]
 
 
+propertyHeight = 25
+
 nodeWidth node = case node of
   Whitespace -> 150
   CharSet _ -> 170
@@ -216,7 +218,43 @@ viewNode dragMode nodes (nodeId, nodeView) =
 viewNodeConnections : Nodes -> List PropertyView -> Model.NodeView -> List (Svg Message)
 viewNodeConnections nodes props nodeView =
   let
-    toConnections (index, property) connections = case property.contents of
+    connectionLine from width to index = line
+       [ x1 (String.fromFloat to.x)
+       , y1 (String.fromFloat (to.y + ((toFloat index) + 0.5) * propertyHeight))
+       , x2 (String.fromFloat (from.x + width))
+       , y2 (String.fromFloat (from.y + 0.5 * propertyHeight))
+       , Svg.Attributes.class "connection"
+       ]
+       []
+
+    connect : NodeId -> Model.NodeView -> (Int -> Maybe (Svg Message))
+    connect supplierId node index =
+      let
+        supplier = Dict.get supplierId nodes.values
+        viewSupplier supplierNodeView =
+          connectionLine supplierNodeView.position (nodeWidth supplierNodeView.node) node.position index
+
+      in Maybe.map viewSupplier supplier
+
+    viewInputConnection : PropertyView -> List (Int -> Maybe (Svg Message))
+    viewInputConnection property = case property.contents of
+        ConnectingProperty (Just supplier) _ ->
+          [ connect supplier nodeView ]
+
+        ConnectingProperties suppliers _ ->
+          suppliers |> Array.toList |> List.map (\supplier -> connect supplier nodeView)
+
+        _ ->  [ (\index -> Nothing) ]
+
+    flattened = props |> List.map viewInputConnection |> flattenList
+    indexed = flattened |> List.indexedMap (\index at -> at index)
+    filtered = List.filterMap identity indexed
+
+  in filtered
+
+
+  {-let
+    toConnections property connections index = case property.contents of
       ConnectingProperty id _ -> Maybe.map (\i -> (index, i) :: connections) id |> Maybe.withDefault connections
 
       -- FIXME needs to increment index actually, not the same index every property!
@@ -240,6 +278,7 @@ viewNodeConnections nodes props nodeView =
           []
       )
       filtered
+      -}
 
 
 viewConnectDrag : View -> Nodes -> Maybe NodeId -> Vec2 -> Html Message
@@ -372,14 +411,21 @@ viewProperties nodeId dragMode props =
 
       ConnectingProperties connectedProps onChange ->
         let
-          onChangeProperty index newInput = case newInput of
+          onChangePropertyAtIndex index newInput = case newInput of
              Just newInputId -> onChange (Array.set index newInputId connectedProps)
-             Nothing -> onChange connectedProps -- FIXME remove element on mouse leave
+             Nothing -> onChange (removeFromArray index connectedProps)
 
+          onChangeStubProperty newInput = case newInput of
+            Just newInputId -> onChange (Array.push newInputId connectedProps)
+            Nothing -> onChange (removeFromArray ((Array.length connectedProps) - 1) connectedProps)
 
-        in Array.toList <| Array.indexedMap
-          (\index currentSupplier -> connectInputProperty property (Just currentSupplier) (onChangeProperty index))
-          connectedProps
+          realProperties = Array.toList <| Array.indexedMap
+            (\index currentSupplier -> connectInputProperty property (Just currentSupplier) (onChangePropertyAtIndex index))
+            connectedProps
+
+          stubProperty = connectInputProperty property Nothing onChangeStubProperty
+        in realProperties ++ [ stubProperty ]
+
 
       TitleProperty -> [ propertyHTML [ Mouse.onLeave (onLeave Nothing True) ] (div[][]) property.name False (leftConnector False) (rightConnector property.connectOutput) ]
 
@@ -440,6 +486,11 @@ viewIntInput number onChange = input
   []
 
 
+removeFromList index list =
+  List.take index list ++ List.drop (index + 1) list
+
+removeFromArray index =
+  Array.toList >> removeFromList index >> Array.fromList
 
 prependListIf: Bool -> a -> List a -> List a
 prependListIf condition element list =
