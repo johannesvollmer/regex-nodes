@@ -14,7 +14,7 @@
 }
 
 * {
-	transition: color 100ms, background-color 100ms, 
+	transition: color 100ms, background-color 100ms, background 100ms,
 	opacity 100ms, stroke 100ms, fill 100ms;
 }
 
@@ -151,8 +151,7 @@ nav {
 }
 
 .connecting.graph-node .property:first-child {
-	background-color: teal; /* partially enable transition */ 
-	background-image: url("background.svg");
+	background-image: url("../img/energy-background.svg");
 	background-repeat: no-repeat;
 	background-position: 0% 0%; 
 	background-size: 100% 100%;
@@ -181,4 +180,7 @@ nav {
 .may-drag-connect .property:hover {
   background-color: teal;
   color: #ffffff88;
+}
+.may-drag-connect .connector {
+  opacity: 0;
 }

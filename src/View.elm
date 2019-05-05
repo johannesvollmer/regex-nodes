@@ -304,8 +304,8 @@ viewProperties nodeId dragMode props =
        Just (RetainPrototypedConnection _) -> True
        _ -> False
 
-    onLeave : Maybe { supplier: Maybe NodeId, onChange: OnChange (Maybe NodeId) } -> Mouse.Event -> Message
-    onLeave input event = DragModeMessage (
+    onLeave : Maybe { supplier: Maybe NodeId, onChange: OnChange (Maybe NodeId) } -> Bool -> Mouse.Event -> Message
+    onLeave input output event = DragModeMessage (
         case dragMode of
           Just (CreateOrRemoveConnection { mouse }) ->
             case input of
@@ -313,9 +313,12 @@ viewProperties nodeId dragMode props =
                 if (Tuple.first event.clientPos) < mouse.x then
                    EditConnection { supplier = supplier, node = onChange Nothing, nodeId = nodeId, mouse = Vec2.fromTuple event.clientPos }
 
-                else StartPrototypeConnect { supplier = nodeId, mouse = Vec2.fromTuple event.clientPos }
+                else if output then StartPrototypeConnect { supplier = nodeId, mouse = Vec2.fromTuple event.clientPos }
+                else UpdateDrag { newMouse = Vec2.fromTuple event.clientPos }
 
-              Nothing -> StartPrototypeConnect { supplier = nodeId, mouse = Vec2.fromTuple event.clientPos }
+              Nothing -> if output then StartPrototypeConnect { supplier = nodeId, mouse = Vec2.fromTuple event.clientPos }
+                else UpdateDrag { newMouse = Vec2.fromTuple event.clientPos }
+
           _ -> UpdateDrag { newMouse = Vec2.fromTuple event.clientPos }
       )
 
@@ -341,7 +344,7 @@ viewProperties nodeId dragMode props =
     updateNode = UpdateNodeMessage nodeId
 
     simpleInputProperty property directInput = propertyHTML
-      [ Mouse.onLeave (onLeave Nothing) ] directInput property.name False (leftConnector False) (rightConnector property.connectOutput)
+      [ Mouse.onLeave (onLeave Nothing property.connectOutput) ] directInput property.name False (leftConnector False) (rightConnector property.connectOutput)
 
     connectInputProperty property currentSupplier onChange =
       let
@@ -351,7 +354,7 @@ viewProperties nodeId dragMode props =
           _ -> []
 
         onLeaveHandlers = if enableDisconnect && mayStartConnectDrag
-            then [ Mouse.onLeave (onLeave (Just { supplier = currentSupplier, onChange = onChange })) ] else []
+            then [ Mouse.onLeave (onLeave (Just { supplier = currentSupplier, onChange = onChange }) property.connectOutput) ] else []
 
         left = leftConnector True
 
@@ -375,7 +378,7 @@ viewProperties nodeId dragMode props =
           (\index currentSupplier -> connectInputProperty property (Just currentSupplier) (onChangeProperty index))
           connectedProps
 
-      TitleProperty -> [ propertyHTML [] (div[][]) property.name False (leftConnector False) (rightConnector property.connectOutput) ]
+      TitleProperty -> [ propertyHTML [ Mouse.onLeave (onLeave Nothing True) ] (div[][]) property.name False (leftConnector False) (rightConnector property.connectOutput) ]
 
   in
     flattenList (List.map singleProperty props)
