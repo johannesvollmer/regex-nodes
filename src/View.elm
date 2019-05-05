@@ -185,8 +185,7 @@ viewSearch query =
         "mousedown"
         { stopPropagation = False, preventDefault = False } -- do not prevent blurring the textbox on selecting a result
         (\_ -> SearchMessage (FinishSearch (InsertPrototype (Model.NodeView position prototype.node))))
-      --, buttonCursor
-      ]  -- [ Mouse.onDown (\_ -> SearchMessage (FinishSearch (Just (NodeView position prototype)))) ] -- TODO do not prevent default, unfocusing the textbox
+      ]
       [ text prototype.name ]
 
     asRegex = div
@@ -252,35 +251,6 @@ viewNodeConnections nodes props nodeView =
 
   in filtered
 
-
-  {-let
-    toConnections property connections index = case property.contents of
-      ConnectingProperty id _ -> Maybe.map (\i -> (index, i) :: connections) id |> Maybe.withDefault connections
-
-      -- FIXME needs to increment index actually, not the same index every property!
-      ConnectingProperties ids _ -> (Array.map (Tuple.pair index) ids |> Array.toList) ++ connections
-      _ -> connections
-
-    indexed = List.indexedMap (\index property -> (index, property)) props
-    filtered = List.foldr toConnections [] indexed
-
-  in
-    List.map
-      (\(index, input) ->
-        let node = Dict.get input nodes.values
-        in line
-          [ x1 (String.fromFloat nodeView.position.x)
-          , y1 (String.fromFloat (nodeView.position.y + ((toFloat index) + 0.5) * 25))
-          , x2 (String.fromFloat (node |> Maybe.map (\n -> n.position.x + nodeWidth n.node) |> Maybe.withDefault 0))
-          , y2 (String.fromFloat ((node |> Maybe.map (.position >> .y) |> Maybe.withDefault 0) + 0.5 * 25))
-          , Svg.Attributes.class "connection"
-          ]
-          []
-      )
-      filtered
-      -}
-
-
 viewConnectDrag : View -> Nodes -> Maybe NodeId -> Vec2 -> Html Message
 viewConnectDrag viewTransformation nodes dragId mouse =
   let
@@ -313,13 +283,11 @@ viewNodeContent dragMode nodeId props nodeView =
     onClick event =
       if event.button == Mouse.SecondButton then
         DragModeMessage (StartPrepareEditingConnection { node = nodeId, mouse = Vec2.fromTuple event.clientPos })
-        -- DragModeMessage (StartPrototypeConnect { supplier = nodeId, mouse = Vec2.fromTuple event.clientPos })
 
       else DragModeMessage (StartNodeMove { node = nodeId, mouse = Vec2.fromTuple event.clientPos })
 
   in div
-    [ -- Mouse.onDown (\event -> DragModeMessage (StartNodeMove { node = nodeId, mouse = Vec2.fromTuple event.clientPos }))
-      Mouse.onDown onClick
+    [ Mouse.onDown onClick
     , classes "graph-node" [(hasDragConnectionPrototype dragMode nodeId, "connecting"), (mayDragConnect, "may-drag-connect")]
     , style "width" ((String.fromFloat (nodeWidth nodeView.node)) ++ "px")
     , translateHTML nodeView.position
@@ -390,9 +358,14 @@ viewProperties nodeId dragMode props =
 
     connectInputProperty property currentSupplier onChange =
       let
+        connectOnEnter supplier event =
+          DragModeMessage (RealizeConnection { mouse = Vec2.fromTuple event.clientPos, nodeId = nodeId, newNode = onChange (Just supplier) })
+
         onEnter = case dragMode of
           Just (CreateConnection { supplier }) ->
-            [ Mouse.onEnter (\event -> DragModeMessage (RealizeConnection { mouse = Vec2.fromTuple event.clientPos, nodeId = nodeId, newNode = onChange (Just supplier) })) ]
+            if supplier == nodeId then [] else -- TODO check for real cycles
+              [ Mouse.onEnter (connectOnEnter supplier) ]
+
           _ -> []
 
         onLeaveHandlers = if enableDisconnect && mayStartConnectDrag
