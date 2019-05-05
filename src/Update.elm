@@ -50,12 +50,14 @@ type ViewMessage
 
 type DragModeMessage
   = StartNodeMove { node : NodeId, mouse : Vec2 }
-  | StartCreateOrRemoveConnection { node: NodeId, mouse: Vec2 }
-  | EditConnection { nodeId: NodeId, node: Node, supplier : Maybe NodeId, mouse : Vec2 }
-  | StartPrototypeConnect { supplier : NodeId, mouse : Vec2 }
-  | UpdateDrag { newMouse : Vec2 }
-  | ConnectPrototype { nodeId: NodeId, newNode: Node }
+
+  | StartPrepareEditingConnection { node: NodeId, mouse: Vec2 }
+  | StartEditingConnection { nodeId: NodeId, node: Node, supplier :Maybe NodeId, mouse :Vec2 }
+  | StartCreateConnection { supplier: NodeId, mouse: Vec2 }
+  | RealizeConnection { nodeId: NodeId, newNode: Node, mouse: Vec2 }
   | FinishDrag
+
+  | UpdateDrag { newMouse : Vec2 }
 
 
 update : Message -> Model -> Model
@@ -101,21 +103,21 @@ update message model =
         -- and then start editing the connection of the old supplier
 
         -- TODO if current drag mode is retain, then reconnect to old node?
-        EditConnection { nodeId, node, supplier, mouse } ->
+        StartEditingConnection { nodeId, node, supplier, mouse } ->
           Maybe.withDefault model <| Maybe.map
             (\oldSupplier ->
               { model | nodes = updateNode model.nodes nodeId node
-              , dragMode = Just (CreatePrototypeConnectionDrag { supplier = oldSupplier, openEnd = mouse })
+              , dragMode = Just (CreateConnection { supplier = oldSupplier, openEnd = mouse })
               }
             )
             supplier
 
 
-        StartPrototypeConnect { supplier, mouse } ->
-          { model | dragMode = Just (CreatePrototypeConnectionDrag { supplier = supplier, openEnd = mouse }) }
+        StartCreateConnection { supplier, mouse } ->
+          { model | dragMode = Just (CreateConnection { supplier = supplier, openEnd = mouse }) }
 
-        StartCreateOrRemoveConnection { node, mouse } ->
-          { model | dragMode = Just (CreateOrRemoveConnection { node = node, mouse = mouse }) }
+        StartPrepareEditingConnection { node, mouse } ->
+          { model | dragMode = Just (PrepareEditingConnection { node = node, mouse = mouse }) }
 
         UpdateDrag { newMouse } ->
           case model.dragMode of
@@ -125,17 +127,17 @@ update message model =
               , dragMode = Just (MoveNodeDrag { node = node, mouse = newMouse })
               }
 
-            Just (CreatePrototypeConnectionDrag { supplier }) ->
-              let mode = CreatePrototypeConnectionDrag { supplier = supplier, openEnd = newMouse } in
+            Just (CreateConnection { supplier }) ->
+              let mode = CreateConnection { supplier = supplier, openEnd = newMouse } in
               { model | dragMode = Just mode }
 
             _ -> model
 
         -- when a connection is established, update the drag mode of the model,
         -- but also already make the connection real
-        ConnectPrototype { nodeId, newNode } ->
+        RealizeConnection { nodeId, newNode, mouse } ->
           { model | nodes = updateNode model.nodes nodeId newNode
-          , dragMode = Just (RetainPrototypedConnection { node = nodeId, previousNodeValue = Dict.get nodeId model.nodes.values |> Maybe.map .node })
+          , dragMode = Just (RetainPrototypedConnection { mouse = mouse, node = nodeId, previousNodeValue = Dict.get nodeId model.nodes.values |> Maybe.map .node })
           }
 
         FinishDrag ->

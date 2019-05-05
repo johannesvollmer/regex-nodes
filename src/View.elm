@@ -93,7 +93,7 @@ view model =
 
     (moveDragging, connectDragId, mousePosition) = case model.dragMode of
         Just (MoveNodeDrag { mouse }) -> (True, Nothing, mouse)
-        Just (CreatePrototypeConnectionDrag { supplier, openEnd }) -> (False, Just supplier, openEnd)
+        Just (CreateConnection { supplier, openEnd }) -> (False, Just supplier, openEnd)
         _ -> (False, Nothing, Vec2 0 0)
 
     connectDragging = connectDragId /= Nothing
@@ -260,19 +260,20 @@ viewConnectDrag viewTransformation nodes dragId mouse =
     []
 
 hasDragConnectionPrototype dragMode nodeId = case dragMode of
-    Just (CreatePrototypeConnectionDrag { supplier }) -> nodeId == supplier
+    Just (CreateConnection { supplier }) -> nodeId == supplier
     _ -> False
 
 viewNodeContent : Maybe DragMode -> NodeId -> List PropertyView -> Model.NodeView -> Html Message
 viewNodeContent dragMode nodeId props nodeView =
   let
     mayDragConnect = case dragMode of
-      Just (CreateOrRemoveConnection { node }) -> nodeId == node
+      Just (PrepareEditingConnection { node }) -> nodeId == node
+      Just (RetainPrototypedConnection { node }) -> nodeId == node -- TODO test
       _ -> False
 
     onClick event =
       if event.button == Mouse.SecondButton then
-        DragModeMessage (StartCreateOrRemoveConnection { node = nodeId, mouse = Vec2.fromTuple event.clientPos })
+        DragModeMessage (StartPrepareEditingConnection { node = nodeId, mouse = Vec2.fromTuple event.clientPos })
         -- DragModeMessage (StartPrototypeConnect { supplier = nodeId, mouse = Vec2.fromTuple event.clientPos })
 
       else DragModeMessage (StartNodeMove { node = nodeId, mouse = Vec2.fromTuple event.clientPos })
@@ -295,29 +296,31 @@ viewProperties nodeId dragMode props =
   let
 
     mayStartConnectDrag = case dragMode of
-        Just (CreateOrRemoveConnection { node }) -> nodeId == node
+        Just (PrepareEditingConnection { node }) -> nodeId == node
         Just (RetainPrototypedConnection { node }) -> nodeId == node
         _ -> False
 
     enableDisconnect = case dragMode of
-       Just (CreateOrRemoveConnection _) -> True
+       Just (PrepareEditingConnection _) -> True
        Just (RetainPrototypedConnection _) -> True
        _ -> False
 
     onLeave : Maybe { supplier: Maybe NodeId, onChange: OnChange (Maybe NodeId) } -> Bool -> Mouse.Event -> Message
     onLeave input output event = DragModeMessage (
         case dragMode of
-          Just (CreateOrRemoveConnection { mouse }) ->
+          -- Just (RetainPrototypedConnection { mouse }) -> TODO
+
+          Just (PrepareEditingConnection { mouse }) ->
             case input of
               Just { supplier, onChange } ->
-                if (Tuple.first event.clientPos) < mouse.x then
-                   EditConnection { supplier = supplier, node = onChange Nothing, nodeId = nodeId, mouse = Vec2.fromTuple event.clientPos }
+                if (Tuple.first event.clientPos) < mouse.x && supplier /= Nothing then
+                   StartEditingConnection { supplier = supplier, node = onChange Nothing, nodeId = nodeId, mouse = Vec2.fromTuple event.clientPos }
 
-                else if output then StartPrototypeConnect { supplier = nodeId, mouse = Vec2.fromTuple event.clientPos }
-                else UpdateDrag { newMouse = Vec2.fromTuple event.clientPos }
+                else if output then StartCreateConnection { supplier = nodeId, mouse = Vec2.fromTuple event.clientPos }
+                else FinishDrag
 
-              Nothing -> if output then StartPrototypeConnect { supplier = nodeId, mouse = Vec2.fromTuple event.clientPos }
-                else UpdateDrag { newMouse = Vec2.fromTuple event.clientPos }
+              Nothing -> if output then StartCreateConnection { supplier = nodeId, mouse = Vec2.fromTuple event.clientPos }
+                else FinishDrag
 
           _ -> UpdateDrag { newMouse = Vec2.fromTuple event.clientPos }
       )
@@ -349,8 +352,8 @@ viewProperties nodeId dragMode props =
     connectInputProperty property currentSupplier onChange =
       let
         onEnter = case dragMode of
-          Just (CreatePrototypeConnectionDrag { supplier }) ->
-            [ Mouse.onEnter (\_ -> DragModeMessage (ConnectPrototype { nodeId = nodeId, newNode = onChange (Just supplier) })) ]
+          Just (CreateConnection { supplier }) ->
+            [ Mouse.onEnter (\event -> DragModeMessage (RealizeConnection { mouse = Vec2.fromTuple event.clientPos, nodeId = nodeId, newNode = onChange (Just supplier) })) ]
           _ -> []
 
         onLeaveHandlers = if enableDisconnect && mayStartConnectDrag
@@ -384,11 +387,19 @@ viewProperties nodeId dragMode props =
     flattenList (List.map singleProperty props)
 
 
+onMouseWithStopPropagation eventName eventHandler = Mouse.onWithOptions
+  eventName { preventDefault = False, stopPropagation = True } eventHandler
+
+stopMousePropagation eventName = onMouseWithStopPropagation eventName
+  (\event -> DragModeMessage (UpdateDrag { newMouse = Vec2.fromTuple event.clientPos }))
+
 viewBoolInput : Bool -> Message -> Html Message
 viewBoolInput value onToggle = input
   [ type_ "checkbox"
   , checked value
-  , Mouse.onClick (\_ -> onToggle)
+  , onMouseWithStopPropagation "click" (\_ -> onToggle)
+  , stopMousePropagation "mousedown"
+  , stopMousePropagation "mouseup"
   ]
   []
 
@@ -400,6 +411,8 @@ viewCharsInput chars onChange = input
   , value chars
   , onInput onChange
   , class "chars input"
+  , stopMousePropagation "mousedown"
+  , stopMousePropagation "mouseup"
   ]
   []
 
@@ -410,6 +423,8 @@ viewCharInput char onChange = input
   , value (String.fromChar char)
   , onInput (\chars -> onChange (chars |> String.uncons |> Maybe.map Tuple.first))
   , class "char input"
+  , stopMousePropagation "mousedown"
+  , stopMousePropagation "mouseup"
   ]
   []
 
@@ -419,6 +434,8 @@ viewIntInput number onChange = input
   , value (String.fromInt number)
   , onInput (\newValue -> onChange (newValue |> String.toInt |> Maybe.withDefault 0))
   , class "int input"
+  , stopMousePropagation "mousedown"
+  , stopMousePropagation "mouseup"
   ]
   []
 

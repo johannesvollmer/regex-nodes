@@ -151,6 +151,7 @@ header img {
 
 
 .property input {
+  padding: 2px;
 	font-size: 0.7em;
 	width: 10px;
 }
