@@ -15,7 +15,7 @@
 
 * {
 	transition: color 100ms, background-color 100ms, background 100ms,
-	opacity 100ms, stroke 100ms, fill 100ms;
+	  opacity 100ms, stroke 100ms, fill 100ms;
 }
 
 code, #search #results #parse-regex {
@@ -151,6 +151,7 @@ nav {
 }
 
 .connecting.graph-node .property:first-child {
+	animation: flashToTealBackground 1s ease-out forwards;
 	background-image: url("../img/energy-background.svg");
 	background-repeat: no-repeat;
 	background-position: 0% 0%; 
@@ -184,19 +185,47 @@ nav {
 }
 
 .may-drag-connect .property:hover {
-  background-color: teal;
-  color: #ffffff88;
+	animation: flashToTealBackground 0.5s ease-out forwards;
+  color: #ffffffaa;
 }
-.may-drag-connect .connector {
-  opacity: 0;
+.may-drag-connect .property:hover .connector {
+  background-color: #ffffff44;
 }
 
 
-@keyframes fromDashToSolid {
-  from { stroke-dasharray: 9; }
-  to { stroke-dasharray: 0; }
+
+@keyframes flashToTealBackground {
+  from {
+    background-color: #4FC195;
+  }
+  to {
+    background-color: teal;
+  }
 }
+
+/*@keyframes fromDashToSolid {
+  0% {
+    stroke-dasharray: 9;
+    stroke: #4FC195;
+  }
+  99.99% {
+    stroke-dasharray: 3;
+  }
+  100% {
+    stroke-dasharray: 0;
+    stroke: teal;
+  }
+}*/
 @keyframes fromSolidToDash {
-  from { stroke-dasharray: 0; }
-  to { stroke-dasharray: 9; }
+  0% {
+    /*stroke-dasharray: 0;*/
+    stroke: #4FC195;
+  }
+  /*0.001% {
+    stroke-dasharray: 3;
+  }*/
+  100%  {
+    /*stroke-dasharray: 9;*/
+    stroke: teal;
+  }
 }
