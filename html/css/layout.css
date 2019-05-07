@@ -145,7 +145,7 @@ header img {
 }
 
 /* override priority, maximise text input size */
-.property > .chars.input, .property > .number.input {
+.property > .chars.input, .property > .int.input {
 	flex-grow: 100;
 }
 

@@ -14,7 +14,7 @@
 }
 
 * {
-	transition: color 100ms, background-color 100ms, background 100ms,
+	transition: color 100ms, background 250ms,
 	  opacity 100ms, stroke 100ms, fill 100ms;
 }
 
@@ -186,7 +186,7 @@ nav {
 
 .may-drag-connect .property:hover {
 	animation: flashToTealBackground 0.5s ease-out forwards;
-  color: #ffffffaa;
+  color: #ffffff77;
 }
 .may-drag-connect .property:hover .connector {
   background-color: #ffffff44;

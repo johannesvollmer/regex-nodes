@@ -16,27 +16,73 @@ type alias BuildResult a = Result String a
 buildNodeExpression : Nodes -> Node -> BuildResult String
 buildNodeExpression nodes node =
   let
-    ownPrecedence = precedence node
-    build child = buildExpression nodes ownPrecedence child
-      -- |> Result.map (parenthesesForPrecedence ownPrecedence (precedence child))
 
     set = String.join "|"
-    optional expression = expression ++ "?"
-    repeated count expression = expression ++ "{" ++ String.fromInt count ++ "}"
-    ifFollowedby successor expression = expression ++ "(?=" ++ successor ++ ")"
 
+    optional expression = expression ++ "?"
+    atLeastOne expression = expression ++ "+"
+    anyRepetition expression = expression ++ "*"
+
+    exactRepetition count expression = expression ++ "{" ++ String.fromInt count ++ "}"
+    minimumRepetition minimum expression = expression ++ "{" ++ String.fromInt minimum ++ ",}"
+    maximumRepetition maximum expression = expression ++ "{0," ++ String.fromInt maximum ++ "}"
+    rangedRepetition minimum maximum expression = expression
+        ++ "{" ++ String.fromInt minimum
+        ++ "," ++ String.fromInt maximum
+        ++ "}"
+
+    ifFollowedBy successor expression = expression ++ "(?=" ++ successor ++ ")"
+    ifNotFollowedBy successor expression = expression ++ "(?!" ++ successor ++ ")"
+    ifAtEnd expression = expression ++ "$"
+    ifAtStart expression = "^" ++ expression
+
+    charset chars = "[" ++ chars ++ "]"  -- TODO escape characters!!!
+    notInCharset chars = "[^" ++ chars ++ "]"  -- TODO escape characters!!!
+    charRange start end = "[" ++ String.fromChar start ++ "-" ++ String.fromChar end ++ "]"  -- TODO escape characters!!!
+    notInCharRange start end = "[^" ++ String.fromChar start ++ "-" ++ String.fromChar end ++ "]"  -- TODO escape characters!!!
+
+    capture child = "(" ++ child ++ ")"
+
+
+
+
+    ownPrecedence = precedence node
+
+    build child = buildExpression nodes ownPrecedence child
+
+    buildSingleChild map child = build child |> Result.map map
+
+    buildMembers join members = members |> Array.toList
+     |> List.map (Just >> build) |> collapseResults
+     |> Result.map join |> Result.mapError (String.join ", ")
 
     string = case node of
-      Whitespace -> Ok "\\w"
-      CharSet chars -> Ok ("[" ++ chars ++ "]")
-      Optional maybeInput -> (build maybeInput) |> Result.map optional
-      Set options -> options |> Array.toList
-        |> List.map (\option -> build (Just option)) |> collapseResults
-        |> Result.map set |> Result.mapError (String.join ", ")
+      SymbolNode symbol -> symbol |> buildSymbol |> Ok
+      CharSetNode chars -> Ok (charset chars)
+      NotInCharSetNode chars -> Ok (notInCharset chars)
+      CharRangeNode start end -> Ok (charRange start end)
+      NotInCharRangeNode start end -> Ok (notInCharRange start end)
+      LiteralNode chars -> Ok chars
 
-      Flags { expression } -> build expression -- we use flags directly at topmost level
-      Repeated { expression, count } -> build expression |> Result.map (repeated count)
-      IfFollowedBy { expression, successor } -> Result.map2 ifFollowedby (build successor) (build expression)
+      SequenceNode members -> buildMembers String.concat members
+      SetNode options -> buildMembers set options
+      CaptureNode child -> buildSingleChild capture child
+
+      FlagsNode { expression } -> build expression -- we use flags directly at topmost level
+
+      IfAtEndNode child -> buildSingleChild ifAtEnd child
+      IfAtStartNode child -> buildSingleChild ifAtStart child
+      IfNotFollowedByNode { expression, successor } -> Result.map2 ifNotFollowedBy (build successor) (build expression)
+      IfFollowedByNode { expression, successor } -> Result.map2 ifFollowedBy (build successor) (build expression)
+
+      OptionalNode child -> buildSingleChild optional child
+      AtLeastOneNode child -> buildSingleChild atLeastOne child
+      AnyRepetitionNode child -> buildSingleChild anyRepetition child
+      ExactRepetitionNode { expression, count } -> buildSingleChild (exactRepetition count) expression
+      RangedRepetitionNode { expression, minimum, maximum } -> buildSingleChild (rangedRepetition minimum maximum) expression
+      MinimumRepetitionNode { expression, minimum } -> buildSingleChild (minimumRepetition minimum) expression
+      MaximumRepetitionNode { expression, maximum } -> buildSingleChild (maximumRepetition maximum) expression
+
 
   in string
 
@@ -66,7 +112,7 @@ buildRegex nodes id =
     expression = buildExpression nodes 0 (Just id)
     nodeView = Dict.get id nodes.values
     options = case nodeView |> Maybe.map .node of
-      Just (Flags { flags }) -> flags
+      Just (FlagsNode { flags }) -> flags
       _ -> defaultFlags
 
   in expression |> Result.map (\ex -> RegexBuild ex options)
@@ -87,19 +133,53 @@ compileRegex build =
 
 
 parenthesesForPrecedence ownPrecedence childPrecedence child =
-  if ownPrecedence > childPrecedence then  "(" ++ child ++ ")" else child
+  if ownPrecedence > childPrecedence then  "(?:" ++ child ++ ")" else child
 
 precedence : Node -> Int
 precedence node = case node of
-    Whitespace -> 5
-    CharSet _ -> 5
-    -- literal _ -> 2
-    Optional _ -> 4 -- at least one ...
-    Set _ -> 1
-    -- sequence _ -> 2
-    Flags _ -> 0
-    Repeated _ -> 4
-    IfFollowedBy _ -> 3
+    FlagsNode _ -> 0
+
+    SetNode _ -> 1
+
+    LiteralNode _ -> 2
+    SequenceNode _ -> 2
+
+    IfAtEndNode _ -> 3 -- TODO test
+    IfAtStartNode _ -> 3 -- TODO test
+    IfNotFollowedByNode _ -> 3
+    IfFollowedByNode _ -> 3
+
+    OptionalNode _ -> 4 -- at least one ...
+    AtLeastOneNode _ -> 4
+    MaximumRepetitionNode _ -> 4
+    MinimumRepetitionNode _ -> 4
+    ExactRepetitionNode _ -> 4
+    RangedRepetitionNode _ -> 4
+    AnyRepetitionNode _ -> 4
+
+    CharSetNode _ -> 5
+    NotInCharSetNode _ -> 5
+    CharRangeNode _ _ -> 5
+    NotInCharRangeNode _ _ -> 5
+    CaptureNode _ -> 5
+    SymbolNode _ -> 5
+
+
+
+buildSymbol symbol = case symbol of
+  WhitespaceChar -> "\\s"
+  NonWhitespaceChar -> "\\S"
+  DigitChar -> "\\d"
+  NonDigitChar -> "\\D"
+  WordChar -> "\\w"
+  NonWordChar -> "\\W"
+  WordBoundaryChar -> "\\b"
+  NonWordBoundaryChar -> "\\B"
+  LinebreakChar -> "\\n"
+  NonLinebreakChar -> "."
+  TabChar -> "\\t"
+  NoChar -> "(?!)"
+  AnyChar -> "(?:)"
 
 
 -- if all elements ok, returns (Ok elementList), if any element is err, returns (Err errorList)

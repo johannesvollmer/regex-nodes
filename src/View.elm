@@ -44,44 +44,115 @@ type alias NodeView =
 properties : Node -> List PropertyView
 properties node =
   case node of
-    Whitespace -> [ PropertyView typeNames.whitespace TitleProperty True ]
-    CharSet chars -> [ PropertyView typeNames.charset (CharsProperty chars (updateCharSetChars)) True ]
-    Optional option -> [ PropertyView typeNames.optional (ConnectingProperty option (updateOptionalOption)) True ]
+    SymbolNode symbol -> [ PropertyView (symbolName symbol) TitleProperty True ]
+    CharSetNode chars -> [ PropertyView typeNames.charset (CharsProperty chars CharSetNode) True ]
+    NotInCharSetNode chars -> [ PropertyView typeNames.notInCharset (CharsProperty chars NotInCharSetNode) True ]
+    LiteralNode literal -> [ PropertyView typeNames.literal (CharsProperty literal LiteralNode) True ]
 
-    Set options ->
-      [ PropertyView typeNames.set TitleProperty True
-      , PropertyView "Option" (ConnectingProperties options (updateSetOptions)) False
+    CaptureNode captured -> [ PropertyView typeNames.capture (ConnectingProperty captured CaptureNode) True ]
+
+    CharRangeNode start end ->
+      [ PropertyView typeNames.charRange TitleProperty True
+      , PropertyView "First Char" (CharProperty start (updateCharRangeFirst end)) False
+      , PropertyView "Last Char" (CharProperty end (updateCharRangeLast start)) False
       ]
 
-    Flags flagsNode ->
+    NotInCharRangeNode start end ->
+      [ PropertyView typeNames.notInCharRange TitleProperty True
+      , PropertyView "First Char" (CharProperty start (updateNotInCharRangeFirst end)) False
+      , PropertyView "Last Char" (CharProperty end (updateNotInCharRangeLast start)) False
+      ]
+
+    SetNode options ->
+      [ PropertyView typeNames.set TitleProperty True
+      , PropertyView "Option" (ConnectingProperties options SetNode) False
+      ]
+
+    SequenceNode members ->
+      [ PropertyView typeNames.sequence TitleProperty True
+      , PropertyView "And Then" (ConnectingProperties members SequenceNode) False
+      ]
+
+    FlagsNode flagsNode ->
       [ PropertyView typeNames.flags (ConnectingProperty flagsNode.expression (updateFlagsExpression flagsNode)) False
       , PropertyView "Multiple Matches" (BoolProperty flagsNode.flags.multiple (updateFlagsMultiple flagsNode)) False
       , PropertyView "Case Insensitive" (BoolProperty flagsNode.flags.caseSensitive (updateFlagsInsensitivity flagsNode)) False
       , PropertyView "Multiline Matches" (BoolProperty flagsNode.flags.multiline (updateFlagsMultiline flagsNode)) False
       ]
 
-    Repeated repetition ->
-      [ PropertyView typeNames.repeated (ConnectingProperty repetition.expression (updateRepetitionExpression repetition)) True
-      , PropertyView "Count" (IntProperty repetition.count (updateRepetitionCount repetition)) False
-      ]
-
-    IfFollowedBy followed ->
+    IfFollowedByNode followed ->
       [ PropertyView typeNames.ifFollowedBy (ConnectingProperty followed.expression (updateFollowedByExpression followed)) True
       , PropertyView "Successor" (ConnectingProperty followed.successor (updateFollowedBySuccessor followed)) False
+      ]
+
+    IfNotFollowedByNode followed ->
+      [ PropertyView typeNames.ifNotFollowedBy (ConnectingProperty followed.expression (updateNotFollowedByExpression followed)) True
+      , PropertyView "Successor" (ConnectingProperty followed.successor (updateNotFollowedBySuccessor followed)) False
+      ]
+
+    IfAtEndNode atEnd ->  [ PropertyView typeNames.ifAtEnd (ConnectingProperty atEnd IfAtEndNode) True ]
+    IfAtStartNode atStart ->  [ PropertyView typeNames.ifAtStart (ConnectingProperty atStart IfAtStartNode) True ]
+
+
+    OptionalNode option -> [ PropertyView typeNames.optional (ConnectingProperty option OptionalNode) True ]
+    AtLeastOneNode counted -> [ PropertyView typeNames.atLeastOne (ConnectingProperty counted AtLeastOneNode) True ]
+    AnyRepetitionNode counted -> [ PropertyView typeNames.anyRepetition (ConnectingProperty counted AnyRepetitionNode) True ]
+
+    ExactRepetitionNode repetition ->
+      [ PropertyView typeNames.exactRepetition (ConnectingProperty repetition.expression (updateExactRepetitionExpression repetition)) True
+      , PropertyView "Count" (IntProperty repetition.count (updateExactRepetitionCount repetition)) False
+      ]
+
+    RangedRepetitionNode counted ->
+      [ PropertyView typeNames.rangedRepetition (ConnectingProperty counted.expression (updateRangedRepetitionExpression counted)) True
+      , PropertyView "Minimum" (IntProperty counted.minimum (updateRangedRepetitionMinimum counted)) False
+      , PropertyView "Maximum" (IntProperty counted.maximum (updateRangedRepetitionMaximum counted)) False
+      ]
+
+    MinimumRepetitionNode counted ->
+      [ PropertyView typeNames.minimumRepetition (ConnectingProperty counted.expression (updateMinimumRepetitionExpression counted)) True
+      , PropertyView "Count" (IntProperty counted.minimum (updateMinimumRepetitionCount counted)) False
+      ]
+
+    MaximumRepetitionNode counted ->
+      [ PropertyView typeNames.maximumRepetition (ConnectingProperty counted.expression (updateMaximumRepetitionExpression counted)) True
+      , PropertyView "Count" (IntProperty counted.maximum (updateMaximumRepetitionCount counted)) False
       ]
 
 
 propertyHeight = 25
 
+-- TODO dry
 nodeWidth node = case node of
-  Whitespace -> 150
-  CharSet _ -> 170
-  Optional _ -> 100
-  Set _ -> 80
-  Flags _ -> 140
-  IfFollowedBy _ -> 120
-  Repeated _ -> 100
+  SymbolNode symbol -> symbol |> symbolName |> mainTextWidth
+  CharSetNode chars -> mainTextWidth typeNames.charset + codeTextWidth chars + 3
+  NotInCharSetNode chars -> mainTextWidth typeNames.charset + codeTextWidth chars + 3
+  CharRangeNode _ _ -> mainTextWidth typeNames.charRange
+  NotInCharRangeNode _ _ -> mainTextWidth typeNames.notInCharRange
+  LiteralNode chars -> mainTextWidth typeNames.literal + codeTextWidth chars + 3
+  OptionalNode _ -> mainTextWidth typeNames.optional
+  SetNode _ -> mainTextWidth typeNames.set
+  FlagsNode _ -> mainTextWidth typeNames.flags
+  IfFollowedByNode _ -> mainTextWidth typeNames.ifFollowedBy
+  ExactRepetitionNode _ -> mainTextWidth typeNames.exactRepetition
+  SequenceNode _ -> mainTextWidth typeNames.sequence
+  CaptureNode _ -> mainTextWidth typeNames.capture
+  IfAtEndNode _ -> mainTextWidth typeNames.ifAtEnd
+  IfAtStartNode _ -> mainTextWidth typeNames.ifAtStart
+  IfNotFollowedByNode _ -> mainTextWidth typeNames.ifNotFollowedBy
+  AtLeastOneNode _ -> mainTextWidth typeNames.atLeastOne
+  AnyRepetitionNode _ -> mainTextWidth typeNames.anyRepetition
+  RangedRepetitionNode _ -> mainTextWidth typeNames.rangedRepetition
+  MinimumRepetitionNode _ -> mainTextWidth typeNames.minimumRepetition
+  MaximumRepetitionNode _ -> mainTextWidth typeNames.maximumRepetition
 
+
+
+-- Thanks, Html, for letting us hardcode those values.
+codeTextWidth = String.length >> (*) 5 >> toFloat
+mainTextWidth text =
+  let length = text |> String.length |> toFloat
+  in length * if length < 14 then 11 else 8
 
 
 -- VIEW
@@ -178,9 +249,12 @@ viewSearch : String -> List (Html Message)
 viewSearch query =
   let
     isEmpty = String.isEmpty query
+    lowercaseQuery = String.toLower query
     regex = Maybe.withDefault Regex.never (Regex.fromStringWith { caseInsensitive = True, multiline = False } query)
-    test name = isEmpty || (Regex.contains regex name)
+
+    test name = isEmpty || String.contains lowercaseQuery (String.toLower name) || (Regex.contains regex name)
     matches prototype = test prototype.name
+
     position = Vec2 (400) (300)
     render prototype = div
       [ Mouse.onWithOptions
@@ -461,7 +535,10 @@ viewCharInput char onChange = input
   [ type_ "text"
   , placeholder "a"
   , value (String.fromChar char)
-  , onInput (\chars -> onChange (chars |> String.uncons |> Maybe.map Tuple.first))
+
+  -- Take the last char of the string
+  , onInput (\chars -> onChange (chars |> String.right 1 |> String.uncons |> Maybe.map Tuple.first))
+
   , class "char input"
   , stopMousePropagation "mousedown"
   , stopMousePropagation "mouseup"

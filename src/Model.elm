@@ -50,37 +50,139 @@ type alias NodeView =
   }
 
 type Node
-  = Whitespace
-  | CharSet String
-  | Optional (Maybe NodeId)
-  | Set (Array NodeId)
-  | Flags { expression : Maybe NodeId, flags : RegexFlags }
-  | Repeated { expression : Maybe NodeId, count : Int  }
-  | IfFollowedBy { expression : Maybe NodeId, successor : Maybe NodeId }
+  = SymbolNode Symbol
+
+  | CharSetNode String
+  | NotInCharSetNode String
+  | LiteralNode String
+  | CharRangeNode Char Char
+  | NotInCharRangeNode Char Char
+
+  | SetNode (Array NodeId)
+  | SequenceNode (Array NodeId)
+
+  | CaptureNode (Maybe NodeId)
+
+  | IfAtEndNode (Maybe NodeId)
+  | IfAtStartNode (Maybe NodeId)
+  | IfFollowedByNode { expression : Maybe NodeId, successor : Maybe NodeId }
+  | IfNotFollowedByNode { expression : Maybe NodeId, successor : Maybe NodeId }
+
+  | OptionalNode (Maybe NodeId)
+  | AtLeastOneNode (Maybe NodeId) -- TODO lazy repetition counts!
+  | AnyRepetitionNode (Maybe NodeId) -- TODO lazy repetition counts!
+  | RangedRepetitionNode { expression : Maybe NodeId, minimum: Int, maximum: Int } -- TODO lazy repetition counts!
+  | MinimumRepetitionNode { expression : Maybe NodeId, minimum: Int  } -- TODO lazy repetition counts!
+  | MaximumRepetitionNode { expression : Maybe NodeId, maximum: Int  } -- TODO lazy repetition counts!
+  | ExactRepetitionNode { expression : Maybe NodeId, count : Int  } -- TODO lazy repetition counts!
+
+
+  | FlagsNode { expression : Maybe NodeId, flags : RegexFlags }
+
+
+{-| Any group of chars that can be represented by a single regex character, for example `\n` for linebreaks -}
+type Symbol
+  = WhitespaceChar
+  | NonWhitespaceChar
+  | DigitChar
+  | NonDigitChar
+  | WordChar
+  | NonWordChar
+  | WordBoundaryChar
+  | NonWordBoundaryChar
+  | LinebreakChar
+  | NonLinebreakChar
+  | TabChar
+  | NoChar
+  | AnyChar
 
 type alias Prototype =
   { name : String
   , node : Node
   }
 
+
+
+-- TODO: DRY
+
 prototypes : List Prototype
 prototypes =
-  [ Prototype typeNames.whitespace    Whitespace
-  , Prototype typeNames.charset       (CharSet ",.?!:")
-  , Prototype typeNames.optional      (Optional Nothing)
-  , Prototype typeNames.set           (Set (Array.fromList []))
-  , Prototype typeNames.flags         (Flags { expression = Nothing, flags = defaultFlags })
-  , Prototype typeNames.repeated      (Repeated { expression = Nothing, count = 3 })
-  , Prototype typeNames.ifFollowedBy  (IfFollowedBy { expression = Nothing, successor = Nothing })
+  [ Prototype symbolNames.whitespace (SymbolNode WhitespaceChar)
+  , Prototype symbolNames.nonWhitespace (SymbolNode NonWhitespaceChar)
+  , Prototype symbolNames.digit (SymbolNode DigitChar)
+  , Prototype symbolNames.nonDigit (SymbolNode NonDigitChar)
+  , Prototype symbolNames.word (SymbolNode WordChar)
+  , Prototype symbolNames.nonWord (SymbolNode NonWordChar)
+  , Prototype symbolNames.wordBoundary (SymbolNode WordBoundaryChar)
+  , Prototype symbolNames.nonWordBoundary (SymbolNode NonWordBoundaryChar)
+  , Prototype symbolNames.lineBreak (SymbolNode LinebreakChar)
+  , Prototype symbolNames.nonLineBreak (SymbolNode NonLinebreakChar)
+  , Prototype symbolNames.tab (SymbolNode TabChar)
+  , Prototype symbolNames.none (SymbolNode NoChar)
+  , Prototype symbolNames.any (SymbolNode AnyChar)
+
+  , Prototype typeNames.charset        (CharSetNode ",.?!:")
+  , Prototype typeNames.notInCharset   (NotInCharSetNode ",.?!:")
+  , Prototype typeNames.literal        (LiteralNode "the")
+  , Prototype typeNames.charRange      (CharRangeNode 'a' 'z')
+  , Prototype typeNames.notInCharRange (NotInCharRangeNode 'a' 'z')
+
+  , Prototype typeNames.set            (SetNode (Array.fromList []))
+  , Prototype typeNames.sequence            (SequenceNode (Array.fromList []))
+  , Prototype typeNames.capture (CaptureNode Nothing)
+
+  , Prototype typeNames.ifAtEnd (IfAtEndNode Nothing)
+  , Prototype typeNames.ifAtStart (IfAtStartNode Nothing)
+  , Prototype typeNames.ifFollowedBy (IfFollowedByNode { expression = Nothing, successor = Nothing })
+  , Prototype typeNames.ifNotFollowedBy (IfNotFollowedByNode { expression = Nothing, successor = Nothing })
+
+  , Prototype typeNames.optional       (OptionalNode Nothing)
+  , Prototype typeNames.atLeastOne (AtLeastOneNode Nothing)
+  , Prototype typeNames.anyRepetition       (AnyRepetitionNode Nothing)
+  , Prototype typeNames.rangedRepetition       (RangedRepetitionNode { expression = Nothing, minimum = 2, maximum = 4 })
+  , Prototype typeNames.minimumRepetition      (MinimumRepetitionNode { expression = Nothing, minimum = 2 })
+  , Prototype typeNames.maximumRepetition      (MaximumRepetitionNode { expression = Nothing, maximum = 4 })
+  , Prototype typeNames.exactRepetition       (ExactRepetitionNode { expression = Nothing, count = 3 })
+
+  , Prototype typeNames.flags          (FlagsNode { expression = Nothing, flags = defaultFlags })
   ]
 
-typeNames =
+symbolNames =
   { whitespace = "Whitespace Char"
-  , charset = "Char Set"
+  , nonWhitespace = "Non Whitespace Char"
+  , digit = "Digit Char"
+  , nonDigit = "Non Digit Char"
+  , word = "Word Char"
+  , nonWord = "Non Word Char"
+  , wordBoundary = "Word Boundary Char"
+  , nonWordBoundary = "Non Word Boundary Char"
+  , lineBreak = "Linebreak Char"
+  , nonLineBreak = "Non Linebreak Char"
+  , tab = "Tab Char"
+  , none = "No Char"
+  , any = "Any Char"
+  }
+
+typeNames =
+  { charset = "Any of Chars"
+  , notInCharset = "None of Chars"
+  , literal = "Char Sequence"
+  , charRange = "Any of Char Range"
+  , notInCharRange = "None of Char Range"
   , optional = "Optional"
   , set = "Any Of"
+  , capture = "Capture"
+  , ifAtEnd = "If At End"
+  , ifAtStart = "If At Start"
+  , ifNotFollowedBy = "If Not Followed By"
+  , sequence = "Sequence"
   , flags = "Configuration"
-  , repeated = "Repeated"
+  , exactRepetition = "Exact Repetition"
+  , atLeastOne = "At Least One"
+  , anyRepetition = "Any Repetition"
+  , minimumRepetition = "Minimum Repetition"
+  , maximumRepetition = "Maximum Repetition"
+  , rangedRepetition = "Ranged Repetition"
   , ifFollowedBy = "If Followed By"
   }
 
@@ -97,3 +199,19 @@ viewTransform { magnification, offset} =
   }
 
 defaultFlags = RegexFlags True True True
+
+
+symbolName symbol = case symbol of
+  WhitespaceChar -> symbolNames.whitespace
+  NonWhitespaceChar -> symbolNames.nonWhitespace
+  DigitChar -> symbolNames.digit
+  NonDigitChar -> symbolNames.nonDigit
+  WordChar -> symbolNames.word
+  NonWordChar -> symbolNames.nonWord
+  WordBoundaryChar -> symbolNames.wordBoundary
+  NonWordBoundaryChar -> symbolNames.nonWordBoundary
+  LinebreakChar -> symbolNames.lineBreak
+  NonLinebreakChar -> symbolNames.nonLineBreak
+  TabChar -> symbolNames.tab
+  NoChar -> symbolNames.none
+  AnyChar -> symbolNames.any

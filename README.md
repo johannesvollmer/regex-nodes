@@ -12,7 +12,7 @@ Alternatively, use [modd](https://github.com/cortesi/modd) to run elm-make on ev
 # To Do
 - [ ] Example text for feedback
 - [ ] Implement all node types
-- [ ] Automatic node width calculation
+- [x] Automatic node width calculation
 - [ ] Middle mouse button view movement
 - [ ] Simplify UX of changing order in "Set Node"s
 - [ ] Reconnect replaced connections 

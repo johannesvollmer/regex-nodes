@@ -153,18 +153,35 @@ updateView amount focus oldView =
   in newView
 
 
-updateCharSetChars newChars = CharSet newChars
-updateOptionalOption newInput = Optional newInput
-updateSetOptions options = Set options
 
-updateFollowedByExpression followed expression = IfFollowedBy { followed | expression = expression }
-updateFollowedBySuccessor followed successor = IfFollowedBy { followed | successor = successor }
+updateFollowedByExpression followed expression = IfFollowedByNode { followed | expression = expression }
+updateFollowedBySuccessor followed successor = IfFollowedByNode { followed | successor = successor }
 
-updateRepetitionExpression repetition expression = Repeated { repetition | expression = expression }
-updateRepetitionCount repetition count = Repeated { repetition | count = count }
+updateNotFollowedByExpression followed expression = IfNotFollowedByNode { followed | expression = expression }
+updateNotFollowedBySuccessor followed successor = IfNotFollowedByNode { followed | successor = successor }
 
-updateFlagsExpression flags newInput = Flags { flags | expression = newInput }
-updateFlags expression newFlags = Flags { expression = expression, flags = newFlags }
+updateCharRangeFirst end maybeStart = CharRangeNode (maybeStart |> Maybe.withDefault 'a') end
+updateCharRangeLast start maybeEnd = CharRangeNode start (maybeEnd |> Maybe.withDefault 'z')
+
+updateNotInCharRangeFirst end maybeStart = NotInCharRangeNode (maybeStart |> Maybe.withDefault 'a') end
+updateNotInCharRangeLast start maybeEnd = NotInCharRangeNode start (maybeEnd |> Maybe.withDefault 'z')
+
+updateExactRepetitionExpression repetition expression = ExactRepetitionNode { repetition | expression = expression }
+updateExactRepetitionCount repetition count = ExactRepetitionNode { repetition | count = count }
+
+updateMinimumRepetitionExpression repetition expression = MinimumRepetitionNode { repetition | expression = expression }
+updateMinimumRepetitionCount repetition count = MinimumRepetitionNode { repetition | minimum = count }
+
+updateMaximumRepetitionExpression repetition expression = MaximumRepetitionNode { repetition | expression = expression }
+updateMaximumRepetitionCount repetition count = MaximumRepetitionNode { repetition | maximum = count }
+
+updateRangedRepetitionExpression repetition expression = RangedRepetitionNode { repetition | expression = expression }
+updateRangedRepetitionMinimum repetition count = RangedRepetitionNode { repetition | minimum = count }
+updateRangedRepetitionMaximum repetition count = RangedRepetitionNode { repetition | maximum = count }
+
+updateFlagsExpression flags newInput = FlagsNode { flags | expression = newInput }
+updateFlags expression newFlags = FlagsNode { expression = expression, flags = newFlags }
 updateFlagsMultiple { expression, flags } multiple = updateFlags expression { flags | multiple = multiple }
 updateFlagsInsensitivity { expression, flags } caseSensitive = updateFlags expression { flags | caseSensitive = caseSensitive }
 updateFlagsMultiline { expression, flags } multiline = updateFlags expression { flags | multiline = multiline }
+
