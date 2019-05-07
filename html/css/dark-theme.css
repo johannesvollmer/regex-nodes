@@ -13,11 +13,6 @@
 	color: #fff;
 }
 
-* {
-	transition: color 100ms, background 250ms,
-	  opacity 100ms, stroke 100ms, fill 100ms;
-}
-
 code, #search #results #parse-regex {
   font-family: 'Ubuntu Mono', source-code-pro, Consolas, monospace;
 }
@@ -175,14 +170,15 @@ nav {
 	stroke: #555;
 }
 .connect-dragging .prototype.connection {
-	animation: fromSolidToDash 0.2s ease-out forwards;
+	animation: fromSolidToDash 2s ease-out forwards;
 }
 :not(.connect-dragging) .connection:not(.prototype) {
-	animation: fromDashToSolid 0.2s ease-in-out forwards;
+	animation: fromDashToSolid 2s ease-in-out forwards;
 }
 
 .may-drag-connect .property:hover {
-	animation: flashToTealBackground 0.5s ease-out forwards;
+  background-color: teal;
+	animation: flashToTealBackground 0.3s ease-out forwards;
   color: #ffffff77;
 }
 .may-drag-connect .property:hover .connector {
@@ -190,6 +186,16 @@ nav {
 }
 
 
+
+/* FIXME will not work for a simple right-mouse-press */
+.property, .property:hover, .property:active, .may-drag-connect .property,
+.graph-node, .connector, #search > input, .property > .chars.input
+{
+  transition: background-color 250ms, opacity 100ms;
+}
+.property, nav a {
+  transition: color 150ms;
+}
 
 @keyframes flashToTealBackground {
   from {
