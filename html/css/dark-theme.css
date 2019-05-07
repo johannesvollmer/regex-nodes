@@ -83,7 +83,7 @@ nav {
 .connection {
 	stroke: teal;
 	stroke-width: 3;
-	stroke-linecap: round;
+	stroke-linecap: butt;
 	fill: none;
 }
 
@@ -178,7 +178,6 @@ nav {
 }
 .connect-dragging .prototype.connection {
 	animation: fromSolidToDash 0.2s ease-out forwards;
-	stroke-linecap: butt;
 }
 :not(.connect-dragging) .connection:not(.prototype) {
 	animation: fromDashToSolid 0.2s ease-in-out forwards;
