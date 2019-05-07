@@ -14,6 +14,7 @@ Alternatively, use [modd](https://github.com/cortesi/modd) to run elm-make on ev
 - [ ] Implement all node types
 - [ ] Middle mouse button view movement
 - [ ] Reconnect replaced connections 
+- [ ] Instantiate Nodes centered to the screen
       when reverting connection prototype
 - [ ] Rewrite Css to Sass
 - [ ] Build to Github Pages
