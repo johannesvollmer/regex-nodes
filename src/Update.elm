@@ -161,7 +161,7 @@ updateNotFollowedByExpression followed expression = IfNotFollowedByNode { follow
 updateNotFollowedBySuccessor followed successor = IfNotFollowedByNode { followed | successor = successor }
 
 updateCharRangeFirst end maybeStart = maybeStart |> Maybe.withDefault 'a' |> (\s -> CharRangeNode s (maxChar s end))
-updateCharRangeFirst start maybeEnd = maybeEnd |> Maybe.withDefault 'z' |> (\e -> CharRangeNode (minChar e start) e)
+updateCharRangeLast start maybeEnd = maybeEnd |> Maybe.withDefault 'z' |> (\e -> CharRangeNode (minChar e start) e)
 
 updateNotInCharRangeFirst end maybeStart = maybeStart |> Maybe.withDefault 'a' |> (\s -> NotInCharRangeNode s (maxChar s end))
 updateNotInCharRangeLast start maybeEnd = maybeEnd |> Maybe.withDefault 'z' |> (\e -> NotInCharRangeNode (minChar e start) e)
