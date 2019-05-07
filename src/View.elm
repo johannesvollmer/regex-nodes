@@ -89,9 +89,9 @@ nodeWidth node = case node of
 view : Model -> Html Message
 view model =
   let
-    expressionResult = Maybe.map
-      (\id -> buildRegex model.nodes id |> constructRegexLiteral)
-      model.result
+    expressionResult = model.result |> Maybe.map
+      (\id -> buildRegex model.nodes id |> Result.map constructRegexLiteral)
+
 
     (moveDragging, connectDragId, mousePosition) = case model.dragMode of
         Just (MoveNodeDrag { mouse }) -> (True, Nothing, mouse)
@@ -150,7 +150,7 @@ view model =
           ]
 
         , div [ id "expression-result" ]
-          [ code [] [ text ("const regex = " ++ (Maybe.withDefault "/(?!)/" expressionResult)) ] ]
+          [ code [] [ text ("const regex = " ++ (expressionResult |> Maybe.withDefault (Ok "/(?!)/") |> Result.withDefault "Error")) ] ]
       ]
     ]
 

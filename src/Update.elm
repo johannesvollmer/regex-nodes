@@ -6,26 +6,6 @@ import Vec2 exposing (Vec2)
 import Parse exposing (..)
 
 
-addNode : Nodes -> NodeView -> Nodes
-addNode nodes node =
-  { values = Dict.insert nodes.nextId node nodes.values
-  , nextId = nodes.nextId + 1
-  }
-
-updateNode : Nodes -> NodeId -> Node -> Nodes
-updateNode nodes id newNode =
-  let updateNodeContents nodeview = Maybe.map (\n -> { n | node = newNode }) nodeview
-  in { nodes | values = Dict.update id updateNodeContents nodes.values }
-
-
-moveNode : View -> Nodes -> NodeId -> Vec2 -> Nodes
-moveNode view nodes nodeId movement =
-  let
-    transform = viewTransform view
-    viewMovement = Vec2.scale (1 / transform.scale) movement
-    updateNodePosition node = Maybe.map (\n -> { n | position = Vec2.add n.position viewMovement }) node
-  in { nodes | values = Dict.update nodeId updateNodePosition nodes.values }
-
 
 
 -- UPDATE
@@ -65,21 +45,7 @@ update message model =
   case message of
     UpdateView viewMessage -> case viewMessage of
       MagnifyView { amount, focus } ->
-        let
-          magnification = model.view.magnification + amount
-          transform = viewTransform { magnification = magnification, offset = model.view.offset }
-
-          oldTransform = viewTransform model.view
-          deltaScale = transform.scale / oldTransform.scale
-
-          newView = if transform.scale < 0.1 || transform.scale > 16 then model.view else
-            { magnification = magnification
-            , offset =
-              { x = (model.view.offset.x - focus.x) * deltaScale + focus.x
-              , y = (model.view.offset.y - focus.y) * deltaScale + focus.y
-              }
-            }
-        in { model | view = newView }
+        { model | view = updateView amount focus model.view }
 
     UpdateNodeMessage id value ->
       { model | nodes = updateNode model.nodes id value }
@@ -145,6 +111,46 @@ update message model =
 
 
 
+
+
+addNode : Nodes -> NodeView -> Nodes
+addNode nodes node =
+  { values = Dict.insert nodes.nextId node nodes.values
+  , nextId = nodes.nextId + 1
+  }
+
+updateNode : Nodes -> NodeId -> Node -> Nodes
+updateNode nodes id newNode =
+  let updateNodeContents nodeview = Maybe.map (\n -> { n | node = newNode }) nodeview
+  in { nodes | values = Dict.update id updateNodeContents nodes.values }
+
+
+moveNode : View -> Nodes -> NodeId -> Vec2 -> Nodes
+moveNode view nodes nodeId movement =
+  let
+    transform = viewTransform view
+    viewMovement = Vec2.scale (1 / transform.scale) movement
+    updateNodePosition node = Maybe.map (\n -> { n | position = Vec2.add n.position viewMovement }) node
+  in { nodes | values = Dict.update nodeId updateNodePosition nodes.values }
+
+
+updateView amount focus oldView =
+  let
+    magnification = oldView.magnification + amount
+    transform = viewTransform { magnification = magnification, offset = oldView.offset }
+
+    oldTransform = viewTransform oldView
+    deltaScale = transform.scale / oldTransform.scale
+
+    newView = if transform.scale < 0.1 || transform.scale > 16 then oldView else
+      { magnification = magnification
+      , offset =
+        { x = (oldView.offset.x - focus.x) * deltaScale + focus.x
+        , y = (oldView.offset.y - focus.y) * deltaScale + focus.y
+        }
+      }
+
+  in newView
 
 
 updateCharSetChars newChars = CharSet newChars
