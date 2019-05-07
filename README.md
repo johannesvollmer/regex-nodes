@@ -15,6 +15,7 @@ Alternatively, use [modd](https://github.com/cortesi/modd) to run elm-make on ev
 - [x] Automatic node width calculation
 - [ ] Middle mouse button view movement
 - [ ] Simplify UX of changing order in "Set Node"s
+- [ ] Tooltips and explanations!!
 - [ ] Reconnect replaced connections 
 - [ ] Instantiate Nodes centered to the screen
       when reverting connection prototype

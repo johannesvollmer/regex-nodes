@@ -233,7 +233,11 @@ preventContextMenu message = Mouse.onWithOptions "contextmenu"
   (\_ -> message)
 
 viewSearchResults search =
-  div [ id "results" ] (Maybe.withDefault [] (Maybe.map viewSearch search) )
+  div
+    [ id "results"
+    , stopMousePropagation "wheel"
+    ]
+    (Maybe.withDefault [] (Maybe.map viewSearch search) )
 
 viewSearchBar search = input
   [ placeholder "Add Nodes"
@@ -277,8 +281,7 @@ viewSearch query =
 
     results = (prototypes |> List.filter matches |> List.map render)
 
-  in
-  prependListIf (not isEmpty) asRegex results
+  in prependListIf (not isEmpty) asRegex results
 
 
 

@@ -97,6 +97,9 @@ header img {
 
 #search #results {
   cursor: pointer;
+  max-height: 80vh;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 #search #results > * {
