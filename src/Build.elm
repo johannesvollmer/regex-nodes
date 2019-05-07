@@ -16,34 +16,41 @@ type alias BuildResult a = Result String a
 buildNodeExpression : Nodes -> Node -> BuildResult String
 buildNodeExpression nodes node =
   let
-
-    build = buildExpression nodes
+    ownPrecedence = precedence node
+    build child = buildExpression nodes ownPrecedence child
+      -- |> Result.map (parenthesesForPrecedence ownPrecedence (precedence child))
 
     set = String.join "|"
     optional expression = expression ++ "?"
     repeated count expression = expression ++ "{" ++ String.fromInt count ++ "}"
     ifFollowedby successor expression = expression ++ "(?=" ++ successor ++ ")"
 
-  in case node of
-    Whitespace -> Ok "\\w"
-    CharSet chars -> Ok ("[" ++ chars ++ "]")
-    Optional maybeInput -> (build maybeInput) |> Result.map optional
-    Set options -> options |> Array.toList
-      |> List.map (\option -> build (Just option)) |> collapseResults
-      |> Result.map set |> Result.mapError (String.join ", ")
 
-    Flags { expression } -> build expression -- we use flags directly at topmost level
-    Repeated { expression, count } -> build expression |> Result.map (repeated count)
-    IfFollowedBy { expression, successor } -> Result.map2 ifFollowedby (build successor) (build expression)
+    string = case node of
+      Whitespace -> Ok "\\w"
+      CharSet chars -> Ok ("[" ++ chars ++ "]")
+      Optional maybeInput -> (build maybeInput) |> Result.map optional
+      Set options -> options |> Array.toList
+        |> List.map (\option -> build (Just option)) |> collapseResults
+        |> Result.map set |> Result.mapError (String.join ", ")
 
+      Flags { expression } -> build expression -- we use flags directly at topmost level
+      Repeated { expression, count } -> build expression |> Result.map (repeated count)
+      IfFollowedBy { expression, successor } -> Result.map2 ifFollowedby (build successor) (build expression)
+
+  in string
 
 {-| Dereferences a node and returns `buildExpression` of it, handling corner cases -}
-buildExpression : Nodes -> Maybe NodeId -> BuildResult String
-buildExpression nodes nodeId = case nodeId of
+buildExpression : Nodes -> Int -> Maybe NodeId -> BuildResult String
+buildExpression nodes ownPrecedence nodeId = case nodeId of
   Nothing -> Ok "(nothing)"
   Just id -> Dict.get id nodes.values
     |> okOrErr "Internal Error: Invalid Node Id"
-    |> Result.andThen (.node >> buildNodeExpression nodes)
+    |> Result.andThen
+      (\nodeView -> nodeView.node
+        |> buildNodeExpression nodes
+        |> Result.map (parenthesesForPrecedence ownPrecedence (precedence nodeView.node))
+      )
 
 
 
@@ -56,7 +63,7 @@ type alias RegexBuild =
 buildRegex : Nodes -> NodeId -> BuildResult RegexBuild
 buildRegex nodes id =
   let
-    expression = buildExpression nodes (Just id)
+    expression = buildExpression nodes 0 (Just id)
     nodeView = Dict.get id nodes.values
     options = case nodeView |> Maybe.map .node of
       Just (Flags { flags }) -> flags
@@ -80,7 +87,7 @@ compileRegex build =
 
 
 parenthesesForPrecedence ownPrecedence childPrecedence child =
-  if ownPrecedence < childPrecedence then  "(" ++ child ++ ")" else child
+  if ownPrecedence > childPrecedence then  "(" ++ child ++ ")" else child
 
 precedence : Node -> Int
 precedence node = case node of

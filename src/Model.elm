@@ -79,7 +79,7 @@ typeNames =
   , charset = "Char Set"
   , optional = "Optional"
   , set = "Any Of"
-  , flags = "Flagged Expression"
+  , flags = "Configuration"
   , repeated = "Repeated"
   , ifFollowedBy = "If Followed By"
   }
