@@ -179,3 +179,10 @@ header img {
 .connect-dragging .property:not(.connectable-input) {
 	pointer-events: none;
 }
+
+
+.connection {
+	stroke-linecap: round;
+	stroke-width: 3;
+	fill: none;
+}
