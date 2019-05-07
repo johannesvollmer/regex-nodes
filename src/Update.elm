@@ -160,11 +160,11 @@ updateFollowedBySuccessor followed successor = IfFollowedByNode { followed | suc
 updateNotFollowedByExpression followed expression = IfNotFollowedByNode { followed | expression = expression }
 updateNotFollowedBySuccessor followed successor = IfNotFollowedByNode { followed | successor = successor }
 
-updateCharRangeFirst end maybeStart = CharRangeNode (maybeStart |> Maybe.withDefault 'a') end
-updateCharRangeLast start maybeEnd = CharRangeNode start (maybeEnd |> Maybe.withDefault 'z')
+updateCharRangeFirst end maybeStart = maybeStart |> Maybe.withDefault 'a' |> (\s -> CharRangeNode s (maxChar s end))
+updateCharRangeFirst start maybeEnd = maybeEnd |> Maybe.withDefault 'z' |> (\e -> CharRangeNode (minChar e start) e)
 
-updateNotInCharRangeFirst end maybeStart = NotInCharRangeNode (maybeStart |> Maybe.withDefault 'a') end
-updateNotInCharRangeLast start maybeEnd = NotInCharRangeNode start (maybeEnd |> Maybe.withDefault 'z')
+updateNotInCharRangeFirst end maybeStart = maybeStart |> Maybe.withDefault 'a' |> (\s -> NotInCharRangeNode s (maxChar s end))
+updateNotInCharRangeLast start maybeEnd = maybeEnd |> Maybe.withDefault 'z' |> (\e -> NotInCharRangeNode (minChar e start) e)
 
 updateExactRepetitionExpression repetition expression = ExactRepetitionNode { repetition | expression = expression }
 updateExactRepetitionCount repetition count = ExactRepetitionNode { repetition | count = count }
@@ -176,8 +176,8 @@ updateMaximumRepetitionExpression repetition expression = MaximumRepetitionNode 
 updateMaximumRepetitionCount repetition count = MaximumRepetitionNode { repetition | maximum = count }
 
 updateRangedRepetitionExpression repetition expression = RangedRepetitionNode { repetition | expression = expression }
-updateRangedRepetitionMinimum repetition count = RangedRepetitionNode { repetition | minimum = count }
-updateRangedRepetitionMaximum repetition count = RangedRepetitionNode { repetition | maximum = count }
+updateRangedRepetitionMinimum repetition count = RangedRepetitionNode { repetition | minimum = count, maximum = max count repetition.maximum }
+updateRangedRepetitionMaximum repetition count = RangedRepetitionNode { repetition | maximum = count, minimum = min count repetition.minimum }
 
 updateFlagsExpression flags newInput = FlagsNode { flags | expression = newInput }
 updateFlags expression newFlags = FlagsNode { expression = expression, flags = newFlags }
@@ -185,3 +185,10 @@ updateFlagsMultiple { expression, flags } multiple = updateFlags expression { fl
 updateFlagsInsensitivity { expression, flags } caseSensitive = updateFlags expression { flags | caseSensitive = caseSensitive }
 updateFlagsMultiline { expression, flags } multiline = updateFlags expression { flags | multiline = multiline }
 
+minChar a b =
+  if Char.toCode a < Char.toCode b
+    then a else b
+
+maxChar a b =
+  if Char.toCode a > Char.toCode b
+    then a else b
