@@ -16,8 +16,12 @@ type alias BuildResult a = Result String a
 buildNodeExpression : Nodes -> Node -> BuildResult String
 buildNodeExpression nodes node =
   let
+    escapeCharset = escapeChars "[^-.\\]"
+    escapeLiteral = escapeChars "[]{}()|^.-+*?!$/\\"
+
 
     set = String.join "|"
+    capture child = "(" ++ child ++ ")"
 
     optional expression = expression ++ "?"
     atLeastOne expression = expression ++ "+"
@@ -36,12 +40,12 @@ buildNodeExpression nodes node =
     ifAtEnd expression = expression ++ "$"
     ifAtStart expression = "^" ++ expression
 
-    charset chars = "[" ++ chars ++ "]"  -- TODO escape characters!!!
-    notInCharset chars = "[^" ++ chars ++ "]"  -- TODO escape characters!!!
-    charRange start end = "[" ++ String.fromChar start ++ "-" ++ String.fromChar end ++ "]"  -- TODO escape characters!!!
-    notInCharRange start end = "[^" ++ String.fromChar start ++ "-" ++ String.fromChar end ++ "]"  -- TODO escape characters!!!
+    charset chars = "[" ++ escapeCharset chars ++ "]"
+    notInCharset chars = "[^" ++ escapeCharset chars ++ "]"
+    charRange start end = "[" ++ escapeCharset (String.fromChar start) ++ "-" ++ escapeCharset (String.fromChar end) ++ "]"
+    notInCharRange start end = "[^" ++ escapeCharset (String.fromChar start) ++ "-" ++ escapeCharset (String.fromChar end) ++ "]"
+    literal chars = escapeLiteral chars
 
-    capture child = "(" ++ child ++ ")"
 
 
 
@@ -62,7 +66,7 @@ buildNodeExpression nodes node =
       NotInCharSetNode chars -> Ok (notInCharset chars)
       CharRangeNode start end -> Ok (charRange start end)
       NotInCharRangeNode start end -> Ok (notInCharRange start end)
-      LiteralNode chars -> Ok chars
+      LiteralNode chars -> Ok (literal chars)
 
       SequenceNode members -> buildMembers String.concat members
       SetNode options -> buildMembers set options
@@ -200,6 +204,15 @@ accumulateResult element collapsed =
         Ok _ -> Err errorList
         Err errElement -> Err (errElement :: errorList)
 
+
+escapeChars pattern chars = chars |> String.toList
+  |> List.concatMap (escapeChar (String.toList pattern))
+  |> String.fromList
+
+escapeChar pattern char =
+  if List.member char pattern
+    then [ '\\', char ]
+    else [ char ]
 
 okOrErr : e -> Maybe k -> Result e k
 okOrErr error maybe = case maybe of
