@@ -176,6 +176,13 @@ nav {
 .connect-dragging .connection:not(.prototype) {
 	stroke: #555;
 }
+.connect-dragging .prototype.connection {
+	animation: fromSolidToDash 0.2s ease-out forwards;
+	stroke-linecap: butt;
+}
+:not(.connect-dragging) .connection:not(.prototype) {
+	animation: fromDashToSolid 0.2s ease-in-out forwards;
+}
 
 .may-drag-connect .property:hover {
   background-color: teal;
@@ -183,4 +190,14 @@ nav {
 }
 .may-drag-connect .connector {
   opacity: 0;
+}
+
+
+@keyframes fromDashToSolid {
+  from { stroke-dasharray: 9; }
+  to { stroke-dasharray: 0; }
+}
+@keyframes fromSolidToDash {
+  from { stroke-dasharray: 0; }
+  to { stroke-dasharray: 9; }
 }

@@ -102,6 +102,8 @@ view model =
 
     nodeViews = (List.map (viewNode model.dragMode model.nodes) (Dict.toList model.nodes.values))
 
+    connections = flattenList (List.map .connections nodeViews)
+
   in div
     [ Mouse.onMove (\event -> DragModeMessage
         (UpdateDrag { newMouse = Vec2.fromTuple event.clientPos })
@@ -121,7 +123,7 @@ view model =
 
     [ svg [ id "connection-graph" ]
       [ g [ magnifyAndOffsetSVG model.view ]
-        (prependListIf connectDragging (viewConnectDrag model.view model.nodes connectDragId mousePosition) (flattenList (List.map .connections nodeViews)))
+        (if connectDragging then connections ++ [ viewConnectDrag model.view model.nodes connectDragId mousePosition ] else connections)
       ]
 
     , div
@@ -217,14 +219,13 @@ viewNode dragMode nodes (nodeId, nodeView) =
 viewNodeConnections : Nodes -> List PropertyView -> Model.NodeView -> List (Svg Message)
 viewNodeConnections nodes props nodeView =
   let
-    connectionLine from width to index = line
-       [ x1 (String.fromFloat to.x)
-       , y1 (String.fromFloat (to.y + ((toFloat index) + 0.5) * propertyHeight))
-       , x2 (String.fromFloat (from.x + width))
-       , y2 (String.fromFloat (from.y + 0.5 * propertyHeight))
-       , Svg.Attributes.class "connection"
-       ]
-       []
+    connectionLine from width to index = Svg.path
+      [ Svg.Attributes.class "connection"
+      , bezierSvgConnectionpath
+        (Vec2 to.x (to.y + ((toFloat index) + 0.5) * propertyHeight))
+        (Vec2 (from.x + width) (from.y + 0.5 * propertyHeight))
+      ]
+      []
 
     connect : NodeId -> Model.NodeView -> (Int -> Maybe (Svg Message))
     connect supplierId node index =
@@ -251,22 +252,42 @@ viewNodeConnections nodes props nodeView =
 
   in filtered
 
+
 viewConnectDrag : View -> Nodes -> Maybe NodeId -> Vec2 -> Html Message
 viewConnectDrag viewTransformation nodes dragId mouse =
   let
     node = Maybe.andThen (\id -> Dict.get id nodes.values) dragId
-    position = Maybe.map (.position) node |> Maybe.withDefault (Vec2 0 0)
+    nodePosition = Maybe.map (.position) node |> Maybe.withDefault (Vec2 0 0)
+
+    nodeAnchor = Vec2
+      (nodePosition.x + (Maybe.map (.node >> nodeWidth) node |> Maybe.withDefault 0))
+      (nodePosition.y + 0.5 * 25.0)
+
     transform = viewTransform viewTransformation
     transformedMouse = Vec2.inverseTransform mouse transform
 
-  in line
-    [ x1 (String.fromFloat transformedMouse.x)
-    , y1 (String.fromFloat transformedMouse.y)
-    , x2 (String.fromFloat (position.x + (Maybe.map (.node >> nodeWidth) node |> Maybe.withDefault 0)) )
-    , y2 (String.fromFloat (position.y + 0.5 * 25.0))
-    , Svg.Attributes.class "prototype connection"
+  in Svg.path
+    [ Svg.Attributes.class "prototype connection"
+    , bezierSvgConnectionpath transformedMouse nodeAnchor
     ]
     []
+
+
+bezierSvgConnectionpath from to =
+  let
+    tangentX1 = from.x - abs(to.x - from.x) * 0.4
+    tangentX2 = to.x + abs(to.x - from.x) * 0.4
+
+  in svgConnectionPath
+    from (Vec2 tangentX1 from.y) (Vec2 tangentX2 to.y) to
+
+svgConnectionPath from fromTangent toTangent to =
+  let
+    vec2ToString vec = String.fromFloat vec.x ++ "," ++ String.fromFloat vec.y ++ " "
+    path = "M" ++ vec2ToString from ++ "C" ++ vec2ToString fromTangent
+      ++ vec2ToString toTangent ++ vec2ToString to
+  in Svg.Attributes.d path
+
 
 hasDragConnectionPrototype dragMode nodeId = case dragMode of
     Just (CreateConnection { supplier }) -> nodeId == supplier
