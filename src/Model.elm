@@ -28,7 +28,7 @@ init =
   , view = View 0 (Vec2 0 0)
   , exampleText =
     { contents = String.repeat 12 "Leverage agile frameworks to provide a robust synopsis for high level overviews. Iterative approaches to corporate strategy foster collaborative thinking to further the overall value proposition. Organically grow the holistic world view of disruptive innovation via workplace diversity and empowerment. Bring to the table win-win survival strategies to ensure proactive domination. At the end of the day, going forward, a new normal that has evolved from generation X is on the runway heading towards a streamlined cloud solution. User generated content in real-time will have multiple touchpoints for offshoring. Capitalize on low hanging fruit to identify a ballpark value added activity to beta test. Override the digital divide with additional clickthroughs from DevOps. Nanotechnology immersion along the information highway will close the loop on focusing solely on the bottom line."
-    , maxMatches = 9000
+    , maxMatches = 5000
     , isEditing = False
     , cachedMatches = Nothing
     }
@@ -118,49 +118,52 @@ type alias Prototype =
 
 
 
--- TODO: DRY
-
 prototypes : List Prototype
 prototypes =
-  [ Prototype symbolNames.whitespace (SymbolNode WhitespaceChar)
-  , Prototype symbolNames.nonWhitespace (SymbolNode NonWhitespaceChar)
-  , Prototype symbolNames.digit (SymbolNode DigitChar)
-  , Prototype symbolNames.nonDigit (SymbolNode NonDigitChar)
-  , Prototype symbolNames.word (SymbolNode WordChar)
-  , Prototype symbolNames.nonWord (SymbolNode NonWordChar)
-  , Prototype symbolNames.wordBoundary (SymbolNode WordBoundary)
-  , Prototype symbolNames.nonWordBoundary (SymbolNode NonWordBoundary)
-  , Prototype symbolNames.lineBreak (SymbolNode LinebreakChar)
-  , Prototype symbolNames.nonLineBreak (SymbolNode NonLinebreakChar)
-  , Prototype symbolNames.tab (SymbolNode TabChar)
-  , Prototype symbolNames.none (SymbolNode Never)
-  , Prototype symbolNames.any (SymbolNode Always)
-
-  , Prototype typeNames.charset        (CharSetNode ",.?!:")
-  , Prototype typeNames.notInCharset   (NotInCharSetNode ",.?!:")
-  , Prototype typeNames.literal        (LiteralNode "the")
-  , Prototype typeNames.charRange      (CharRangeNode 'a' 'z')
-  , Prototype typeNames.notInCharRange (NotInCharRangeNode 'a' 'z')
-
-  , Prototype typeNames.set            (SetNode (Array.fromList []))
-  , Prototype typeNames.sequence            (SequenceNode (Array.fromList []))
-  , Prototype typeNames.capture (CaptureNode Nothing)
-
-  , Prototype typeNames.ifAtEnd (IfAtEndNode Nothing)
-  , Prototype typeNames.ifAtStart (IfAtStartNode Nothing)
-  , Prototype typeNames.ifFollowedBy (IfFollowedByNode { expression = Nothing, successor = Nothing })
-  , Prototype typeNames.ifNotFollowedBy (IfNotFollowedByNode { expression = Nothing, successor = Nothing })
-
-  , Prototype typeNames.optional       (OptionalNode Nothing)
-  , Prototype typeNames.atLeastOne (AtLeastOneNode Nothing)
-  , Prototype typeNames.anyRepetition       (AnyRepetitionNode Nothing)
-  , Prototype typeNames.rangedRepetition       (RangedRepetitionNode { expression = Nothing, minimum = 2, maximum = 4 })
-  , Prototype typeNames.minimumRepetition      (MinimumRepetitionNode { expression = Nothing, minimum = 2 })
-  , Prototype typeNames.maximumRepetition      (MaximumRepetitionNode { expression = Nothing, maximum = 4 })
-  , Prototype typeNames.exactRepetition       (ExactRepetitionNode { expression = Nothing, count = 3 })
-
-  , Prototype typeNames.flags          (FlagsNode { expression = Nothing, flags = defaultFlags })
+  [ symbolProto .whitespace (SymbolNode WhitespaceChar)
+  , symbolProto .nonWhitespace (SymbolNode NonWhitespaceChar)
+  , symbolProto .digit (SymbolNode DigitChar)
+  , symbolProto .nonDigit (SymbolNode NonDigitChar)
+  , symbolProto .word (SymbolNode WordChar)
+  , symbolProto .nonWord (SymbolNode NonWordChar)
+  , symbolProto .wordBoundary (SymbolNode WordBoundary)
+  , symbolProto .nonWordBoundary (SymbolNode NonWordBoundary)
+  , symbolProto .lineBreak (SymbolNode LinebreakChar)
+  , symbolProto .nonLineBreak (SymbolNode NonLinebreakChar)
+  , symbolProto .tab (SymbolNode TabChar)
+  , symbolProto .none (SymbolNode Never)
+  , symbolProto .any (SymbolNode Always)
+  
+  , typeProto .charset (CharSetNode ",.?!:")
+  , typeProto .notInCharset (NotInCharSetNode ",.?!:")
+  , typeProto .literal (LiteralNode "the")
+  , typeProto .charRange (CharRangeNode 'a' 'z')
+  , typeProto .notInCharRange (NotInCharRangeNode 'a' 'z')
+  
+  , typeProto .set (SetNode (Array.fromList []))
+  , typeProto .sequence (SequenceNode (Array.fromList []))
+  , typeProto .capture (CaptureNode Nothing)
+  
+  , typeProto .ifAtEnd (IfAtEndNode Nothing)
+  , typeProto .ifAtStart (IfAtStartNode Nothing)
+  , typeProto .ifFollowedBy (IfFollowedByNode { expression = Nothing, successor = Nothing })
+  , typeProto .ifNotFollowedBy (IfNotFollowedByNode { expression = Nothing, successor = Nothing })
+  
+  , typeProto .optional (OptionalNode Nothing)
+  , typeProto .atLeastOne (AtLeastOneNode Nothing)
+  , typeProto .anyRepetition (AnyRepetitionNode Nothing)
+  , typeProto .rangedRepetition (RangedRepetitionNode { expression = Nothing, minimum = 2, maximum = 4 })
+  , typeProto .minimumRepetition (MinimumRepetitionNode { expression = Nothing, minimum = 2 })
+  , typeProto .maximumRepetition (MaximumRepetitionNode { expression = Nothing, maximum = 4 })
+  , typeProto .exactRepetition (ExactRepetitionNode { expression = Nothing, count = 3 })
+  
+  , typeProto .flags (FlagsNode { expression = Nothing, flags = defaultFlags })
   ]
+
+
+typeProto getter = Prototype (getter typeNames)
+symbolProto getter = Prototype (getter symbolNames)
+
 
 symbolNames =
   { whitespace = "Whitespace Char"
@@ -187,8 +190,8 @@ typeNames =
   , optional = "Optional"
   , set = "Any Of"
   , capture = "Capture"
-  , ifAtEnd = "If At End"
-  , ifAtStart = "If At Start"
+  , ifAtEnd = "If At End Of Line"
+  , ifAtStart = "If At Start Of Line"
   , ifNotFollowedBy = "If Not Followed By"
   , sequence = "Sequence"
   , flags = "Configuration"

@@ -187,16 +187,21 @@ updateCache model =
   let
     example = model.exampleText
     regex = model.result |> Maybe.map (buildRegex model.nodes)
+
+    multiple = regex |> Maybe.map
+      (Result.map (.flags >> .multiple) >> Result.withDefault False)
+      |> Maybe.withDefault False
+
     compiled = regex |> Maybe.andThen (Result.map compileRegex >> Result.map Just >> Result.withDefault Nothing)
-    newExample = { example | cachedMatches = Maybe.map (extractMatches example.maxMatches example.contents) compiled }
+    newExample = { example | cachedMatches = Maybe.map (extractMatches multiple example.maxMatches example.contents) compiled }
 
   in { model | exampleText = newExample }
 
 
-extractMatches : Int -> String -> Regex.Regex -> List (String, String)
-extractMatches maxMatches text regex =
+extractMatches : Bool -> Int -> String -> Regex.Regex -> List (String, String)
+extractMatches multiple maxMatches text regex =
   let
-    matches = Regex.findAtMost maxMatches regex text
+    matches = Regex.findAtMost (if multiple then maxMatches else 1) regex text
 
     extract : Int -> List Regex.Match -> List (String, String)
     extract startTextIndex remainingMatches = case remainingMatches of
