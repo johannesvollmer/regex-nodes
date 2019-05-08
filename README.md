@@ -14,6 +14,7 @@ Alternatively, use [modd](https://github.com/cortesi/modd) to run elm-make on ev
 - [x] Implement all node types
 - [x] Automatic node width calculation
 - [ ] Initial node setup for an easy start
+- [ ] Build Scripts + Build to Github Pages
 - [ ] Parse regex code in "Add Nodes"
 - [ ] How to delete nodes
 - [ ] Do not adjust example for every node move?
@@ -23,6 +24,5 @@ Alternatively, use [modd](https://github.com/cortesi/modd) to run elm-make on ev
 - [ ] Reconnect replaced connections 
       when reverting connection prototype
 - [ ] Instantiate Nodes centered to the screen
-- [ ] Rewrite Css to Sass
-- [ ] Build Scripts + Build to Github Pages
+- [ ] Consider rewriting Css to Sass
 - [ ] Node Groups!
