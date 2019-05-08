@@ -218,7 +218,7 @@ view model =
     , div [ id "overlay" ]
       [ nav []
         [ header []
-          [ img [ src "img/logo.svg" ] []
+          [ img [ src "html/img/logo.svg" ] []
           , h1 [] [ text "Regex Nodes" ]
           , a
             [ href "https://github.com/johannesvollmer/regex-nodes", target "_blank", rel "noopener noreferrer" ]
