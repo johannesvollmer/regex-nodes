@@ -199,7 +199,8 @@ extractMatches maxMatches text regex =
           extractedRest = extract endIndex restMatches
 
           before = String.slice startTextIndex match.index text
-        in (before, match.match) :: extractedRest
+          matchWithoutSpaces = String.replace " " "\u{200A}·\u{200A}" match.match -- insert dot +hair-space to visualize whitespace
+        in (before, matchWithoutSpaces) :: extractedRest
 
 
     simplify restMatches =
