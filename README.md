@@ -21,8 +21,8 @@ Alternatively, use [modd](https://github.com/cortesi/modd) to run elm-make on ev
 - [ ] Simplify UX of changing order in "Set Node"s
 - [ ] Tooltips and explanations!!
 - [ ] Reconnect replaced connections 
-- [ ] Instantiate Nodes centered to the screen
       when reverting connection prototype
+- [ ] Instantiate Nodes centered to the screen
 - [ ] Rewrite Css to Sass
 - [ ] Build Scripts + Build to Github Pages
 - [ ] Node Groups!
