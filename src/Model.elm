@@ -8,13 +8,14 @@ import Vec2 exposing (Vec2)
 -- MODEL
 
 type alias Model =
-  { nodes : Nodes
-  , result : Maybe NodeId
+  { nodes: Nodes
+  , result: Maybe NodeId
+  , exampleSize: Vec2
 
-  , search : Maybe String
-  , dragMode : Maybe DragMode
+  , search: Maybe String
+  , dragMode: Maybe DragMode
 
-  , view : View
+  , view: View
   }
 
 init : Model
@@ -24,6 +25,7 @@ init =
   , dragMode = Nothing
   , search = Nothing
   , view = View 0 (Vec2 0 0)
+  , exampleSize = Vec2 600 400 -- TODO finetune
   }
 
 type alias View =
@@ -154,8 +156,8 @@ symbolNames =
   , nonDigit = "Non Digit Char"
   , word = "Word Char"
   , nonWord = "Non Word Char"
-  , wordBoundary = "Word Boundary Char"
-  , nonWordBoundary = "Non Word Boundary Char"
+  , wordBoundary = "Word Boundary"
+  , nonWordBoundary = "Non Word Boundary"
   , lineBreak = "Linebreak Char"
   , nonLineBreak = "Non Linebreak Char"
   , tab = "Tab Char"
