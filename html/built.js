@@ -9229,7 +9229,7 @@ var author$project$View$view = function (model) {
 										elm$html$Html$img,
 										_List_fromArray(
 											[
-												elm$html$Html$Attributes$src('img/logo.svg')
+												elm$html$Html$Attributes$src('html/img/logo.svg')
 											]),
 										_List_Nil),
 										A2(
