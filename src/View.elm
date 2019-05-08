@@ -155,7 +155,7 @@ nodeWidth node = case node of
 codeTextWidth = String.length >> (*) 5 >> toFloat
 mainTextWidth text =
   let length = text |> String.length |> toFloat
-  in length * if length < 14 then 11 else 9
+  in length * if length < 14 then 12 else 9
 
 
 -- VIEW
@@ -239,7 +239,7 @@ view model =
           ]
 
         , div [ id "expression-result" ]
-          [ code [] [ text ("const regex = " ++ (expressionResult |> Maybe.withDefault (Ok "/(?!)/") |> Result.withDefault "Error")) ] ]
+          [ code [] [ text ("const regex = " ++ (expressionResult |> Maybe.withDefault (Ok "/(nothing)/") |> Result.withDefault "Error")) ] ]
       ]
     ]
 

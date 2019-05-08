@@ -50,7 +50,9 @@ update message model =
       { model | exampleText = { old | contents = text } }
 
     SetEditingExampleText enabled ->
-      enableEditingExampleText model enabled
+      if not enabled
+        then updateCache (enableEditingExampleText model enabled)
+        else enableEditingExampleText model enabled
 
     UpdateView viewMessage ->
       if model.exampleText.isEditing

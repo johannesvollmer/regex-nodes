@@ -103,13 +103,13 @@ type Symbol
   | NonDigitChar
   | WordChar
   | NonWordChar
-  | WordBoundaryChar
-  | NonWordBoundaryChar
+  | WordBoundary
+  | NonWordBoundary
   | LinebreakChar
   | NonLinebreakChar
   | TabChar
-  | NoChar
-  | AnyChar
+  | Never
+  | Always
 
 type alias Prototype =
   { name : String
@@ -128,13 +128,13 @@ prototypes =
   , Prototype symbolNames.nonDigit (SymbolNode NonDigitChar)
   , Prototype symbolNames.word (SymbolNode WordChar)
   , Prototype symbolNames.nonWord (SymbolNode NonWordChar)
-  , Prototype symbolNames.wordBoundary (SymbolNode WordBoundaryChar)
-  , Prototype symbolNames.nonWordBoundary (SymbolNode NonWordBoundaryChar)
+  , Prototype symbolNames.wordBoundary (SymbolNode WordBoundary)
+  , Prototype symbolNames.nonWordBoundary (SymbolNode NonWordBoundary)
   , Prototype symbolNames.lineBreak (SymbolNode LinebreakChar)
   , Prototype symbolNames.nonLineBreak (SymbolNode NonLinebreakChar)
   , Prototype symbolNames.tab (SymbolNode TabChar)
-  , Prototype symbolNames.none (SymbolNode NoChar)
-  , Prototype symbolNames.any (SymbolNode AnyChar)
+  , Prototype symbolNames.none (SymbolNode Never)
+  , Prototype symbolNames.any (SymbolNode Always)
 
   , Prototype typeNames.charset        (CharSetNode ",.?!:")
   , Prototype typeNames.notInCharset   (NotInCharSetNode ",.?!:")
@@ -174,8 +174,8 @@ symbolNames =
   , lineBreak = "Linebreak Char"
   , nonLineBreak = "Non Linebreak Char"
   , tab = "Tab Char"
-  , none = "No Char"
-  , any = "Any Char"
+  , none = "Nothing"
+  , any = "Anything"
   }
 
 typeNames =
@@ -223,10 +223,10 @@ symbolName symbol = case symbol of
   NonDigitChar -> symbolNames.nonDigit
   WordChar -> symbolNames.word
   NonWordChar -> symbolNames.nonWord
-  WordBoundaryChar -> symbolNames.wordBoundary
-  NonWordBoundaryChar -> symbolNames.nonWordBoundary
+  WordBoundary -> symbolNames.wordBoundary
+  NonWordBoundary -> symbolNames.nonWordBoundary
   LinebreakChar -> symbolNames.lineBreak
   NonLinebreakChar -> symbolNames.nonLineBreak
   TabChar -> symbolNames.tab
-  NoChar -> symbolNames.none
-  AnyChar -> symbolNames.any
+  Never -> symbolNames.none
+  Always -> symbolNames.any

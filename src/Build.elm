@@ -177,13 +177,13 @@ buildSymbol symbol = case symbol of
   NonDigitChar -> "\\D"
   WordChar -> "\\w"
   NonWordChar -> "\\W"
-  WordBoundaryChar -> "\\b"
-  NonWordBoundaryChar -> "\\B"
+  WordBoundary -> "\\b"
+  NonWordBoundary -> "\\B"
   LinebreakChar -> "\\n"
   NonLinebreakChar -> "."
   TabChar -> "\\t"
-  NoChar -> "(?!)"
-  AnyChar -> "(?:)"
+  Never -> "(?!)"
+  Always -> "(.|\\n)"
 
 
 -- if all elements ok, returns (Ok elementList), if any element is err, returns (Err errorList)

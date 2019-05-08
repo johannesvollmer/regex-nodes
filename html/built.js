@@ -5201,9 +5201,9 @@ var author$project$Build$buildSymbol = function (symbol) {
 			return '\\w';
 		case 'NonWordChar':
 			return '\\W';
-		case 'WordBoundaryChar':
+		case 'WordBoundary':
 			return '\\b';
-		case 'NonWordBoundaryChar':
+		case 'NonWordBoundary':
 			return '\\B';
 		case 'LinebreakChar':
 			return '\\n';
@@ -5211,10 +5211,10 @@ var author$project$Build$buildSymbol = function (symbol) {
 			return '.';
 		case 'TabChar':
 			return '\\t';
-		case 'NoChar':
+		case 'Never':
 			return '(?!)';
 		default:
-			return '(?:)';
+			return '(.|\\n)';
 	}
 };
 var elm$core$Result$Err = function (a) {
@@ -6020,7 +6020,8 @@ var author$project$Update$update = F2(
 					});
 			case 'SetEditingExampleText':
 				var enabled = message.a;
-				return A2(author$project$Update$enableEditingExampleText, model, enabled);
+				return (!enabled) ? author$project$Update$updateCache(
+					A2(author$project$Update$enableEditingExampleText, model, enabled)) : A2(author$project$Update$enableEditingExampleText, model, enabled);
 			case 'UpdateView':
 				var viewMessage = message.a;
 				if (model.exampleText.isEditing || elm$core$Dict$isEmpty(model.nodes.values)) {
@@ -6778,7 +6779,7 @@ var author$project$View$bezierSvgConnectionpath = F2(
 			A2(author$project$Vec2$Vec2, tangentX2, to.y),
 			to);
 	});
-var author$project$Model$symbolNames = {any: 'Any Char', digit: 'Digit Char', lineBreak: 'Linebreak Char', nonDigit: 'Non Digit Char', nonLineBreak: 'Non Linebreak Char', nonWhitespace: 'Non Whitespace Char', nonWord: 'Non Word Char', nonWordBoundary: 'Non Word Boundary', none: 'No Char', tab: 'Tab Char', whitespace: 'Whitespace Char', word: 'Word Char', wordBoundary: 'Word Boundary'};
+var author$project$Model$symbolNames = {any: 'Anything', digit: 'Digit Char', lineBreak: 'Linebreak Char', nonDigit: 'Non Digit Char', nonLineBreak: 'Non Linebreak Char', nonWhitespace: 'Non Whitespace Char', nonWord: 'Non Word Char', nonWordBoundary: 'Non Word Boundary', none: 'Nothing', tab: 'Tab Char', whitespace: 'Whitespace Char', word: 'Word Char', wordBoundary: 'Word Boundary'};
 var author$project$Model$symbolName = function (symbol) {
 	switch (symbol.$) {
 		case 'WhitespaceChar':
@@ -6793,9 +6794,9 @@ var author$project$Model$symbolName = function (symbol) {
 			return author$project$Model$symbolNames.word;
 		case 'NonWordChar':
 			return author$project$Model$symbolNames.nonWord;
-		case 'WordBoundaryChar':
+		case 'WordBoundary':
 			return author$project$Model$symbolNames.wordBoundary;
-		case 'NonWordBoundaryChar':
+		case 'NonWordBoundary':
 			return author$project$Model$symbolNames.nonWordBoundary;
 		case 'LinebreakChar':
 			return author$project$Model$symbolNames.lineBreak;
@@ -6803,7 +6804,7 @@ var author$project$Model$symbolName = function (symbol) {
 			return author$project$Model$symbolNames.nonLineBreak;
 		case 'TabChar':
 			return author$project$Model$symbolNames.tab;
-		case 'NoChar':
+		case 'Never':
 			return author$project$Model$symbolNames.none;
 		default:
 			return author$project$Model$symbolNames.any;
@@ -6819,7 +6820,7 @@ var author$project$View$codeTextWidth = A2(
 		elm$core$Basics$toFloat));
 var author$project$View$mainTextWidth = function (text) {
 	var length = elm$core$String$length(text);
-	return length * ((length < 14) ? 11 : 9);
+	return length * ((length < 14) ? 12 : 9);
 };
 var author$project$View$nodeWidth = function (node) {
 	switch (node.$) {
@@ -8717,14 +8718,14 @@ var author$project$Model$NodeView = F2(
 	function (position, node) {
 		return {node: node, position: position};
 	});
-var author$project$Model$AnyChar = {$: 'AnyChar'};
+var author$project$Model$Always = {$: 'Always'};
 var author$project$Model$DigitChar = {$: 'DigitChar'};
 var author$project$Model$LinebreakChar = {$: 'LinebreakChar'};
-var author$project$Model$NoChar = {$: 'NoChar'};
+var author$project$Model$Never = {$: 'Never'};
 var author$project$Model$NonDigitChar = {$: 'NonDigitChar'};
 var author$project$Model$NonLinebreakChar = {$: 'NonLinebreakChar'};
 var author$project$Model$NonWhitespaceChar = {$: 'NonWhitespaceChar'};
-var author$project$Model$NonWordBoundaryChar = {$: 'NonWordBoundaryChar'};
+var author$project$Model$NonWordBoundary = {$: 'NonWordBoundary'};
 var author$project$Model$NonWordChar = {$: 'NonWordChar'};
 var author$project$Model$Prototype = F2(
 	function (name, node) {
@@ -8735,7 +8736,7 @@ var author$project$Model$SymbolNode = function (a) {
 };
 var author$project$Model$TabChar = {$: 'TabChar'};
 var author$project$Model$WhitespaceChar = {$: 'WhitespaceChar'};
-var author$project$Model$WordBoundaryChar = {$: 'WordBoundaryChar'};
+var author$project$Model$WordBoundary = {$: 'WordBoundary'};
 var author$project$Model$WordChar = {$: 'WordChar'};
 var author$project$Model$prototypes = _List_fromArray(
 	[
@@ -8766,11 +8767,11 @@ var author$project$Model$prototypes = _List_fromArray(
 		A2(
 		author$project$Model$Prototype,
 		author$project$Model$symbolNames.wordBoundary,
-		author$project$Model$SymbolNode(author$project$Model$WordBoundaryChar)),
+		author$project$Model$SymbolNode(author$project$Model$WordBoundary)),
 		A2(
 		author$project$Model$Prototype,
 		author$project$Model$symbolNames.nonWordBoundary,
-		author$project$Model$SymbolNode(author$project$Model$NonWordBoundaryChar)),
+		author$project$Model$SymbolNode(author$project$Model$NonWordBoundary)),
 		A2(
 		author$project$Model$Prototype,
 		author$project$Model$symbolNames.lineBreak,
@@ -8786,11 +8787,11 @@ var author$project$Model$prototypes = _List_fromArray(
 		A2(
 		author$project$Model$Prototype,
 		author$project$Model$symbolNames.none,
-		author$project$Model$SymbolNode(author$project$Model$NoChar)),
+		author$project$Model$SymbolNode(author$project$Model$Never)),
 		A2(
 		author$project$Model$Prototype,
 		author$project$Model$symbolNames.any,
-		author$project$Model$SymbolNode(author$project$Model$AnyChar)),
+		author$project$Model$SymbolNode(author$project$Model$Always)),
 		A2(
 		author$project$Model$Prototype,
 		author$project$Model$typeNames.charset,
@@ -9305,7 +9306,7 @@ var author$project$View$view = function (model) {
 											'Error',
 											A2(
 												elm$core$Maybe$withDefault,
-												elm$core$Result$Ok('/(?!)/'),
+												elm$core$Result$Ok('/(nothing)/'),
 												expressionResult)))
 									]))
 							]))
