@@ -5998,6 +5998,13 @@ var author$project$Vec2$sub = F2(
 		return A2(author$project$Vec2$Vec2, a.x - b.x, a.y - b.y);
 	});
 var elm$core$Basics$neq = _Utils_notEqual;
+var elm$core$Dict$isEmpty = function (dict) {
+	if (dict.$ === 'RBEmpty_elm_builtin') {
+		return true;
+	} else {
+		return false;
+	}
+};
 var author$project$Update$update = F2(
 	function (message, model) {
 		switch (message.$) {
@@ -6016,7 +6023,7 @@ var author$project$Update$update = F2(
 				return A2(author$project$Update$enableEditingExampleText, model, enabled);
 			case 'UpdateView':
 				var viewMessage = message.a;
-				if (model.exampleText.isEditing) {
+				if (model.exampleText.isEditing || elm$core$Dict$isEmpty(model.nodes.values)) {
 					return model;
 				} else {
 					var amount = viewMessage.a.amount;

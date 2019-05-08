@@ -53,7 +53,10 @@ update message model =
       enableEditingExampleText model enabled
 
     UpdateView viewMessage ->
-      if model.exampleText.isEditing then model
+      if model.exampleText.isEditing
+        || Dict.isEmpty model.nodes.values
+      then model
+
       else case viewMessage of
           MagnifyView { amount, focus } ->
             { model | view = updateView amount focus model.view }
