@@ -74,13 +74,19 @@ update message model =
     DragModeMessage modeMessage ->
       case modeMessage of
         StartNodeMove { node, mouse } ->
-          updateCache { model | result = Just node
-          , dragMode = Just (MoveNodeDrag { node = node, mouse = mouse })
-          }
+          let
+            newModel = { model
+              | result = Just node,
+              dragMode = Just (MoveNodeDrag { node = node, mouse = mouse })
+              }
+
+          in if model.result /= newModel.result
+            -- only update cache if node really changed
+            then updateCache newModel else newModel
+
 
         -- update the subject node (disconnecting the input)
         -- and then start editing the connection of the old supplier
-
         -- TODO if current drag mode is retain, then reconnect to old node?
         StartEditingConnection { nodeId, node, supplier, mouse } ->
           Maybe.withDefault model <| Maybe.map
