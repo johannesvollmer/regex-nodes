@@ -256,7 +256,7 @@ viewSearchResults search =
     (Maybe.withDefault [] (Maybe.map viewSearch search) )
 
 viewSearchBar search = input
-  [ placeholder "Add Nodes"
+  [ placeholder (if search == Nothing then "Add Nodes" else "Search Nodes or enter a Regular Expression")
   , type_ "text"
   , value (Maybe.withDefault "" search)
   , onFocus (SearchMessage (UpdateSearch ""))
