@@ -13,6 +13,8 @@ Alternatively, use [modd](https://github.com/cortesi/modd) to run elm-make on ev
 - [x] Example text for instant feedback
 - [x] Implement all node types
 - [x] Automatic node width calculation
+- [ ] Initial node setup for an easy start
+- [ ] Parse regex code in "Add Nodes"
 - [ ] How to delete nodes
 - [ ] Do not adjust example for every node move?
 - [ ] Middle mouse button view movement
