@@ -10,7 +10,8 @@ import Vec2 exposing (Vec2)
 type alias Model =
   { nodes: Nodes
   , result: Maybe NodeId
-  , exampleSize: Vec2
+
+  , exampleText: ExampleText
 
   , search: Maybe String
   , dragMode: Maybe DragMode
@@ -25,7 +26,19 @@ init =
   , dragMode = Nothing
   , search = Nothing
   , view = View 0 (Vec2 0 0)
-  , exampleSize = Vec2 600 400 -- TODO finetune
+  , exampleText =
+    { contents = String.repeat 12 "Leverage agile frameworks to provide a robust synopsis for high level overviews. Iterative approaches to corporate strategy foster collaborative thinking to further the overall value proposition. Organically grow the holistic world view of disruptive innovation via workplace diversity and empowerment. Bring to the table win-win survival strategies to ensure proactive domination. At the end of the day, going forward, a new normal that has evolved from generation X is on the runway heading towards a streamlined cloud solution. User generated content in real-time will have multiple touchpoints for offshoring. Capitalize on low hanging fruit to identify a ballpark value added activity to beta test. Override the digital divide with additional clickthroughs from DevOps. Nanotechnology immersion along the information highway will close the loop on focusing solely on the bottom line."
+    , maxMatches = 4000
+    , isEditing = False
+    , cachedMatches = Nothing
+    }
+  }
+
+type alias ExampleText =
+  { isEditing: Bool
+  , contents: String
+  , maxMatches: Int
+  , cachedMatches: Maybe (List (String, String))
   }
 
 type alias View =

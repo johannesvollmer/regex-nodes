@@ -4,16 +4,23 @@
   padding: 0;
 
 	overflow: hidden;
-	user-select: none;
 }
 
 
-body, #main, #overlay, #node-graph, #connection-graph {
+body, #main, #overlay, #node-graph, #connection-graph, #example-text {
 	position: fixed;
 	top:0; left:0;
 	width: 100vw;
 	height: 100vh;
 	overflow: hidden;
+}
+
+#node-graph :not(input) {
+  user-select: none; /* wont work for double click */
+}
+#node-graph :not(input)::selection {
+  color: inherit;
+	background: transparent; /* user-select:none wont work for double click */
 }
 
 
@@ -25,8 +32,25 @@ body, #main, #overlay, #node-graph, #connection-graph {
 	overflow: visible;
 } 
 
-#background-example-text {
-	text-align: justify;
+#example-text {
+  font-size: 1.2em;
+
+  overflow: hidden;
+  box-sizing: border-box;
+  padding: 70px 12px 12px 12px;
+  text-align: justify;
+  resize: none;
+  white-space: pre-line; /* required for align:justify in a textarea */
+
+	user-select: auto;
+	pointer-events: all;
+}
+
+.editing-example-text #example-text {
+}
+
+.editing-example-text #connection-graph, .editing-example-text #node-graph {
+  display: none;
 }
 
 #overlay {
@@ -75,6 +99,16 @@ header a, header h1 {
 header img {
   display: inline-block;
   height: 100%;
+}
+
+#edit-example {
+  padding: 20px;
+  user-select: none; /* FIXME wont work for double click */
+  cursor: pointer;
+}
+#edit-example::selection {
+  color: inherit;
+	background: transparent; /* user-select:none wont work for double click */
 }
 
 #search {

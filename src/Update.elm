@@ -1,10 +1,11 @@
 module Update exposing (..)
 
 import Model exposing (..)
+import Build exposing (buildRegex, compileRegex)
 import Dict exposing (Dict)
 import Vec2 exposing (Vec2)
 import Parse exposing (..)
-
+import Regex
 
 
 
@@ -15,6 +16,8 @@ type Message
   | DragModeMessage DragModeMessage
   | UpdateNodeMessage NodeId Node
   | UpdateView ViewMessage
+  | UpdateExampleText String
+  | SetEditingExampleText Bool
 
 type SearchMessage
   = UpdateSearch String
@@ -32,7 +35,7 @@ type DragModeMessage
   = StartNodeMove { node : NodeId, mouse : Vec2 }
 
   | StartPrepareEditingConnection { node: NodeId, mouse: Vec2 }
-  | StartEditingConnection { nodeId: NodeId, node: Node, supplier :Maybe NodeId, mouse :Vec2 }
+  | StartEditingConnection { nodeId: NodeId, node: Node, supplier: Maybe NodeId, mouse: Vec2 }
   | StartCreateConnection { supplier: NodeId, mouse: Vec2 }
   | RealizeConnection { nodeId: NodeId, newNode: Node, mouse: Vec2 }
   | FinishDrag
@@ -43,25 +46,35 @@ type DragModeMessage
 update : Message -> Model -> Model
 update message model =
   case message of
-    UpdateView viewMessage -> case viewMessage of
-      MagnifyView { amount, focus } ->
-        { model | view = updateView amount focus model.view }
+    UpdateExampleText text -> let old = model.exampleText in
+      { model | exampleText = { old | contents = text } }
+
+    SetEditingExampleText enabled ->
+      enableEditingExampleText model enabled
+
+    UpdateView viewMessage ->
+      if model.exampleText.isEditing then model
+      else case viewMessage of
+          MagnifyView { amount, focus } ->
+            { model | view = updateView amount focus model.view }
 
     UpdateNodeMessage id value ->
-      { model | nodes = updateNode model.nodes id value }
+      updateCache { model | nodes = updateNode model.nodes id value }
 
     SearchMessage searchMessage ->
       case searchMessage of
         UpdateSearch query -> { model | search = Just query }
-        FinishSearch result -> case result of
-          InsertPrototype prototype -> { model | nodes = addNode model.nodes prototype, search = Nothing }
-          ParseRegex regex -> { model | search = Nothing, nodes = addParsedRegexNode model.nodes regex }
-          NoResult -> { model | search = Nothing }
+        FinishSearch result -> stopEditingExampleText
+          (case result of
+            InsertPrototype prototype -> { model | nodes = addNode model.nodes prototype, search = Nothing }
+            ParseRegex regex -> { model | search = Nothing, nodes = addParsedRegexNode model.nodes regex }
+            NoResult -> { model | search = Nothing }
+          )
 
     DragModeMessage modeMessage ->
       case modeMessage of
         StartNodeMove { node, mouse } ->
-          { model | result = Just node
+          updateCache { model | result = Just node
           , dragMode = Just (MoveNodeDrag { node = node, mouse = mouse })
           }
 
@@ -72,7 +85,7 @@ update message model =
         StartEditingConnection { nodeId, node, supplier, mouse } ->
           Maybe.withDefault model <| Maybe.map
             (\oldSupplier ->
-              { model | nodes = updateNode model.nodes nodeId node
+              updateCache { model | nodes = updateNode model.nodes nodeId node
               , dragMode = Just (CreateConnection { supplier = oldSupplier, openEnd = mouse })
               }
             )
@@ -102,7 +115,7 @@ update message model =
         -- when a connection is established, update the drag mode of the model,
         -- but also already make the connection real
         RealizeConnection { nodeId, newNode, mouse } ->
-          { model | nodes = updateNode model.nodes nodeId newNode
+          updateCache { model | nodes = updateNode model.nodes nodeId newNode
           , dragMode = Just (RetainPrototypedConnection { mouse = mouse, node = nodeId, previousNodeValue = Dict.get nodeId model.nodes.values |> Maybe.map .node })
           }
 
@@ -111,7 +124,12 @@ update message model =
 
 
 
+stopEditingExampleText model =
+  enableEditingExampleText model False
 
+enableEditingExampleText model enabled =
+  let old = model.exampleText in
+  { model | exampleText = { old | isEditing = enabled } }
 
 addNode : Nodes -> NodeView -> Nodes
 addNode nodes node =
@@ -152,6 +170,49 @@ updateView amount focus oldView =
 
   in newView
 
+
+
+updateCache model =
+  let
+    example = model.exampleText
+    regex = model.result |> Maybe.map (buildRegex model.nodes)
+    compiled = regex |> Maybe.andThen (Result.map compileRegex >> Result.map Just >> Result.withDefault Nothing)
+    newExample = { example | cachedMatches = Maybe.map (extractMatches example.maxMatches example.contents) compiled }
+
+  in { model | exampleText = newExample }
+
+
+extractMatches : Int -> String -> Regex.Regex -> List (String, String)
+extractMatches maxMatches text regex =
+  let
+    matches = Regex.findAtMost maxMatches regex text
+
+    extract : Int -> List Regex.Match -> List (String, String)
+    extract startTextIndex remainingMatches = case remainingMatches of
+      [] -> -- add remaining text into a stub pair, but only if not the maximum number of matches was reached
+        if List.length matches == maxMatches then []
+        else [ (String.slice startTextIndex (String.length text) text, "") ]
+
+      match :: restMatches ->
+        let
+          endIndex = match.index + String.length match.match
+          extractedRest = extract endIndex restMatches
+
+          before = String.slice startTextIndex match.index text
+        in (before, match.match) :: extractedRest
+
+
+    simplify restMatches =
+      case restMatches of
+        (before, match) :: rest ->
+          case simplify rest of
+            -- merge matches if there is no unmatched content between them
+            ("", immediateSuccessor) :: moreRest -> (before, match ++ immediateSuccessor) :: moreRest
+            other -> (before, match) :: other -- just return the simplified rest otherwise
+
+        complex -> complex
+
+  in matches |> extract 0 |> simplify
 
 
 updateFollowedByExpression followed expression = IfFollowedByNode { followed | expression = expression }

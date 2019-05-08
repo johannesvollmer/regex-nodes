@@ -2,6 +2,7 @@ module View exposing (..)
 
 import Array exposing (Array)
 import Html exposing (..)
+import Html.Lazy exposing (lazy)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onInput, onBlur, onFocus)
 import Dict exposing (Dict)
@@ -10,6 +11,8 @@ import Html.Events.Extra.Wheel as Wheel
 import Svg exposing (Svg, svg, line, g)
 import Svg.Attributes exposing (x1, x2, y1, y2)
 import Regex
+import Json.Decode
+import Json.Encode
 
 import Vec2 exposing (Vec2)
 import Model exposing (..)
@@ -152,17 +155,19 @@ nodeWidth node = case node of
 codeTextWidth = String.length >> (*) 5 >> toFloat
 mainTextWidth text =
   let length = text |> String.length |> toFloat
-  in length * if length < 14 then 11 else 8
+  in length * if length < 14 then 11 else 9
 
 
 -- VIEW
 
+-- TODO use lazy html!
+
 view : Model -> Html Message
 view model =
   let
-    expressionResult = model.result |> Maybe.map
-      (\id -> buildRegex model.nodes id |> Result.map constructRegexLiteral)
+    regex = model.result |> Maybe.map (buildRegex model.nodes)
 
+    expressionResult = regex |> Maybe.map (Result.map constructRegexLiteral)
 
     (moveDragging, connectDragId, mousePosition) = case model.dragMode of
         Just (MoveNodeDrag { mouse }) -> (True, Nothing, mouse)
@@ -174,6 +179,8 @@ view model =
     nodeViews = (List.map (viewNode model.dragMode model.nodes) (Dict.toList model.nodes.values))
 
     connections = flattenList (List.map .connections nodeViews)
+
+
 
   in div
     [ Mouse.onMove (\event -> DragModeMessage
@@ -189,10 +196,12 @@ view model =
       }))
 
     , id "main"
-    , classes "" [(moveDragging, "move-dragging"), (connectDragging, "connect-dragging")]
+    , classes "" [(moveDragging, "move-dragging"), (connectDragging, "connect-dragging"), (model.exampleText.isEditing, "editing-example-text")]
     ]
 
-    [ svg [ id "connection-graph" ]
+    [ lazy viewExampleText model.exampleText
+
+    , svg [ id "connection-graph" ]
       [ g [ magnifyAndOffsetSVG model.view ]
         (if connectDragging then connections ++ [ viewConnectDrag model.view model.nodes connectDragId mousePosition ] else connections)
       ]
@@ -215,6 +224,13 @@ view model =
             [ href "https://github.com/johannesvollmer/regex-nodes", target "_blank", rel "noopener noreferrer" ]
             [ text "by johannes vollmer" ]
           ]
+
+        , div
+          [ id "edit-example"
+          , checked model.exampleText.isEditing
+          , Mouse.onClick (\_ -> SetEditingExampleText (not model.exampleText.isEditing))
+          ]
+          [ text "Edit Example" ]
         ]
 
         , div [ id "search" ]
@@ -241,6 +257,7 @@ viewSearchResults search =
 
 viewSearchBar search = input
   [ placeholder "Add Nodes"
+  , type_ "text"
   , value (Maybe.withDefault "" search)
   , onFocus (SearchMessage (UpdateSearch ""))
   , onInput (\text -> SearchMessage (UpdateSearch text))
@@ -284,9 +301,32 @@ viewSearch query =
   in prependListIf (not isEmpty) asRegex results
 
 
+-- TODO use Html.Lazy!!!
+
+viewExampleText example =
+  if example.isEditing
+    then textarea [ id "example-text", onInput UpdateExampleText ]
+      [ text example.contents ]
+
+    else
+      let
+        texts = example.cachedMatches |> Maybe.map viewExampleTexts
+          |> Maybe.withDefault [ text example.contents ]
+
+      in div [ id "example-text" ] texts
 
 
-flattenList list = List.foldr (++) [] list
+viewExampleTexts : List (String, String) -> List (Html Message)
+viewExampleTexts matches =
+  let
+    render matchPair =
+      [ Html.text (Tuple.first matchPair)
+      , span [ class "match" ] [ Html.text (Tuple.second matchPair) ]
+      ]
+
+  in matches |> List.concatMap render
+
+
 viewNode : Maybe DragMode -> Nodes -> (NodeId, Model.NodeView) -> NodeView
 viewNode dragMode nodes (nodeId, nodeView) =
   let props = properties nodeView.node in
@@ -559,6 +599,9 @@ viewIntInput number onChange = input
   ]
   []
 
+
+
+flattenList list = List.foldr (++) [] list
 
 removeFromList index list =
   List.take index list ++ List.drop (index + 1) list

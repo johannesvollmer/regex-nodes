@@ -13,6 +13,25 @@
 	color: #fff;
 }
 
+
+
+/* FIXME will not work when removing parent classes! */
+.property, .graph-node, .connector, #search > input, .property > .chars.input, #edit-example-container
+{
+  transition: background-color 250ms, opacity 100ms;
+}
+
+.property .chars.input
+{
+  transition: border-color 150ms;
+}
+
+.property, nav a, #example-text {
+  transition: color 150ms;
+}
+
+
+
 code, #search #results #parse-regex {
   font-family: 'Ubuntu Mono', source-code-pro, Consolas, monospace;
 }
@@ -52,7 +71,7 @@ nav {
 #search input {
   background: #444;
   border: 2px solid #444;
-  color: #ddd;
+  color: #fff;
 }
 #search input:focus {
   background: transparent;
@@ -65,15 +84,36 @@ nav {
   background: #1b1b1b;
 }
 
-
-#background-example-text {
-	color: #333;
-	opacity: 0.8;
+#edit-example {
+  color: #999;
 }
-#background-example-text .match {
-	color: #444;
+.editing-example-text #edit-example {
+  background-color: #222;
+  color: #ddd;
 }
 
+
+#example-text {
+  /*animation: enterEditableText 0.2s forwards reverse; FIXME would flash on page load */
+  color: #444;
+	opacity: 0.7; /* avoid too bright text highlighting */
+}
+#example-text .match {
+	color: #111;
+	background-color: #444444dd;
+}
+.editing-example-text #example-text {
+  animation: enterEditableText 0.2s forwards;
+
+  border: none; /* reset textarea styling */
+	background: transparent;
+}
+
+/* on-spawn animation is started when example text area is swapped with div */
+@keyframes enterEditableText {
+  from { color: #444; }
+  to   { color: #888; }
+}
 
 .connection {
 	stroke: teal;
@@ -102,13 +142,13 @@ nav {
 	background-color: #eeeeee22;
 }
 
-.property input {
+.property .chars.input {
 	border: 1px solid transparent;
 	background-color: #22222222;
 	font-family: 'Ubuntu Mono', source-code-pro, Menlo, Monaco, Consolas, "Courier New",
     monospace;
 }
-.property input:focus {
+.property .chars.input:focus {
 	border: 1px solid #333;
 	background-color: transparent;
 }
@@ -187,15 +227,6 @@ nav {
 
 
 
-/* FIXME will not work for a simple right-mouse-press */
-.property, .property:hover, .property:active, .may-drag-connect .property,
-.graph-node, .connector, #search > input, .property > .chars.input
-{
-  transition: background-color 250ms, opacity 100ms;
-}
-.property, nav a {
-  transition: color 150ms;
-}
 
 @keyframes flashToTealBackground {
   from {
