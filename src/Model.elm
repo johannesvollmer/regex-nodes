@@ -121,48 +121,54 @@ type alias Prototype =
 prototypes : List Prototype
 prototypes =
   [ symbolProto .whitespace (SymbolNode WhitespaceChar)
-  , symbolProto .nonWhitespace (SymbolNode NonWhitespaceChar)
   , symbolProto .digit (SymbolNode DigitChar)
   , symbolProto .nonDigit (SymbolNode NonDigitChar)
-  , symbolProto .word (SymbolNode WordChar)
-  , symbolProto .nonWord (SymbolNode NonWordChar)
-  , symbolProto .wordBoundary (SymbolNode WordBoundary)
-  , symbolProto .nonWordBoundary (SymbolNode NonWordBoundary)
-  , symbolProto .lineBreak (SymbolNode LinebreakChar)
-  , symbolProto .nonLineBreak (SymbolNode NonLinebreakChar)
-  , symbolProto .tab (SymbolNode TabChar)
-  , symbolProto .none (SymbolNode Never)
-  , symbolProto .any (SymbolNode Always)
   
   , typeProto .charset (CharSetNode ",.?!:")
-  , typeProto .notInCharset (NotInCharSetNode ",.?!:")
   , typeProto .literal (LiteralNode "the")
   , typeProto .charRange (CharRangeNode 'A' 'Z')
-  , typeProto .notInCharRange (NotInCharRangeNode 'A' 'Z')
-  
+
   , typeProto .set (SetNode (Array.fromList []))
   , typeProto .sequence (SequenceNode (Array.fromList []))
-  , typeProto .capture (CaptureNode Nothing)
-  
+
+
+  , symbolProto .nonWhitespace (SymbolNode NonWhitespaceChar)
+  , typeProto .notInCharset (NotInCharSetNode ",.?!:")
+  , typeProto .notInCharRange (NotInCharRangeNode 'A' 'Z')
+
+  , typeProto .optional (OptionalNode Nothing)
+  , typeProto .atLeastOne (AtLeastOneNode Nothing)
+  , typeProto .anyRepetition (AnyRepetitionNode Nothing)
+
   , typeProto .ifAtEnd (IfAtEndNode Nothing)
   , typeProto .ifAtStart (IfAtStartNode Nothing)
   , typeProto .ifFollowedBy (IfFollowedByNode { expression = Nothing, successor = Nothing })
   , typeProto .ifNotFollowedBy (IfNotFollowedByNode { expression = Nothing, successor = Nothing })
-  
-  , typeProto .optional (OptionalNode Nothing)
-  , typeProto .atLeastOne (AtLeastOneNode Nothing)
-  , typeProto .anyRepetition (AnyRepetitionNode Nothing)
+
+  , symbolProto .wordBoundary (SymbolNode WordBoundary)
+  , symbolProto .nonWordBoundary (SymbolNode NonWordBoundary)
+
   , typeProto .rangedRepetition (RangedRepetitionNode { expression = Nothing, minimum = 2, maximum = 4 })
   , typeProto .minimumRepetition (MinimumRepetitionNode { expression = Nothing, minimum = 2 })
   , typeProto .maximumRepetition (MaximumRepetitionNode { expression = Nothing, maximum = 4 })
   , typeProto .exactRepetition (ExactRepetitionNode { expression = Nothing, count = 3 })
-  
+
+  , symbolProto .word (SymbolNode WordChar)
+  , symbolProto .nonWord (SymbolNode NonWordChar)
+  , symbolProto .lineBreak (SymbolNode LinebreakChar)
+  , symbolProto .nonLineBreak (SymbolNode NonLinebreakChar)
+  , symbolProto .tab (SymbolNode TabChar)
+
   , typeProto .flags (FlagsNode { expression = Nothing, flags = defaultFlags })
+  , typeProto .capture (CaptureNode Nothing)
+
+  , symbolProto .none (SymbolNode Never)
+  , symbolProto .any (SymbolNode Always)
   ]
 
 
-typeProto getter = Prototype (getter typeNames)
-symbolProto getter = Prototype (getter symbolNames)
+typeProto getter = Prototype <| getter typeNames
+symbolProto getter = Prototype <| getter symbolNames
 
 
 symbolNames =

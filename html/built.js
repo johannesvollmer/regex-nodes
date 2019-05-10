@@ -8819,12 +8819,6 @@ var author$project$Model$prototypes = _List_fromArray(
 		A2(
 		author$project$Model$symbolProto,
 		function ($) {
-			return $.bi;
-		},
-		author$project$Model$SymbolNode(1)),
-		A2(
-		author$project$Model$symbolProto,
-		function ($) {
 			return $.a7;
 		},
 		author$project$Model$SymbolNode(2)),
@@ -8835,71 +8829,11 @@ var author$project$Model$prototypes = _List_fromArray(
 		},
 		author$project$Model$SymbolNode(3)),
 		A2(
-		author$project$Model$symbolProto,
-		function ($) {
-			return $.bt;
-		},
-		author$project$Model$SymbolNode(4)),
-		A2(
-		author$project$Model$symbolProto,
-		function ($) {
-			return $.bj;
-		},
-		author$project$Model$SymbolNode(5)),
-		A2(
-		author$project$Model$symbolProto,
-		function ($) {
-			return $.bu;
-		},
-		author$project$Model$SymbolNode(6)),
-		A2(
-		author$project$Model$symbolProto,
-		function ($) {
-			return $.bk;
-		},
-		author$project$Model$SymbolNode(7)),
-		A2(
-		author$project$Model$symbolProto,
-		function ($) {
-			return $.bc;
-		},
-		author$project$Model$SymbolNode(8)),
-		A2(
-		author$project$Model$symbolProto,
-		function ($) {
-			return $.bh;
-		},
-		author$project$Model$SymbolNode(9)),
-		A2(
-		author$project$Model$symbolProto,
-		function ($) {
-			return $.bq;
-		},
-		author$project$Model$SymbolNode(10)),
-		A2(
-		author$project$Model$symbolProto,
-		function ($) {
-			return $.bl;
-		},
-		author$project$Model$SymbolNode(11)),
-		A2(
-		author$project$Model$symbolProto,
-		function ($) {
-			return $.a5;
-		},
-		author$project$Model$SymbolNode(12)),
-		A2(
 		author$project$Model$typeProto,
 		function ($) {
 			return $.bM;
 		},
 		author$project$Model$CharSetNode(',.?!:')),
-		A2(
-		author$project$Model$typeProto,
-		function ($) {
-			return $.cp;
-		},
-		author$project$Model$NotInCharSetNode(',.?!:')),
 		A2(
 		author$project$Model$typeProto,
 		function ($) {
@@ -8915,12 +8849,6 @@ var author$project$Model$prototypes = _List_fromArray(
 		A2(
 		author$project$Model$typeProto,
 		function ($) {
-			return $.co;
-		},
-		A2(author$project$Model$NotInCharRangeNode, 'A', 'Z')),
-		A2(
-		author$project$Model$typeProto,
-		function ($) {
 			return $.cL;
 		},
 		author$project$Model$SetNode(
@@ -8933,11 +8861,41 @@ var author$project$Model$prototypes = _List_fromArray(
 		author$project$Model$SequenceNode(
 			elm$core$Array$fromList(_List_Nil))),
 		A2(
+		author$project$Model$symbolProto,
+		function ($) {
+			return $.bi;
+		},
+		author$project$Model$SymbolNode(1)),
+		A2(
 		author$project$Model$typeProto,
 		function ($) {
-			return $.bI;
+			return $.cp;
 		},
-		author$project$Model$CaptureNode(elm$core$Maybe$Nothing)),
+		author$project$Model$NotInCharSetNode(',.?!:')),
+		A2(
+		author$project$Model$typeProto,
+		function ($) {
+			return $.co;
+		},
+		A2(author$project$Model$NotInCharRangeNode, 'A', 'Z')),
+		A2(
+		author$project$Model$typeProto,
+		function ($) {
+			return $.cv;
+		},
+		author$project$Model$OptionalNode(elm$core$Maybe$Nothing)),
+		A2(
+		author$project$Model$typeProto,
+		function ($) {
+			return $.bA;
+		},
+		author$project$Model$AtLeastOneNode(elm$core$Maybe$Nothing)),
+		A2(
+		author$project$Model$typeProto,
+		function ($) {
+			return $.bz;
+		},
+		author$project$Model$AnyRepetitionNode(elm$core$Maybe$Nothing)),
 		A2(
 		author$project$Model$typeProto,
 		function ($) {
@@ -8965,23 +8923,17 @@ var author$project$Model$prototypes = _List_fromArray(
 		author$project$Model$IfNotFollowedByNode(
 			{q: elm$core$Maybe$Nothing, cO: elm$core$Maybe$Nothing})),
 		A2(
-		author$project$Model$typeProto,
+		author$project$Model$symbolProto,
 		function ($) {
-			return $.cv;
+			return $.bu;
 		},
-		author$project$Model$OptionalNode(elm$core$Maybe$Nothing)),
+		author$project$Model$SymbolNode(6)),
 		A2(
-		author$project$Model$typeProto,
+		author$project$Model$symbolProto,
 		function ($) {
-			return $.bA;
+			return $.bk;
 		},
-		author$project$Model$AtLeastOneNode(elm$core$Maybe$Nothing)),
-		A2(
-		author$project$Model$typeProto,
-		function ($) {
-			return $.bz;
-		},
-		author$project$Model$AnyRepetitionNode(elm$core$Maybe$Nothing)),
+		author$project$Model$SymbolNode(7)),
 		A2(
 		author$project$Model$typeProto,
 		function ($) {
@@ -9011,12 +8963,60 @@ var author$project$Model$prototypes = _List_fromArray(
 		author$project$Model$ExactRepetitionNode(
 			{c5: 3, q: elm$core$Maybe$Nothing})),
 		A2(
+		author$project$Model$symbolProto,
+		function ($) {
+			return $.bt;
+		},
+		author$project$Model$SymbolNode(4)),
+		A2(
+		author$project$Model$symbolProto,
+		function ($) {
+			return $.bj;
+		},
+		author$project$Model$SymbolNode(5)),
+		A2(
+		author$project$Model$symbolProto,
+		function ($) {
+			return $.bc;
+		},
+		author$project$Model$SymbolNode(8)),
+		A2(
+		author$project$Model$symbolProto,
+		function ($) {
+			return $.bh;
+		},
+		author$project$Model$SymbolNode(9)),
+		A2(
+		author$project$Model$symbolProto,
+		function ($) {
+			return $.bq;
+		},
+		author$project$Model$SymbolNode(10)),
+		A2(
 		author$project$Model$typeProto,
 		function ($) {
 			return $.K;
 		},
 		author$project$Model$FlagsNode(
-			{q: elm$core$Maybe$Nothing, K: author$project$Model$defaultFlags}))
+			{q: elm$core$Maybe$Nothing, K: author$project$Model$defaultFlags})),
+		A2(
+		author$project$Model$typeProto,
+		function ($) {
+			return $.bI;
+		},
+		author$project$Model$CaptureNode(elm$core$Maybe$Nothing)),
+		A2(
+		author$project$Model$symbolProto,
+		function ($) {
+			return $.bl;
+		},
+		author$project$Model$SymbolNode(11)),
+		A2(
+		author$project$Model$symbolProto,
+		function ($) {
+			return $.a5;
+		},
+		author$project$Model$SymbolNode(12))
 	]);
 var author$project$Update$InsertPrototype = function (a) {
 	return {$: 0, a: a};
