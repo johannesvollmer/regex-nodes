@@ -137,7 +137,8 @@ compileRegex build =
 
 
 parenthesesForPrecedence ownPrecedence childPrecedence child =
-  if ownPrecedence > childPrecedence then  "(?:" ++ child ++ ")" else child
+  if ownPrecedence > childPrecedence && childPrecedence < 5 -- atomic children don't need any parentheses
+    then  "(?:" ++ child ++ ")" else child
 
 precedence : Node -> Int
 precedence node = case node of
@@ -145,7 +146,11 @@ precedence node = case node of
 
     SetNode _ -> 1
 
-    LiteralNode _ -> 2
+    LiteralNode text ->
+      if String.length text == 1
+        then 5
+        else 2
+
     SequenceNode _ -> 2
 
     IfAtEndNode _ -> 3 -- TODO test

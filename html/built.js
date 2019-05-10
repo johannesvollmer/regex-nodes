@@ -5427,10 +5427,12 @@ var author$project$Build$okOrErr = F2(
 			return elm$core$Result$Err(error);
 		}
 	});
+var elm$core$Basics$and = _Basics_and;
 var author$project$Build$parenthesesForPrecedence = F3(
 	function (ownPrecedence, childPrecedence, child) {
-		return (_Utils_cmp(ownPrecedence, childPrecedence) > 0) ? ('(?:' + (child + ')')) : child;
+		return ((_Utils_cmp(ownPrecedence, childPrecedence) > 0) && (childPrecedence < 5)) ? ('(?:' + (child + ')')) : child;
 	});
+var elm$core$String$length = _String_length;
 var author$project$Build$precedence = function (node) {
 	switch (node.$) {
 		case 20:
@@ -5438,7 +5440,8 @@ var author$project$Build$precedence = function (node) {
 		case 6:
 			return 1;
 		case 3:
-			return 2;
+			var text = node.a;
+			return (elm$core$String$length(text) === 1) ? 5 : 2;
 		case 7:
 			return 2;
 		case 9:
@@ -5833,7 +5836,6 @@ var elm$core$List$length = function (xs) {
 		0,
 		xs);
 };
-var elm$core$String$length = _String_length;
 var elm$core$String$split = F2(
 	function (sep, string) {
 		return _List_fromArray(
@@ -6460,7 +6462,6 @@ var elm$json$Json$Decode$Index = F2(
 var elm$json$Json$Decode$OneOf = function (a) {
 	return {$: 2, a: a};
 };
-var elm$core$Basics$and = _Basics_and;
 var elm$core$Char$toCode = _Char_toCode;
 var elm$core$Char$isLower = function (_char) {
 	var code = elm$core$Char$toCode(_char);
@@ -6689,6 +6690,10 @@ var author$project$View$magnifyAndOffsetSVG = function (transformView) {
 	return elm$svg$Svg$Attributes$transform(
 		A2(author$project$View$magnifyAndOffset, '', transformView));
 };
+var elm$core$Basics$always = F2(
+	function (a, _n0) {
+		return a;
+	});
 var elm$virtual_dom$VirtualDom$Custom = function (a) {
 	return {$: 3, a: a};
 };
@@ -6800,9 +6805,7 @@ var author$project$View$preventContextMenu = function (message) {
 		mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$onWithOptions,
 		'contextmenu',
 		{aY: true, a0: true},
-		function (_n0) {
-			return message;
-		});
+		elm$core$Basics$always(message));
 };
 var author$project$Vec2$inverseTransform = F2(
 	function (value, transformation) {
@@ -7761,9 +7764,7 @@ var author$project$View$viewNodeConnections = F3(
 			}
 			return _List_fromArray(
 				[
-					function (index) {
-					return elm$core$Maybe$Nothing;
-				}
+					elm$core$Basics$always(elm$core$Maybe$Nothing)
 				]);
 		};
 		var flattened = author$project$View$flattenList(
@@ -8053,9 +8054,7 @@ var author$project$View$viewBoolInput = F2(
 					A2(
 					author$project$View$onMouseWithStopPropagation,
 					'click',
-					function (_n0) {
-						return onToggle;
-					}),
+					elm$core$Basics$always(onToggle)),
 					author$project$View$stopMousePropagation('mousedown'),
 					author$project$View$stopMousePropagation('mouseup')
 				]),
@@ -8068,6 +8067,17 @@ var elm$core$String$right = F2(
 			-n,
 			elm$core$String$length(string),
 			string);
+	});
+var author$project$View$stringToChar = F2(
+	function (fallback, string) {
+		return A2(
+			elm$core$Maybe$withDefault,
+			fallback,
+			A2(
+				elm$core$Maybe$map,
+				elm$core$Tuple$first,
+				elm$core$String$uncons(
+					A2(elm$core$String$right, 1, string))));
 	});
 var elm$html$Html$Attributes$placeholder = elm$html$Html$Attributes$stringProperty('placeholder');
 var elm$html$Html$Attributes$value = elm$html$Html$Attributes$stringProperty('value');
@@ -8082,17 +8092,10 @@ var author$project$View$viewCharInput = F2(
 					elm$html$Html$Attributes$value(
 					elm$core$String$fromChar(_char)),
 					elm$html$Html$Events$onInput(
-					function (chars) {
-						return onChange(
-							A2(
-								elm$core$Maybe$withDefault,
-								_char,
-								A2(
-									elm$core$Maybe$map,
-									elm$core$Tuple$first,
-									elm$core$String$uncons(
-										A2(elm$core$String$right, 1, chars)))));
-					}),
+					A2(
+						elm$core$Basics$composeL,
+						onChange,
+						author$project$View$stringToChar(_char))),
 					elm$html$Html$Attributes$class('char input'),
 					author$project$View$stopMousePropagation('mousedown'),
 					author$project$View$stopMousePropagation('mouseup')
@@ -8116,6 +8119,13 @@ var author$project$View$viewCharsInput = F2(
 			_List_Nil);
 	});
 var elm$core$String$toInt = _String_toInt;
+var author$project$View$stringToInt = F2(
+	function (fallback, string) {
+		return A2(
+			elm$core$Maybe$withDefault,
+			fallback,
+			elm$core$String$toInt(string));
+	});
 var elm$html$Html$Attributes$min = elm$html$Html$Attributes$stringProperty('min');
 var author$project$View$viewPositiveIntInput = F2(
 	function (number, onChange) {
@@ -8127,13 +8137,10 @@ var author$project$View$viewPositiveIntInput = F2(
 					elm$html$Html$Attributes$value(
 					elm$core$String$fromInt(number)),
 					elm$html$Html$Events$onInput(
-					function (newValue) {
-						return onChange(
-							A2(
-								elm$core$Maybe$withDefault,
-								number,
-								elm$core$String$toInt(newValue)));
-					}),
+					A2(
+						elm$core$Basics$composeL,
+						onChange,
+						author$project$View$stringToInt(number))),
 					elm$html$Html$Attributes$class('int input'),
 					author$project$View$stopMousePropagation('mousedown'),
 					author$project$View$stopMousePropagation('mouseup'),
@@ -9263,13 +9270,11 @@ var author$project$View$view = function (model) {
 							}));
 				}),
 				mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$onUp(
-				function (_n2) {
-					return author$project$Update$DragModeMessage(author$project$Update$FinishDrag);
-				}),
+				elm$core$Basics$always(
+					author$project$Update$DragModeMessage(author$project$Update$FinishDrag))),
 				mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$onLeave(
-				function (_n3) {
-					return author$project$Update$DragModeMessage(author$project$Update$FinishDrag);
-				}),
+				elm$core$Basics$always(
+					author$project$Update$DragModeMessage(author$project$Update$FinishDrag))),
 				mpizenberg$elm_pointer_events$Html$Events$Extra$Wheel$onWheel(
 				function (event) {
 					return author$project$Update$UpdateView(
@@ -9411,10 +9416,9 @@ var author$project$View$view = function (model) {
 												elm$html$Html$Attributes$id('edit-example'),
 												elm$html$Html$Attributes$checked(model.bW.b6),
 												mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$onClick(
-												function (_n4) {
-													return author$project$Update$UpdateExampleText(
-														author$project$Update$SetEditing(!model.bW.b6));
-												})
+												elm$core$Basics$always(
+													author$project$Update$UpdateExampleText(
+														author$project$Update$SetEditing(!model.bW.b6))))
 											]),
 										_List_fromArray(
 											[

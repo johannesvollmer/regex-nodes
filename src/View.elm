@@ -185,8 +185,8 @@ view model =
         (UpdateDrag { newMouse = Vec2.fromTuple event.clientPos })
       )
 
-    , Mouse.onUp (\_ -> DragModeMessage FinishDrag)
-    , Mouse.onLeave (\_ -> DragModeMessage FinishDrag)
+    , Mouse.onUp (always <| DragModeMessage FinishDrag)
+    , Mouse.onLeave (always <| DragModeMessage FinishDrag)
 
     , Wheel.onWheel (\event -> UpdateView (MagnifyView
       { amount = (if event.deltaY < 0 then 1 else -1)
@@ -232,7 +232,7 @@ view model =
           , div
             [ id "edit-example"
             , checked model.exampleText.isEditing
-            , Mouse.onClick (\_ -> UpdateExampleText (SetEditing (not model.exampleText.isEditing)))
+            , Mouse.onClick (always <| UpdateExampleText <| SetEditing <| not model.exampleText.isEditing)
             ]
 
             [ text "Edit Example" ]
@@ -253,7 +253,7 @@ view model =
 
 preventContextMenu message = Mouse.onWithOptions "contextmenu"
   { preventDefault = True, stopPropagation = True }
-  (\_ -> message)
+  (always message)
 
 viewSearchResults search =
   div
@@ -368,7 +368,7 @@ viewNodeConnections nodes props nodeView =
         ConnectingProperties suppliers _ ->
           suppliers |> Array.toList |> List.map (\supplier -> connect supplier nodeView)
 
-        _ ->  [ (\index -> Nothing) ]
+        _ ->  [ always Nothing ]
 
     flattened = props |> List.map viewInputConnection |> flattenList
     indexed = flattened |> List.indexedMap (\index at -> at index)
@@ -561,7 +561,7 @@ viewBoolInput : Bool -> Message -> Html Message
 viewBoolInput value onToggle = input
   [ type_ "checkbox"
   , checked value
-  , onMouseWithStopPropagation "click" (\_ -> onToggle)
+  , onMouseWithStopPropagation "click" (always onToggle)
   , stopMousePropagation "mousedown"
   , stopMousePropagation "mouseup"
   ]
@@ -587,7 +587,7 @@ viewCharInput char onChange = input
   , value (String.fromChar char)
 
   -- Take the last char of the string
-  , onInput (\chars -> onChange (chars |> String.right 1 |> String.uncons |> Maybe.map Tuple.first |> Maybe.withDefault char))
+  , onInput (onChange << stringToChar char)
 
   , class "char input"
   , stopMousePropagation "mousedown"
@@ -595,17 +595,27 @@ viewCharInput char onChange = input
   ]
   []
 
+
 viewPositiveIntInput : Int -> (Int -> Message) -> Html Message
 viewPositiveIntInput number onChange = input
   [ type_ "number"
   , value (String.fromInt number)
-  , onInput (\newValue -> onChange (newValue |> String.toInt |> Maybe.withDefault number))
+  , onInput (onChange << stringToInt number)
   , class "int input"
   , stopMousePropagation "mousedown"
   , stopMousePropagation "mouseup"
   , Html.Attributes.min "0"
   ]
   []
+
+
+stringToInt fallback string = string
+  |> String.toInt |> Maybe.withDefault fallback
+
+stringToChar fallback string = string
+  |> String.right 1 |> String.uncons
+  |> Maybe.map Tuple.first |> Maybe.withDefault fallback
+
 
 
 flattenList list = List.foldr (++) [] list
