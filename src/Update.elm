@@ -221,15 +221,13 @@ extractMatches multiple maxMatches text regex =
         else extractedMatches ++ [(String.slice indexAfterLastMatch (String.length text) text, "")]
 
 
-    simplify restMatches =
-      case restMatches of
-        (before, match) :: rest ->
-          case simplify rest of
-            -- merge matches if there is no unmatched content between them
-            ("", immediateSuccessor) :: moreRest -> (before, match ++ immediateSuccessor) :: moreRest
-            other -> (before, match) :: other -- just return the simplified rest otherwise
+    simplifyMatch (before, match) alreadySimplified = case alreadySimplified of
+        -- if text between this and succesor match is empty, merge them into a single match
+        ("", immediateSuccessor) :: moreRest -> (before, match ++ immediateSuccessor) :: moreRest
 
-        complex -> complex
+        other -> (before, match) :: other -- just append otherwise
+
+    simplify = List.foldr simplifyMatch []
 
 
     -- replace spaces by (hair-space ++ dot ++ hair-space) to visualize whitespace

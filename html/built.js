@@ -4567,7 +4567,7 @@ var author$project$Model$init = {
 		bG: elm$core$Maybe$Nothing,
 		bO: A2(elm$core$String$repeat, 12, 'Leverage agile frameworks to provide a robust synopsis for high level overviews. Iterative approaches to corporate strategy foster collaborative thinking to further the overall value proposition. Organically grow the holistic world view of disruptive innovation via workplace diversity and empowerment. Bring to the table win-win survival strategies to ensure proactive domination. At the end of the day, going forward, a new normal that has evolved from generation X is on the runway heading towards a streamlined cloud solution. User generated content in real-time will have multiple touchpoints for offshoring. Capitalize on low hanging fruit to identify a ballpark value added activity to beta test. Override the digital divide with additional clickthroughs from DevOps. Nanotechnology immersion along the information highway will close the loop on focusing solely on the bottom line.'),
 		b6: false,
-		cd: 5000
+		cd: 4000
 	},
 	cn: {cl: 0, cT: elm$core$Dict$empty},
 	cH: elm$core$Maybe$Nothing,
@@ -5867,17 +5867,14 @@ var author$project$Update$extractMatches = F4(
 				elm$core$Tuple$mapSecond(visualizeMatch),
 				matchList);
 		};
-		var simplify = function (restMatches) {
-			if (restMatches.b) {
-				var _n1 = restMatches.a;
-				var before = _n1.a;
-				var match = _n1.b;
-				var rest = restMatches.b;
-				var _n2 = simplify(rest);
-				if (_n2.b && (_n2.a.a === '')) {
-					var _n3 = _n2.a;
+		var simplifyMatch = F2(
+			function (_n4, alreadySimplified) {
+				var before = _n4.a;
+				var match = _n4.b;
+				if (alreadySimplified.b && (alreadySimplified.a.a === '')) {
+					var _n3 = alreadySimplified.a;
 					var immediateSuccessor = _n3.b;
-					var moreRest = _n2.b;
+					var moreRest = alreadySimplified.b;
 					return A2(
 						elm$core$List$cons,
 						_Utils_Tuple2(
@@ -5885,26 +5882,23 @@ var author$project$Update$extractMatches = F4(
 							_Utils_ap(match, immediateSuccessor)),
 						moreRest);
 				} else {
-					var other = _n2;
+					var other = alreadySimplified;
 					return A2(
 						elm$core$List$cons,
 						_Utils_Tuple2(before, match),
 						other);
 				}
-			} else {
-				var complex = restMatches;
-				return complex;
-			}
-		};
+			});
+		var simplify = A2(elm$core$List$foldr, simplifyMatch, _List_Nil);
 		var matches = A3(
 			elm$regex$Regex$findAtMost,
 			multiple ? maxMatches : 1,
 			regex,
 			text);
 		var extractMatch = F2(
-			function (match, _n5) {
-				var textStartIndex = _n5.a;
-				var extractedMatches = _n5.b;
+			function (match, _n1) {
+				var textStartIndex = _n1.a;
+				var extractedMatches = _n1.b;
 				var textBeforeMatch = A3(elm$core$String$slice, textStartIndex, match.b3, text);
 				var indexAfterMatch = match.b3 + elm$core$String$length(match.cc);
 				return _Utils_Tuple2(
@@ -5917,13 +5911,13 @@ var author$project$Update$extractMatches = F4(
 							])));
 			});
 		var extract = function (rawMatches) {
-			var _n4 = A3(
+			var _n0 = A3(
 				elm$core$List$foldl,
 				extractMatch,
 				_Utils_Tuple2(0, _List_Nil),
 				rawMatches);
-			var indexAfterLastMatch = _n4.a;
-			var extractedMatches = _n4.b;
+			var indexAfterLastMatch = _n0.a;
+			var extractedMatches = _n0.b;
 			return _Utils_eq(
 				elm$core$List$length(matches),
 				maxMatches) ? extractedMatches : _Utils_ap(
