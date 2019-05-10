@@ -23,10 +23,10 @@ Alternatively, use [modd](https://github.com/cortesi/modd) in this directory to 
 - [x] Automatic node width calculation
 - [ ] Initial node setup for an easy start
 - [x] Build Scripts + Build to Github Pages
-    - [ ] Use optimized builds instead of debug builds for github pages
+    - [x] Use optimized builds instead of debug builds for github pages
 - [ ] Parse regex code in "Add Nodes"
 - [ ] How to delete nodes
-- [ ] Do not adjust example for every node move?
+- [x] Do not adjust example for every node move
 - [ ] Middle mouse button view movement
 - [ ] Simplify UX of changing order in "Set Node"s
 - [ ] Tooltips and explanations!!
