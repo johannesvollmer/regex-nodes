@@ -221,13 +221,14 @@ extractMatches multiple maxMatches text regex =
         else extractedMatches ++ [(String.slice indexAfterLastMatch (String.length text) text, "")]
 
 
+    simplify = List.foldr simplifyMatch []
+
     simplifyMatch (before, match) alreadySimplified = case alreadySimplified of
-        -- if text between this and succesor match is empty, merge them into a single match
+        -- if text between this and successor match is empty, merge them into a single match
         ("", immediateSuccessor) :: moreRest -> (before, match ++ immediateSuccessor) :: moreRest
 
-        other -> (before, match) :: other -- just append otherwise
-
-    simplify = List.foldr simplifyMatch []
+         -- just append otherwise
+        other -> (before, match) :: other
 
 
     -- replace spaces by (hair-space ++ dot ++ hair-space) to visualize whitespace
@@ -270,9 +271,9 @@ updateFlagsInsensitivity { expression, flags } caseSensitive = updateFlags expre
 updateFlagsMultiline { expression, flags } multiline = updateFlags expression { flags | multiline = multiline }
 
 minChar a b =
-  if Char.toCode a < Char.toCode b
+  if a < b
     then a else b
 
 maxChar a b =
-  if Char.toCode a > Char.toCode b
+  if a > b
     then a else b
