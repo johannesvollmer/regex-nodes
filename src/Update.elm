@@ -203,20 +203,22 @@ extractMatches multiple maxMatches text regex =
   let
     matches = Regex.findAtMost (if multiple then maxMatches else 1) regex text
 
-    extract : Int -> List Regex.Match -> List (String, String)
-    extract startTextIndex remainingMatches = case remainingMatches of
-      [] -> -- add remaining text into a stub pair, but only if not the maximum number of matches was reached
-        if List.length matches == maxMatches then []
-        else [ (String.slice startTextIndex (String.length text) text, "") ]
+    extractMatch match (textStartIndex, extractedMatches) =
+      let
+        textBeforeMatch = String.slice textStartIndex match.index text
+        indexAfterMatch = match.index + String.length match.match
+      in (indexAfterMatch, extractedMatches ++ [(textBeforeMatch, match.match)])
 
-      match :: restMatches ->
-        let
-          endIndex = match.index + String.length match.match
-          extractedRest = extract endIndex restMatches
+    extract rawMatches =
+      let (indexAfterLastMatch, extractedMatches) = List.foldl extractMatch (0, []) rawMatches -- use foldr in order to utilize various optimizations
 
-          before = String.slice startTextIndex match.index text
-          matchWithoutSpaces = String.replace " " "\u{200A}·\u{200A}" match.match -- insert dot +hair-space to visualize whitespace
-        in (before, matchWithoutSpaces) :: extractedRest
+      in if List.length matches == maxMatches
+        -- do not append unprocessed text
+        -- (if maximum matches were processed, any text after the last match has not been processed)
+        then extractedMatches
+
+        -- else, also add all the text after the last match
+        else extractedMatches ++ [(String.slice indexAfterLastMatch (String.length text) text, "")]
 
 
     simplify restMatches =
@@ -229,7 +231,13 @@ extractMatches multiple maxMatches text regex =
 
         complex -> complex
 
-  in matches |> extract 0 |> simplify
+
+    -- replace spaces by (hair-space ++ dot ++ hair-space) to visualize whitespace
+    -- (separate function to avoid recursion stack overflow)
+    visualizeMatch match = String.replace " " "\u{200A}·\u{200A}" match
+    visualize matchList = List.map (Tuple.mapSecond visualizeMatch) matchList
+
+  in matches |> extract |> simplify |> visualize
 
 
 updateFollowedByExpression followed expression = IfFollowedByNode { followed | expression = expression }

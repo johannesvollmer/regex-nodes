@@ -5847,9 +5847,26 @@ var elm$core$String$replace = F3(
 			A2(elm$core$String$split, before, string));
 	});
 var elm$core$String$slice = _String_slice;
+var elm$core$Tuple$mapSecond = F2(
+	function (func, _n0) {
+		var x = _n0.a;
+		var y = _n0.b;
+		return _Utils_Tuple2(
+			x,
+			func(y));
+	});
 var elm$regex$Regex$findAtMost = _Regex_findAtMost;
 var author$project$Update$extractMatches = F4(
 	function (multiple, maxMatches, text, regex) {
+		var visualizeMatch = function (match) {
+			return A3(elm$core$String$replace, ' ', '\u200a·\u200a', match);
+		};
+		var visualize = function (matchList) {
+			return A2(
+				elm$core$List$map,
+				elm$core$Tuple$mapSecond(visualizeMatch),
+				matchList);
+		};
 		var simplify = function (restMatches) {
 			if (restMatches.b) {
 				var _n1 = restMatches.a;
@@ -5884,36 +5901,47 @@ var author$project$Update$extractMatches = F4(
 			multiple ? maxMatches : 1,
 			regex,
 			text);
-		var extract = F2(
-			function (startTextIndex, remainingMatches) {
-				if (!remainingMatches.b) {
-					return _Utils_eq(
-						elm$core$List$length(matches),
-						maxMatches) ? _List_Nil : _List_fromArray(
-						[
-							_Utils_Tuple2(
-							A3(
-								elm$core$String$slice,
-								startTextIndex,
-								elm$core$String$length(text),
-								text),
-							'')
-						]);
-				} else {
-					var match = remainingMatches.a;
-					var restMatches = remainingMatches.b;
-					var matchWithoutSpaces = A3(elm$core$String$replace, ' ', '\u200a·\u200a', match.cc);
-					var endIndex = match.b3 + elm$core$String$length(match.cc);
-					var extractedRest = A2(extract, endIndex, restMatches);
-					var before = A3(elm$core$String$slice, startTextIndex, match.b3, text);
-					return A2(
-						elm$core$List$cons,
-						_Utils_Tuple2(before, matchWithoutSpaces),
-						extractedRest);
-				}
+		var extractMatch = F2(
+			function (match, _n5) {
+				var textStartIndex = _n5.a;
+				var extractedMatches = _n5.b;
+				var textBeforeMatch = A3(elm$core$String$slice, textStartIndex, match.b3, text);
+				var indexAfterMatch = match.b3 + elm$core$String$length(match.cc);
+				return _Utils_Tuple2(
+					indexAfterMatch,
+					_Utils_ap(
+						extractedMatches,
+						_List_fromArray(
+							[
+								_Utils_Tuple2(textBeforeMatch, match.cc)
+							])));
 			});
-		return simplify(
-			A2(extract, 0, matches));
+		var extract = function (rawMatches) {
+			var _n4 = A3(
+				elm$core$List$foldl,
+				extractMatch,
+				_Utils_Tuple2(0, _List_Nil),
+				rawMatches);
+			var indexAfterLastMatch = _n4.a;
+			var extractedMatches = _n4.b;
+			return _Utils_eq(
+				elm$core$List$length(matches),
+				maxMatches) ? extractedMatches : _Utils_ap(
+				extractedMatches,
+				_List_fromArray(
+					[
+						_Utils_Tuple2(
+						A3(
+							elm$core$String$slice,
+							indexAfterLastMatch,
+							elm$core$String$length(text),
+							text),
+						'')
+					]));
+		};
+		return visualize(
+			simplify(
+				extract(matches)));
 	});
 var elm$core$Maybe$andThen = F2(
 	function (callback, maybeValue) {
