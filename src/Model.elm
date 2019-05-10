@@ -137,8 +137,8 @@ prototypes =
   , typeProto .charset (CharSetNode ",.?!:")
   , typeProto .notInCharset (NotInCharSetNode ",.?!:")
   , typeProto .literal (LiteralNode "the")
-  , typeProto .charRange (CharRangeNode 'a' 'z')
-  , typeProto .notInCharRange (NotInCharRangeNode 'a' 'z')
+  , typeProto .charRange (CharRangeNode 'A' 'Z')
+  , typeProto .notInCharRange (NotInCharRangeNode 'A' 'Z')
   
   , typeProto .set (SetNode (Array.fromList []))
   , typeProto .sequence (SequenceNode (Array.fromList []))

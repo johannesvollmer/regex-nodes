@@ -101,6 +101,29 @@ header img {
   height: 100%;
 }
 
+#example-options {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+#match-limit {
+  opacity: 0;
+  pointer-events: none;
+}
+
+#match-limit input {
+  width: 70px;
+  padding: 4px;
+  margin: 0 20px 0 20px;
+}
+
+.editing-example-text #match-limit {
+  opacity: 1;
+  pointer-events: all;
+}
+
 #edit-example {
   padding: 20px;
   user-select: none; /* FIXME wont work for double click */

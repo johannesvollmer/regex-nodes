@@ -11,8 +11,6 @@ import Html.Events.Extra.Wheel as Wheel
 import Svg exposing (Svg, svg, line, g)
 import Svg.Attributes exposing (x1, x2, y1, y2)
 import Regex
-import Json.Decode
-import Json.Encode
 
 import Vec2 exposing (Vec2)
 import Model exposing (..)
@@ -33,7 +31,7 @@ type alias OnChange a = a -> Node
 type PropertyViewContents
   = BoolProperty Bool (OnChange Bool)
   | CharsProperty String (OnChange String)
-  | CharProperty Char (OnChange (Maybe Char))
+  | CharProperty Char (OnChange Char)
   | IntProperty Int (OnChange Int)
   | ConnectingProperty (Maybe NodeId) (OnChange (Maybe NodeId))
   | ConnectingProperties (Array NodeId) (OnChange (Array NodeId))
@@ -225,22 +223,31 @@ view model =
             [ text "by johannes vollmer" ]
           ]
 
-        , div
-          [ id "edit-example"
-          , checked model.exampleText.isEditing
-          , Mouse.onClick (\_ -> SetEditingExampleText (not model.exampleText.isEditing))
+        , div [ id "example-options" ]
+          [ div [ id "match-limit" ]
+            [ text "Example Match Limit"
+            , viewPositiveIntInput model.exampleText.maxMatches (UpdateExampleText << UpdateMaxMatchLimit)
+            ]
+
+          , div
+            [ id "edit-example"
+            , checked model.exampleText.isEditing
+            , Mouse.onClick (\_ -> UpdateExampleText (SetEditing (not model.exampleText.isEditing)))
+            ]
+
+            [ text "Edit Example" ]
           ]
-          [ text "Edit Example" ]
         ]
 
-        , div [ id "search" ]
-          [ viewSearchBar model.search
-          , viewSearchResults model.search
-          ]
+      , div [ id "search" ]
+        [ viewSearchBar model.search
+        , viewSearchResults model.search
+        ]
 
-        , div [ id "expression-result" ]
-          [ code [] [ text ("const regex = " ++ (expressionResult |> Maybe.withDefault (Ok "/(nothing)/") |> Result.withDefault "Error")) ] ]
+      , div [ id "expression-result" ]
+        [ code [] [ text ("const regex = " ++ (expressionResult |> Maybe.withDefault (Ok "/(nothing)/") |> Result.withDefault "Error")) ] ]
       ]
+
     ]
 
 
@@ -256,7 +263,7 @@ viewSearchResults search =
     (Maybe.withDefault [] (Maybe.map viewSearch search) )
 
 viewSearchBar search = input
-  [ placeholder (if search == Nothing then "Add Nodes" else "Search Nodes or enter a Regular Expression")
+  [ placeholder (if search == Nothing then "Add Nodes" else "Search Nodes  or  Enter A Regular Expression")
   , type_ "text"
   , value (Maybe.withDefault "" search)
   , onFocus (SearchMessage (UpdateSearch ""))
@@ -305,7 +312,7 @@ viewSearch query =
 
 viewExampleText example =
   if example.isEditing
-    then textarea [ id "example-text", onInput UpdateExampleText ]
+    then textarea [ id "example-text", onInput (UpdateExampleText << UpdateContents) ]
       [ text example.contents ]
 
     else
@@ -517,7 +524,7 @@ viewProperties nodeId dragMode props =
       BoolProperty value onChange -> [ simpleInputProperty property (viewBoolInput value (onChange (not value) |> updateNode)) ]
       CharsProperty chars onChange -> [ simpleInputProperty property (viewCharsInput chars (onChange >> updateNode)) ]
       CharProperty char onChange -> [ simpleInputProperty property (viewCharInput char (onChange >> updateNode)) ]
-      IntProperty number onChange -> [ simpleInputProperty property (viewIntInput number (onChange >> updateNode)) ]
+      IntProperty number onChange -> [ simpleInputProperty property (viewPositiveIntInput number (onChange >> updateNode)) ]
       ConnectingProperty currentSupplier onChange -> [ connectInputProperty property currentSupplier onChange ]
 
       ConnectingProperties connectedProps onChange ->
@@ -573,14 +580,14 @@ viewCharsInput chars onChange = input
   ]
   []
 
-viewCharInput : Char -> (Maybe Char -> Message) -> Html Message
+viewCharInput : Char -> (Char -> Message) -> Html Message
 viewCharInput char onChange = input
   [ type_ "text"
   , placeholder "a"
   , value (String.fromChar char)
 
   -- Take the last char of the string
-  , onInput (\chars -> onChange (chars |> String.right 1 |> String.uncons |> Maybe.map Tuple.first))
+  , onInput (\chars -> onChange (chars |> String.right 1 |> String.uncons |> Maybe.map Tuple.first |> Maybe.withDefault char))
 
   , class "char input"
   , stopMousePropagation "mousedown"
@@ -588,17 +595,17 @@ viewCharInput char onChange = input
   ]
   []
 
-viewIntInput : Int -> (Int -> Message) -> Html Message
-viewIntInput number onChange = input
+viewPositiveIntInput : Int -> (Int -> Message) -> Html Message
+viewPositiveIntInput number onChange = input
   [ type_ "number"
   , value (String.fromInt number)
-  , onInput (\newValue -> onChange (newValue |> String.toInt |> Maybe.withDefault 0))
+  , onInput (\newValue -> onChange (newValue |> String.toInt |> Maybe.withDefault number))
   , class "int input"
   , stopMousePropagation "mousedown"
   , stopMousePropagation "mouseup"
+  , Html.Attributes.min "0"
   ]
   []
-
 
 
 flattenList list = List.foldr (++) [] list

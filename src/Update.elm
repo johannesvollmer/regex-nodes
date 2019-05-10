@@ -16,8 +16,12 @@ type Message
   | DragModeMessage DragModeMessage
   | UpdateNodeMessage NodeId Node
   | UpdateView ViewMessage
-  | UpdateExampleText String
-  | SetEditingExampleText Bool
+  | UpdateExampleText ExampleTextMessage
+
+type ExampleTextMessage
+  = UpdateContents String
+  | SetEditing Bool
+  | UpdateMaxMatchLimit Int
 
 type SearchMessage
   = UpdateSearch String
@@ -46,13 +50,20 @@ type DragModeMessage
 update : Message -> Model -> Model
 update message model =
   case message of
-    UpdateExampleText text -> let old = model.exampleText in
-      { model | exampleText = { old | contents = text } }
+    UpdateExampleText textMessage -> case textMessage of
 
-    SetEditingExampleText enabled ->
-      if not enabled
+      SetEditing enabled -> if not enabled
+        -- update cache because text contents or match limit could have been changed
         then updateCache (enableEditingExampleText model enabled)
         else enableEditingExampleText model enabled
+
+      UpdateContents text -> let old = model.exampleText in
+        { model | exampleText = { old | contents = text } }
+
+      UpdateMaxMatchLimit limit -> let old = model.exampleText in
+        { model | exampleText = { old | maxMatches = limit } }
+
+
 
     UpdateView viewMessage ->
       if model.exampleText.isEditing
@@ -69,12 +80,10 @@ update message model =
     SearchMessage searchMessage ->
       case searchMessage of
         UpdateSearch query -> { model | search = Just query }
-        FinishSearch result -> stopEditingExampleText
-          (case result of
-            InsertPrototype prototype -> { model | nodes = addNode model.nodes prototype, search = Nothing }
-            ParseRegex regex -> { model | search = Nothing, nodes = addParsedRegexNode model.nodes regex }
-            NoResult -> { model | search = Nothing }
-          )
+        FinishSearch result -> case result of
+          InsertPrototype prototype -> stopEditingExampleText { model | nodes = addNode model.nodes prototype, search = Nothing }
+          ParseRegex regex -> stopEditingExampleText { model | search = Nothing, nodes = addParsedRegexNode model.nodes regex }
+          NoResult -> { model | search = Nothing }
 
     DragModeMessage modeMessage ->
       case modeMessage of
@@ -245,24 +254,24 @@ updateFollowedBySuccessor followed successor = IfFollowedByNode { followed | suc
 updateNotFollowedByExpression followed expression = IfNotFollowedByNode { followed | expression = expression }
 updateNotFollowedBySuccessor followed successor = IfNotFollowedByNode { followed | successor = successor }
 
-updateCharRangeFirst end maybeStart = maybeStart |> Maybe.withDefault 'a' |> (\s -> CharRangeNode s (maxChar s end))
-updateCharRangeLast start maybeEnd = maybeEnd |> Maybe.withDefault 'z' |> (\e -> CharRangeNode (minChar e start) e)
+updateCharRangeFirst end start = CharRangeNode (minChar start end) (maxChar start end) -- swaps chars if necessary
+updateCharRangeLast start end = CharRangeNode (minChar end start) (maxChar start end) -- swaps chars if necessary
 
-updateNotInCharRangeFirst end maybeStart = maybeStart |> Maybe.withDefault 'a' |> (\s -> NotInCharRangeNode s (maxChar s end))
-updateNotInCharRangeLast start maybeEnd = maybeEnd |> Maybe.withDefault 'z' |> (\e -> NotInCharRangeNode (minChar e start) e)
+updateNotInCharRangeFirst end start = CharRangeNode (minChar start end) (maxChar start end) -- swaps chars if necessary
+updateNotInCharRangeLast start end = CharRangeNode (minChar end start) (maxChar start end) -- swaps chars if necessary
 
 updateExactRepetitionExpression repetition expression = ExactRepetitionNode { repetition | expression = expression }
-updateExactRepetitionCount repetition count = ExactRepetitionNode { repetition | count = count }
+updateExactRepetitionCount repetition count = ExactRepetitionNode { repetition | count = positive count }
 
 updateMinimumRepetitionExpression repetition expression = MinimumRepetitionNode { repetition | expression = expression }
-updateMinimumRepetitionCount repetition count = MinimumRepetitionNode { repetition | minimum = count }
+updateMinimumRepetitionCount repetition count = MinimumRepetitionNode { repetition | minimum = positive count }
 
 updateMaximumRepetitionExpression repetition expression = MaximumRepetitionNode { repetition | expression = expression }
-updateMaximumRepetitionCount repetition count = MaximumRepetitionNode { repetition | maximum = count }
+updateMaximumRepetitionCount repetition count = MaximumRepetitionNode { repetition | maximum = positive count }
 
 updateRangedRepetitionExpression repetition expression = RangedRepetitionNode { repetition | expression = expression }
-updateRangedRepetitionMinimum repetition count = RangedRepetitionNode { repetition | minimum = count, maximum = max count repetition.maximum }
-updateRangedRepetitionMaximum repetition count = RangedRepetitionNode { repetition | maximum = count, minimum = min count repetition.minimum }
+updateRangedRepetitionMinimum repetition count = RangedRepetitionNode { repetition | minimum = positive count, maximum = max (positive count) repetition.maximum }
+updateRangedRepetitionMaximum repetition count = RangedRepetitionNode { repetition | maximum = positive count, minimum = min (positive count) repetition.minimum }
 
 updateFlagsExpression flags newInput = FlagsNode { flags | expression = newInput }
 updateFlags expression newFlags = FlagsNode { expression = expression, flags = newFlags }
@@ -270,10 +279,6 @@ updateFlagsMultiple { expression, flags } multiple = updateFlags expression { fl
 updateFlagsInsensitivity { expression, flags } caseSensitive = updateFlags expression { flags | caseSensitive = caseSensitive }
 updateFlagsMultiline { expression, flags } multiline = updateFlags expression { flags | multiline = multiline }
 
-minChar a b =
-  if a < b
-    then a else b
-
-maxChar a b =
-  if a > b
-    then a else b
+positive = Basics.max 0
+minChar a b = if a < b then a else b
+maxChar a b = if a > b then a else b

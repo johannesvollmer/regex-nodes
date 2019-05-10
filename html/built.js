@@ -6050,19 +6050,33 @@ var author$project$Update$update = F2(
 	function (message, model) {
 		switch (message.$) {
 			case 4:
-				var text = message.a;
-				var old = model.bW;
-				return _Utils_update(
-					model,
-					{
-						bW: _Utils_update(
-							old,
-							{bO: text})
-					});
-			case 5:
-				var enabled = message.a;
-				return (!enabled) ? author$project$Update$updateCache(
-					A2(author$project$Update$enableEditingExampleText, model, enabled)) : A2(author$project$Update$enableEditingExampleText, model, enabled);
+				var textMessage = message.a;
+				switch (textMessage.$) {
+					case 1:
+						var enabled = textMessage.a;
+						return (!enabled) ? author$project$Update$updateCache(
+							A2(author$project$Update$enableEditingExampleText, model, enabled)) : A2(author$project$Update$enableEditingExampleText, model, enabled);
+					case 0:
+						var text = textMessage.a;
+						var old = model.bW;
+						return _Utils_update(
+							model,
+							{
+								bW: _Utils_update(
+									old,
+									{bO: text})
+							});
+					default:
+						var limit = textMessage.a;
+						var old = model.bW;
+						return _Utils_update(
+							model,
+							{
+								bW: _Utils_update(
+									old,
+									{cd: limit})
+							});
+				}
 			case 3:
 				var viewMessage = message.a;
 				if (model.bW.b6 || elm$core$Dict$isEmpty(model.cn.cT)) {
@@ -6096,31 +6110,30 @@ var author$project$Update$update = F2(
 						});
 				} else {
 					var result = searchMessage.a;
-					return author$project$Update$stopEditingExampleText(
-						function () {
-							switch (result.$) {
-								case 0:
-									var prototype = result.a;
-									return _Utils_update(
-										model,
-										{
-											cn: A2(author$project$Update$addNode, model.cn, prototype),
-											cJ: elm$core$Maybe$Nothing
-										});
-								case 1:
-									var regex = result.a;
-									return _Utils_update(
-										model,
-										{
-											cn: A2(author$project$Parse$addParsedRegexNode, model.cn, regex),
-											cJ: elm$core$Maybe$Nothing
-										});
-								default:
-									return _Utils_update(
-										model,
-										{cJ: elm$core$Maybe$Nothing});
-							}
-						}());
+					switch (result.$) {
+						case 0:
+							var prototype = result.a;
+							return author$project$Update$stopEditingExampleText(
+								_Utils_update(
+									model,
+									{
+										cn: A2(author$project$Update$addNode, model.cn, prototype),
+										cJ: elm$core$Maybe$Nothing
+									}));
+						case 1:
+							var regex = result.a;
+							return author$project$Update$stopEditingExampleText(
+								_Utils_update(
+									model,
+									{
+										cn: A2(author$project$Parse$addParsedRegexNode, model.cn, regex),
+										cJ: elm$core$Maybe$Nothing
+									}));
+						default:
+							return _Utils_update(
+								model,
+								{cJ: elm$core$Maybe$Nothing});
+					}
 				}
 			default:
 				var modeMessage = message.a;
@@ -6181,14 +6194,14 @@ var author$project$Update$update = F2(
 							});
 					case 6:
 						var newMouse = modeMessage.a.ds;
-						var _n5 = model.bR;
-						_n5$2:
+						var _n6 = model.bR;
+						_n6$2:
 						while (true) {
-							if (!_n5.$) {
-								switch (_n5.a.$) {
+							if (!_n6.$) {
+								switch (_n6.a.$) {
 									case 0:
-										var node = _n5.a.a.bf;
-										var mouse = _n5.a.a.r;
+										var node = _n6.a.a.bf;
+										var mouse = _n6.a.a.r;
 										var delta = A2(author$project$Vec2$sub, newMouse, mouse);
 										return _Utils_update(
 											model,
@@ -6199,7 +6212,7 @@ var author$project$Update$update = F2(
 												cn: A4(author$project$Update$moveNode, model.dX, model.cn, node, delta)
 											});
 									case 2:
-										var supplier = _n5.a.a.an;
+										var supplier = _n6.a.a.an;
 										var mode = author$project$Model$CreateConnection(
 											{bn: newMouse, an: supplier});
 										return _Utils_update(
@@ -6208,10 +6221,10 @@ var author$project$Update$update = F2(
 												bR: elm$core$Maybe$Just(mode)
 											});
 									default:
-										break _n5$2;
+										break _n6$2;
 								}
 							} else {
-								break _n5$2;
+								break _n6$2;
 							}
 						}
 						return model;
@@ -6252,11 +6265,17 @@ var author$project$Update$DragModeMessage = function (a) {
 };
 var author$project$Update$FinishDrag = {$: 5};
 var author$project$Update$MagnifyView = elm$core$Basics$identity;
-var author$project$Update$SetEditingExampleText = function (a) {
-	return {$: 5, a: a};
+var author$project$Update$SetEditing = function (a) {
+	return {$: 1, a: a};
 };
 var author$project$Update$UpdateDrag = function (a) {
 	return {$: 6, a: a};
+};
+var author$project$Update$UpdateExampleText = function (a) {
+	return {$: 4, a: a};
+};
+var author$project$Update$UpdateMaxMatchLimit = function (a) {
+	return {$: 2, a: a};
 };
 var author$project$Update$UpdateView = function (a) {
 	return {$: 3, a: a};
@@ -6958,8 +6977,8 @@ var author$project$View$viewConnectDrag = F4(
 				]),
 			_List_Nil);
 	});
-var author$project$Update$UpdateExampleText = function (a) {
-	return {$: 4, a: a};
+var author$project$Update$UpdateContents = function (a) {
+	return {$: 0, a: a};
 };
 var elm$html$Html$span = _VirtualDom_node('span');
 var elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
@@ -6983,6 +7002,11 @@ var author$project$View$viewExampleTexts = function (matches) {
 	};
 	return A2(elm$core$List$concatMap, render, matches);
 };
+var elm$core$Basics$composeL = F3(
+	function (g, f, x) {
+		return g(
+			f(x));
+	});
 var elm$html$Html$div = _VirtualDom_node('div');
 var elm$html$Html$textarea = _VirtualDom_node('textarea');
 var elm$html$Html$Attributes$id = elm$html$Html$Attributes$stringProperty('id');
@@ -7025,7 +7049,8 @@ var author$project$View$viewExampleText = function (example) {
 			_List_fromArray(
 				[
 					elm$html$Html$Attributes$id('example-text'),
-					elm$html$Html$Events$onInput(author$project$Update$UpdateExampleText)
+					elm$html$Html$Events$onInput(
+					A2(elm$core$Basics$composeL, author$project$Update$UpdateExampleText, author$project$Update$UpdateContents))
 				]),
 			_List_fromArray(
 				[
@@ -7091,45 +7116,38 @@ var author$project$Model$CharRangeNode = F2(
 	});
 var author$project$Update$maxChar = F2(
 	function (a, b) {
-		return (_Utils_cmp(
-			elm$core$Char$toCode(a),
-			elm$core$Char$toCode(b)) > 0) ? a : b;
-	});
-var author$project$Update$updateCharRangeFirst = F2(
-	function (end, maybeStart) {
-		return function (s) {
-			return A2(
-				author$project$Model$CharRangeNode,
-				s,
-				A2(author$project$Update$maxChar, s, end));
-		}(
-			A2(elm$core$Maybe$withDefault, 'a', maybeStart));
+		return (_Utils_cmp(a, b) > 0) ? a : b;
 	});
 var author$project$Update$minChar = F2(
 	function (a, b) {
-		return (_Utils_cmp(
-			elm$core$Char$toCode(a),
-			elm$core$Char$toCode(b)) < 0) ? a : b;
+		return (_Utils_cmp(a, b) < 0) ? a : b;
+	});
+var author$project$Update$updateCharRangeFirst = F2(
+	function (end, start) {
+		return A2(
+			author$project$Model$CharRangeNode,
+			A2(author$project$Update$minChar, start, end),
+			A2(author$project$Update$maxChar, start, end));
 	});
 var author$project$Update$updateCharRangeLast = F2(
-	function (start, maybeEnd) {
-		return function (e) {
-			return A2(
-				author$project$Model$CharRangeNode,
-				A2(author$project$Update$minChar, e, start),
-				e);
-		}(
-			A2(elm$core$Maybe$withDefault, 'z', maybeEnd));
+	function (start, end) {
+		return A2(
+			author$project$Model$CharRangeNode,
+			A2(author$project$Update$minChar, end, start),
+			A2(author$project$Update$maxChar, start, end));
 	});
 var author$project$Model$ExactRepetitionNode = function (a) {
 	return {$: 19, a: a};
 };
+var author$project$Update$positive = elm$core$Basics$max(0);
 var author$project$Update$updateExactRepetitionCount = F2(
 	function (repetition, count) {
 		return author$project$Model$ExactRepetitionNode(
 			_Utils_update(
 				repetition,
-				{c5: count}));
+				{
+					c5: author$project$Update$positive(count)
+				}));
 	});
 var author$project$Update$updateExactRepetitionExpression = F2(
 	function (repetition, expression) {
@@ -7211,7 +7229,9 @@ var author$project$Update$updateMaximumRepetitionCount = F2(
 		return author$project$Model$MaximumRepetitionNode(
 			_Utils_update(
 				repetition,
-				{ce: count}));
+				{
+					ce: author$project$Update$positive(count)
+				}));
 	});
 var author$project$Update$updateMaximumRepetitionExpression = F2(
 	function (repetition, expression) {
@@ -7228,7 +7248,9 @@ var author$project$Update$updateMinimumRepetitionCount = F2(
 		return author$project$Model$MinimumRepetitionNode(
 			_Utils_update(
 				repetition,
-				{cg: count}));
+				{
+					cg: author$project$Update$positive(count)
+				}));
 	});
 var author$project$Update$updateMinimumRepetitionExpression = F2(
 	function (repetition, expression) {
@@ -7254,29 +7276,19 @@ var author$project$Update$updateNotFollowedBySuccessor = F2(
 				followed,
 				{cO: successor}));
 	});
-var author$project$Model$NotInCharRangeNode = F2(
-	function (a, b) {
-		return {$: 5, a: a, b: b};
-	});
 var author$project$Update$updateNotInCharRangeFirst = F2(
-	function (end, maybeStart) {
-		return function (s) {
-			return A2(
-				author$project$Model$NotInCharRangeNode,
-				s,
-				A2(author$project$Update$maxChar, s, end));
-		}(
-			A2(elm$core$Maybe$withDefault, 'a', maybeStart));
+	function (end, start) {
+		return A2(
+			author$project$Model$CharRangeNode,
+			A2(author$project$Update$minChar, start, end),
+			A2(author$project$Update$maxChar, start, end));
 	});
 var author$project$Update$updateNotInCharRangeLast = F2(
-	function (start, maybeEnd) {
-		return function (e) {
-			return A2(
-				author$project$Model$NotInCharRangeNode,
-				A2(author$project$Update$minChar, e, start),
-				e);
-		}(
-			A2(elm$core$Maybe$withDefault, 'z', maybeEnd));
+	function (start, end) {
+		return A2(
+			author$project$Model$CharRangeNode,
+			A2(author$project$Update$minChar, end, start),
+			A2(author$project$Update$maxChar, start, end));
 	});
 var author$project$Model$RangedRepetitionNode = function (a) {
 	return {$: 16, a: a};
@@ -7298,8 +7310,11 @@ var author$project$Update$updateRangedRepetitionMaximum = F2(
 			_Utils_update(
 				repetition,
 				{
-					ce: count,
-					cg: A2(elm$core$Basics$min, count, repetition.cg)
+					ce: author$project$Update$positive(count),
+					cg: A2(
+						elm$core$Basics$min,
+						author$project$Update$positive(count),
+						repetition.cg)
 				}));
 	});
 var author$project$Update$updateRangedRepetitionMinimum = F2(
@@ -7308,8 +7323,11 @@ var author$project$Update$updateRangedRepetitionMinimum = F2(
 			_Utils_update(
 				repetition,
 				{
-					ce: A2(elm$core$Basics$max, count, repetition.ce),
-					cg: count
+					ce: A2(
+						elm$core$Basics$max,
+						author$project$Update$positive(count),
+						repetition.ce),
+					cg: author$project$Update$positive(count)
 				}));
 	});
 var author$project$View$BoolProperty = F2(
@@ -8067,10 +8085,13 @@ var author$project$View$viewCharInput = F2(
 					function (chars) {
 						return onChange(
 							A2(
-								elm$core$Maybe$map,
-								elm$core$Tuple$first,
-								elm$core$String$uncons(
-									A2(elm$core$String$right, 1, chars))));
+								elm$core$Maybe$withDefault,
+								_char,
+								A2(
+									elm$core$Maybe$map,
+									elm$core$Tuple$first,
+									elm$core$String$uncons(
+										A2(elm$core$String$right, 1, chars)))));
 					}),
 					elm$html$Html$Attributes$class('char input'),
 					author$project$View$stopMousePropagation('mousedown'),
@@ -8095,7 +8116,8 @@ var author$project$View$viewCharsInput = F2(
 			_List_Nil);
 	});
 var elm$core$String$toInt = _String_toInt;
-var author$project$View$viewIntInput = F2(
+var elm$html$Html$Attributes$min = elm$html$Html$Attributes$stringProperty('min');
+var author$project$View$viewPositiveIntInput = F2(
 	function (number, onChange) {
 		return A2(
 			elm$html$Html$input,
@@ -8109,12 +8131,13 @@ var author$project$View$viewIntInput = F2(
 						return onChange(
 							A2(
 								elm$core$Maybe$withDefault,
-								0,
+								number,
 								elm$core$String$toInt(newValue)));
 					}),
 					elm$html$Html$Attributes$class('int input'),
 					author$project$View$stopMousePropagation('mousedown'),
-					author$project$View$stopMousePropagation('mouseup')
+					author$project$View$stopMousePropagation('mouseup'),
+					elm$html$Html$Attributes$min('0')
 				]),
 			_List_Nil);
 	});
@@ -8540,7 +8563,7 @@ var author$project$View$viewProperties = F3(
 							simpleInputProperty,
 							property,
 							A2(
-								author$project$View$viewIntInput,
+								author$project$View$viewPositiveIntInput,
 								number,
 								A2(elm$core$Basics$composeR, onChange, updateNode)))
 						]);
@@ -8724,7 +8747,7 @@ var author$project$View$viewSearchBar = function (search) {
 		_List_fromArray(
 			[
 				elm$html$Html$Attributes$placeholder(
-				_Utils_eq(search, elm$core$Maybe$Nothing) ? 'Add Nodes' : 'Search Nodes or enter a Regular Expression'),
+				_Utils_eq(search, elm$core$Maybe$Nothing) ? 'Add Nodes' : 'Search Nodes  or  Enter A Regular Expression'),
 				elm$html$Html$Attributes$type_('text'),
 				elm$html$Html$Attributes$value(
 				A2(elm$core$Maybe$withDefault, '', search)),
@@ -8755,6 +8778,10 @@ var author$project$Model$NonLinebreakChar = 9;
 var author$project$Model$NonWhitespaceChar = 1;
 var author$project$Model$NonWordBoundary = 7;
 var author$project$Model$NonWordChar = 5;
+var author$project$Model$NotInCharRangeNode = F2(
+	function (a, b) {
+		return {$: 5, a: a, b: b};
+	});
 var author$project$Model$SymbolNode = function (a) {
 	return {$: 0, a: a};
 };
@@ -8877,13 +8904,13 @@ var author$project$Model$prototypes = _List_fromArray(
 		function ($) {
 			return $.bL;
 		},
-		A2(author$project$Model$CharRangeNode, 'a', 'z')),
+		A2(author$project$Model$CharRangeNode, 'A', 'Z')),
 		A2(
 		author$project$Model$typeProto,
 		function ($) {
 			return $.co;
 		},
-		A2(author$project$Model$NotInCharRangeNode, 'a', 'z')),
+		A2(author$project$Model$NotInCharRangeNode, 'A', 'Z')),
 		A2(
 		author$project$Model$typeProto,
 		function ($) {
@@ -9359,16 +9386,40 @@ var author$project$View$view = function (model) {
 								elm$html$Html$div,
 								_List_fromArray(
 									[
-										elm$html$Html$Attributes$id('edit-example'),
-										elm$html$Html$Attributes$checked(model.bW.b6),
-										mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$onClick(
-										function (_n4) {
-											return author$project$Update$SetEditingExampleText(!model.bW.b6);
-										})
+										elm$html$Html$Attributes$id('example-options')
 									]),
 								_List_fromArray(
 									[
-										elm$html$Html$text('Edit Example')
+										A2(
+										elm$html$Html$div,
+										_List_fromArray(
+											[
+												elm$html$Html$Attributes$id('match-limit')
+											]),
+										_List_fromArray(
+											[
+												elm$html$Html$text('Example Match Limit'),
+												A2(
+												author$project$View$viewPositiveIntInput,
+												model.bW.cd,
+												A2(elm$core$Basics$composeL, author$project$Update$UpdateExampleText, author$project$Update$UpdateMaxMatchLimit))
+											])),
+										A2(
+										elm$html$Html$div,
+										_List_fromArray(
+											[
+												elm$html$Html$Attributes$id('edit-example'),
+												elm$html$Html$Attributes$checked(model.bW.b6),
+												mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$onClick(
+												function (_n4) {
+													return author$project$Update$UpdateExampleText(
+														author$project$Update$SetEditing(!model.bW.b6));
+												})
+											]),
+										_List_fromArray(
+											[
+												elm$html$Html$text('Edit Example')
+											]))
 									]))
 							])),
 						A2(
