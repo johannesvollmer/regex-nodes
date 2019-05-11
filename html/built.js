@@ -9469,8 +9469,18 @@ var author$project$View$view = function (model) {
 								_List_Nil,
 								_List_fromArray(
 									[
+										A2(
+										elm$html$Html$span,
+										_List_fromArray(
+											[
+												elm$html$Html$Attributes$id('declaration')
+											]),
+										_List_fromArray(
+											[
+												elm$html$Html$text('const regex = ')
+											])),
 										elm$html$Html$text(
-										'const regex = ' + A2(
+										A2(
 											elm$core$Result$withDefault,
 											'Error',
 											A2(

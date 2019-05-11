@@ -85,6 +85,10 @@ nav {
 #expression-result {
   background: #1b1b1b;
 }
+#expression-result #declaration {
+  color: #666;
+  font: inherit;
+}
 #expression-result #lock {
   color: #666;
 }

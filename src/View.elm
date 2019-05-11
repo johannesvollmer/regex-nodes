@@ -246,7 +246,9 @@ view model =
 
       , div [ id "expression-result" ]
         [ code []
-          [ text ("const regex = " ++ (expressionResult |> Maybe.withDefault (Ok "/(nothing)/") |> Result.withDefault "Error")) ]
+          [ span [ id "declaration" ] [ text "const regex = " ]
+          , text (expressionResult |> Maybe.withDefault (Ok "/(nothing)/") |> Result.withDefault "Error")
+          ]
 
         , div
           [ id "lock", classes "button" [(model.outputNode.locked, "checked")]
