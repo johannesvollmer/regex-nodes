@@ -13,6 +13,7 @@ import Regex
 
 type Message
   = SearchMessage SearchMessage
+  | SetOutputLocked Bool
   | DragModeMessage DragModeMessage
   | UpdateNodeMessage NodeId Node
   | UpdateView ViewMessage
@@ -74,6 +75,9 @@ update message model =
           MagnifyView { amount, focus } ->
             { model | view = updateView amount focus model.view }
 
+    SetOutputLocked locked ->
+      { model | outputNode = { id = model.outputNode.id, locked = locked } }
+
     UpdateNodeMessage id value ->
       updateCache { model | nodes = updateNode model.nodes id value }
 
@@ -89,12 +93,14 @@ update message model =
       case modeMessage of
         StartNodeMove { node, mouse } ->
           let
-            newModel = { model
-              | result = Just node,
-              dragMode = Just (MoveNodeDrag { node = node, mouse = mouse })
+            newModel =  { model
+              | dragMode = Just (MoveNodeDrag { node = node, mouse = mouse })
+              , outputNode = if not model.outputNode.locked || model.outputNode.id == Nothing
+                                then { id = Just node, locked = model.outputNode.locked }
+                                else model.outputNode
               }
 
-          in if model.result /= newModel.result
+          in if model.outputNode.id /= newModel.outputNode.id
             -- only update cache if node really changed
             then updateCache newModel else newModel
 
@@ -192,10 +198,11 @@ updateView amount focus oldView =
 
 
 
+updateCache : Model -> Model
 updateCache model =
   let
     example = model.exampleText
-    regex = model.result |> Maybe.map (buildRegex model.nodes)
+    regex = model.outputNode.id |> Maybe.map (buildRegex model.nodes)
 
     multiple = regex |> Maybe.map
       (Result.map (.flags >> .multiple) >> Result.withDefault False)

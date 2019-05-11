@@ -9,7 +9,7 @@ import Vec2 exposing (Vec2)
 
 type alias Model =
   { nodes: Nodes
-  , result: Maybe NodeId
+  , outputNode: OutputNode
 
   , exampleText: ExampleText
 
@@ -22,7 +22,7 @@ type alias Model =
 init : Model
 init =
   { nodes = { values = Dict.empty, nextId = 0 }
-  , result = Nothing
+  , outputNode = { id = Nothing, locked = False }
   , dragMode = Nothing
   , search = Nothing
   , view = View 0 (Vec2 0 0)
@@ -32,6 +32,11 @@ init =
     , isEditing = False
     , cachedMatches = Nothing
     }
+  }
+
+type alias OutputNode =
+  { id: Maybe NodeId
+  , locked: Bool
   }
 
 type alias ExampleText =

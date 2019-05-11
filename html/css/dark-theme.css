@@ -81,8 +81,19 @@ nav {
 #search #results #parse-regex {
   color: teal;
 }
+
 #expression-result {
   background: #1b1b1b;
+}
+#expression-result #lock {
+  color: #666;
+}
+#expression-result #lock:hover {
+  background-color: #242424;
+}
+#expression-result #lock.checked {
+  background-color: #111;
+  color: #ddd;
 }
 
 #match-limit  {
@@ -91,6 +102,9 @@ nav {
 
 #edit-example {
   color: #999;
+}
+#edit-example:hover {
+  background-color: #393939;
 }
 .editing-example-text #edit-example {
   background-color: #222;
@@ -126,10 +140,13 @@ nav {
 
 .graph-node {
 	background-color: #eee;
-	box-shadow: 2px 2px 0 0 #00000022;
+	box-shadow: 2px 2px 0 0 #00000044;
 }
 .graph-node {
 	cursor: pointer;
+}
+.output.graph-node {
+  color: teal;
 }
 .move-dragging * {
 	cursor: grabbing;

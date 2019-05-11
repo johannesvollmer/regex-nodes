@@ -163,7 +163,7 @@ mainTextWidth text =
 view : Model -> Html Message
 view model =
   let
-    regex = model.result |> Maybe.map (buildRegex model.nodes)
+    regex = model.outputNode.id |> Maybe.map (buildRegex model.nodes)
 
     expressionResult = regex |> Maybe.map (Result.map constructRegexLiteral)
 
@@ -174,7 +174,7 @@ view model =
 
     connectDragging = connectDragId /= Nothing
 
-    nodeViews = (List.map (viewNode model.dragMode model.nodes) (Dict.toList model.nodes.values))
+    nodeViews = (List.map (viewNode model.dragMode model.outputNode.id model.nodes) (Dict.toList model.nodes.values))
 
     connections = flattenList (List.map .connections nodeViews)
 
@@ -230,7 +230,7 @@ view model =
             ]
 
           , div
-            [ id "edit-example"
+            [ id "edit-example", class "button"
             , checked model.exampleText.isEditing
             , Mouse.onClick (always <| UpdateExampleText <| SetEditing <| not model.exampleText.isEditing)
             ]
@@ -245,7 +245,15 @@ view model =
         ]
 
       , div [ id "expression-result" ]
-        [ code [] [ text ("const regex = " ++ (expressionResult |> Maybe.withDefault (Ok "/(nothing)/") |> Result.withDefault "Error")) ] ]
+        [ code []
+          [ text ("const regex = " ++ (expressionResult |> Maybe.withDefault (Ok "/(nothing)/") |> Result.withDefault "Error")) ]
+
+        , div
+          [ id "lock", classes "button" [(model.outputNode.locked, "checked")]
+          , Mouse.onClick (always <| SetOutputLocked <| not model.outputNode.locked)
+          ]
+          [ text (if model.outputNode.locked then "Locked" else "Lock") ]
+        ]
       ]
 
     ]
@@ -334,10 +342,10 @@ viewExampleTexts matches =
   in matches |> List.concatMap render
 
 
-viewNode : Maybe DragMode -> Nodes -> (NodeId, Model.NodeView) -> NodeView
-viewNode dragMode nodes (nodeId, nodeView) =
+viewNode : Maybe DragMode -> Maybe NodeId -> Nodes -> (NodeId, Model.NodeView) -> NodeView
+viewNode dragMode outputNode nodes (nodeId, nodeView) =
   let props = properties nodeView.node in
-  NodeView (viewNodeContent dragMode nodeId props nodeView) (viewNodeConnections nodes props nodeView)
+  NodeView (viewNodeContent dragMode outputNode nodeId props nodeView) (viewNodeConnections nodes props nodeView)
 
 
 viewNodeConnections : Nodes -> List PropertyView -> Model.NodeView -> List (Svg Message)
@@ -417,8 +425,8 @@ hasDragConnectionPrototype dragMode nodeId = case dragMode of
     Just (CreateConnection { supplier }) -> nodeId == supplier
     _ -> False
 
-viewNodeContent : Maybe DragMode -> NodeId -> List PropertyView -> Model.NodeView -> Html Message
-viewNodeContent dragMode nodeId props nodeView =
+viewNodeContent : Maybe DragMode -> Maybe NodeId -> NodeId -> List PropertyView -> Model.NodeView -> Html Message
+viewNodeContent dragMode outputNode nodeId props nodeView =
   let
     mayDragConnect = case dragMode of
       Just (PrepareEditingConnection { node }) -> nodeId == node
@@ -433,9 +441,13 @@ viewNodeContent dragMode nodeId props nodeView =
 
   in div
     [ Mouse.onDown onClick
-    , classes "graph-node" [(hasDragConnectionPrototype dragMode nodeId, "connecting"), (mayDragConnect, "may-drag-connect")]
     , style "width" ((String.fromFloat (nodeWidth nodeView.node)) ++ "px")
     , translateHTML nodeView.position
+    , classes "graph-node"
+      [ (hasDragConnectionPrototype dragMode nodeId, "connecting")
+      , (outputNode == Just nodeId, "output")
+      , (mayDragConnect, "may-drag-connect")
+      ]
     ]
 
     (viewProperties nodeId dragMode props)

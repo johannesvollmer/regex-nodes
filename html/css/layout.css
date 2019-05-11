@@ -15,10 +15,14 @@ body, #main, #overlay, #node-graph, #connection-graph, #example-text {
 	overflow: hidden;
 }
 
-#node-graph :not(input) {
+.button, #node-graph :not(input) {
   user-select: none; /* wont work for double click */
 }
-#node-graph :not(input)::selection {
+.button {
+  cursor: pointer;
+}
+
+.button::selection, #node-graph :not(input)::selection {
   color: inherit;
 	background: transparent; /* user-select:none wont work for double click */
 }
@@ -126,12 +130,6 @@ header img {
 
 #edit-example {
   padding: 20px;
-  user-select: none; /* FIXME wont work for double click */
-  cursor: pointer;
-}
-#edit-example::selection {
-  color: inherit;
-	background: transparent; /* user-select:none wont work for double click */
 }
 
 #search {
@@ -165,10 +163,25 @@ header img {
 }
 
 #expression-result {
-  text-align: center;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+
   font-size: 28px;
+}
+
+#expression-result code {
+  text-align: center;
+  flex-grow: 1;
   padding: 12px;
 }
+
+#expression-result #lock {
+  text-align: center;
+  width: 8ch;
+  padding: 12px 24px;
+}
+
 
 
 .graph-node {
