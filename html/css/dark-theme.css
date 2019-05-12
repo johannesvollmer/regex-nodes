@@ -32,7 +32,7 @@
 }
 
 .graph-node .menu, .graph-node:hover .menu {
-  transition: height 100ms, top 100ms;
+  transition: height 80ms, top 80ms;
 }
 
 
@@ -170,9 +170,16 @@ nav {
   background-color: #00000044;
   color: #888;
 }
-.graph-node .menu:hover {
-  background-color: #814;
+.graph-node .menu .button {
+  opacity: 0.7;
+}
+.graph-node .menu .button:hover {
+  background-color: #444;
   color: #ddd;
+  opacity: 1;
+}
+.graph-node .menu .delete.button:hover {
+  background-color: #814;
 }
 
 .property:hover {

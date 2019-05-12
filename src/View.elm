@@ -468,10 +468,17 @@ viewNodeContent dragMode outputNode nodeId props nodeView =
     , div
         [ class "menu" ]
         [ div
-            [ Mouse.onClick <| always <| DeleteNode <| nodeId
-            , class "button"
+            [ Mouse.onClick <| always <| DuplicateNode <| nodeId
+            , class "duplicate button"
             ]
-            [ text "×" ]
+            [ img [ src "html/img/copy.svg" ] [] ]
+
+        , div
+            [ Mouse.onClick <| always <| DeleteNode <| nodeId
+            , class "delete button"
+            ]
+            [ img [ src "html/img/bin.svg" ] [] ]
+
         ]
     ]
 

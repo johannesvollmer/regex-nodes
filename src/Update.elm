@@ -19,6 +19,7 @@ type Message
   | UpdateView ViewMessage
   | UpdateExampleText ExampleTextMessage
   | DeleteNode NodeId
+  | DuplicateNode NodeId
 
 type ExampleTextMessage
   = UpdateContents String
@@ -83,6 +84,7 @@ update message model =
       updateCache { model | nodes = updateNode model.nodes id value }
 
     DeleteNode id -> deleteNode model id
+    DuplicateNode id -> duplicateNode model id
 
     SearchMessage searchMessage ->
       case searchMessage of
@@ -167,6 +169,19 @@ deleteNode model nodeId =
     , outputNode = { id = output, locked = model.outputNode.locked }
     , dragMode = Nothing
     }
+
+
+duplicateNode: Model -> NodeId -> Model
+duplicateNode model nodeId =
+  let
+    nodes = model.nodes
+    node = Dict.get nodeId nodes.values
+
+  in case node of
+      Nothing -> model
+      Just original -> { model | nodes = addNode nodes original }
+
+
 
 stopEditingExampleText model =
   enableEditingExampleText model False

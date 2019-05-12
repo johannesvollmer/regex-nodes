@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+  xmlns:svg="http://www.w3.org/2000/svg"
+  xmlns="http://www.w3.org/2000/svg"
+  width="50"
+  height="50"
+  viewBox="0 0 13.229167 13.229167"
+  version="1.1"
+>
+  <g transform="translate(0,-283.77083)">
+    <rect
+      style="fill:#ddd"
+      width="5.2916665"
+      height="6.614583"
+      x="3.96875"
+      y="288.53333"
+    />
+
+    <rect
+      style="fill:#ddd"
+      width="5.8208346"
+      height="1.3229166"
+      x="3.7041659"
+      y="286.68124"
+    />
+  </g>
+</svg>

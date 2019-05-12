@@ -6270,6 +6270,21 @@ var author$project$Update$deleteNode = F2(
 					cy: {b_: output, cc: model.cy.cc}
 				}));
 	});
+var author$project$Update$duplicateNode = F2(
+	function (model, nodeId) {
+		var nodes = model.cp;
+		var node = A2(elm$core$Dict$get, nodeId, nodes.cV);
+		if (node.$ === 1) {
+			return model;
+		} else {
+			var original = node.a;
+			return _Utils_update(
+				model,
+				{
+					cp: A2(author$project$Update$addNode, nodes, original)
+				});
+		}
+	});
 var author$project$Update$enableEditingExampleText = F2(
 	function (model, enabled) {
 		var old = model.bW;
@@ -6440,6 +6455,9 @@ var author$project$Update$update = F2(
 			case 6:
 				var id = message.a;
 				return A2(author$project$Update$deleteNode, model, id);
+			case 7:
+				var id = message.a;
+				return A2(author$project$Update$duplicateNode, model, id);
 			case 0:
 				var searchMessage = message.a;
 				if (!searchMessage.$) {
@@ -8027,6 +8045,9 @@ var author$project$View$viewNodeConnections = F3(
 var author$project$Update$DeleteNode = function (a) {
 	return {$: 6, a: a};
 };
+var author$project$Update$DuplicateNode = function (a) {
+	return {$: 7, a: a};
+};
 var author$project$Update$StartNodeMove = function (a) {
 	return {$: 0, a: a};
 };
@@ -8859,6 +8880,13 @@ var author$project$View$viewProperties = F3(
 		return author$project$View$flattenList(
 			A2(elm$core$List$map, singleProperty, props));
 	});
+var elm$html$Html$img = _VirtualDom_node('img');
+var elm$html$Html$Attributes$src = function (url) {
+	return A2(
+		elm$html$Html$Attributes$stringProperty,
+		'src',
+		_VirtualDom_noJavaScriptOrHtmlUri(url));
+};
 var mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$onClick = A2(mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$onWithOptions, 'click', mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$defaultOptions);
 var mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$onDown = A2(mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$onWithOptions, 'mousedown', mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$defaultOptions);
 var author$project$View$viewNodeContent = F5(
@@ -8946,12 +8974,37 @@ var author$project$View$viewNodeContent = F5(
 								[
 									mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$onClick(
 									elm$core$Basics$always(
-										author$project$Update$DeleteNode(nodeId))),
-									elm$html$Html$Attributes$class('button')
+										author$project$Update$DuplicateNode(nodeId))),
+									elm$html$Html$Attributes$class('duplicate button')
 								]),
 							_List_fromArray(
 								[
-									elm$html$Html$text('×')
+									A2(
+									elm$html$Html$img,
+									_List_fromArray(
+										[
+											elm$html$Html$Attributes$src('html/img/copy.svg')
+										]),
+									_List_Nil)
+								])),
+							A2(
+							elm$html$Html$div,
+							_List_fromArray(
+								[
+									mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$onClick(
+									elm$core$Basics$always(
+										author$project$Update$DeleteNode(nodeId))),
+									elm$html$Html$Attributes$class('delete button')
+								]),
+							_List_fromArray(
+								[
+									A2(
+									elm$html$Html$img,
+									_List_fromArray(
+										[
+											elm$html$Html$Attributes$src('html/img/bin.svg')
+										]),
+									_List_Nil)
 								]))
 						]))
 				]));
@@ -9388,7 +9441,6 @@ var elm$html$Html$a = _VirtualDom_node('a');
 var elm$html$Html$code = _VirtualDom_node('code');
 var elm$html$Html$h1 = _VirtualDom_node('h1');
 var elm$html$Html$header = _VirtualDom_node('header');
-var elm$html$Html$img = _VirtualDom_node('img');
 var elm$html$Html$nav = _VirtualDom_node('nav');
 var elm$html$Html$Attributes$href = function (url) {
 	return A2(
@@ -9397,12 +9449,6 @@ var elm$html$Html$Attributes$href = function (url) {
 		_VirtualDom_noJavaScriptUri(url));
 };
 var elm$html$Html$Attributes$rel = _VirtualDom_attribute('rel');
-var elm$html$Html$Attributes$src = function (url) {
-	return A2(
-		elm$html$Html$Attributes$stringProperty,
-		'src',
-		_VirtualDom_noJavaScriptOrHtmlUri(url));
-};
 var elm$html$Html$Attributes$target = elm$html$Html$Attributes$stringProperty('target');
 var elm$virtual_dom$VirtualDom$lazy = _VirtualDom_lazy;
 var elm$html$Html$Lazy$lazy = elm$virtual_dom$VirtualDom$lazy;
