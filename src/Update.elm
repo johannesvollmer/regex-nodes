@@ -19,6 +19,7 @@ type Message
   | UpdateView ViewMessage
   | UpdateExampleText ExampleTextMessage
   | DeleteNode NodeId
+  | ConfirmDeleteNode Bool
   | DuplicateNode NodeId
 
 type ExampleTextMessage
@@ -83,8 +84,14 @@ update message model =
     UpdateNodeMessage id value ->
       updateCache { model | nodes = updateNode model.nodes id value }
 
-    DeleteNode id -> deleteNode model id
     DuplicateNode id -> duplicateNode model id
+
+    DeleteNode id -> deleteNode { model | confirmDeletion = Just id } -- TODO only: { model | confirmDeletion = Just id }
+
+    ConfirmDeleteNode delete -> if not delete
+      then { model | confirmDeletion = Nothing }
+      else deleteNode model
+
 
     SearchMessage searchMessage ->
       case searchMessage of
@@ -154,19 +161,21 @@ update message model =
           { model | dragMode = Nothing }
 
 
-deleteNode: Model -> NodeId -> Model
-deleteNode model nodeId =
+deleteNode: Model -> Model
+deleteNode model =
   let
     nodes = model.nodes
-    output = if model.outputNode.id == Just nodeId
+    nodeId = model.confirmDeletion |> Maybe.withDefault -1
+    output = if model.outputNode.id == model.confirmDeletion
       then Nothing else model.outputNode.id
 
-    newNodeValues = Dict.remove nodeId model.nodes.values
+    newNodeValues = model.nodes.values |> Dict.remove nodeId
       |> Dict.map (\_ view -> { view | node = onNodeDeleted nodeId view.node })
 
   in updateCache { model
     | nodes = { nodes | values = newNodeValues }
     , outputNode = { id = output, locked = model.outputNode.locked }
+    , confirmDeletion = Nothing
     , dragMode = Nothing
     }
 
@@ -179,7 +188,12 @@ duplicateNode model nodeId =
 
   in case node of
       Nothing -> model
-      Just original -> { model | nodes = addNode nodes original }
+      Just original ->
+        let
+          position = Vec2.add original.position (Vec2 0 -28)
+          clone = { original | position = position }
+
+        in { model | nodes = addNode nodes clone }
 
 
 

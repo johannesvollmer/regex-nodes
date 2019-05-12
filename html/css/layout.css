@@ -206,19 +206,16 @@ header img {
 .graph-node .menu {
   position: absolute;
   right: 0; top: 0;
-  margin: 0; padding: 0;
   height: 0;
 
   display: flex;
   flex-direction: row;
 }
 .graph-node:hover .menu,  graph-node .menu:hover {
-  margin: 0; padding: 0;
   top: -25px;
   height: 25px;
 }
 .graph-node .menu .button, .menu .button img {
-  margin: 0; padding: 0;
   height: 100%;
 }
 .menu .button img {
@@ -251,6 +248,11 @@ header img {
 /* override priority, maximise text input size */
 .property > .chars.input, .property > .int.input {
 	flex-grow: 100;
+}
+
+/* override priority, maximise text input size */
+.property > .chars.input, .property > .int.input, .property > .char.input {
+	text-align: center;
 }
 
 

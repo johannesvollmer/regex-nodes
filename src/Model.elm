@@ -16,6 +16,8 @@ type alias Model =
   , search: Maybe String
   , dragMode: Maybe DragMode
 
+  , confirmDeletion : Maybe NodeId
+
   , view: View
   }
 
@@ -26,6 +28,7 @@ init =
   , dragMode = Nothing
   , search = Nothing
   , view = View 0 (Vec2 0 0)
+  , confirmDeletion = Nothing
   , exampleText =
     { contents = String.repeat 12 "Leverage agile frameworks to provide a robust synopsis for high level overviews. Iterative approaches to corporate strategy foster collaborative thinking to further the overall value proposition. Organically grow the holistic world view of disruptive innovation via workplace diversity and empowerment. Bring to the table win-win survival strategies to ensure proactive domination. At the end of the day, going forward, a new normal that has evolved from generation X is on the runway heading towards a streamlined cloud solution. User generated content in real-time will have multiple touchpoints for offshoring. Capitalize on low hanging fruit to identify a ballpark value added activity to beta test. Override the digital divide with additional clickthroughs from DevOps. Nanotechnology immersion along the information highway will close the loop on focusing solely on the bottom line."
     , maxMatches = 4000
@@ -126,20 +129,19 @@ type alias Prototype =
 prototypes : List Prototype
 prototypes =
   [ symbolProto .whitespace (SymbolNode WhitespaceChar)
+  , symbolProto .nonWhitespace (SymbolNode NonWhitespaceChar)
   , symbolProto .digit (SymbolNode DigitChar)
   , symbolProto .nonDigit (SymbolNode NonDigitChar)
   
   , typeProto .charset (CharSetNode ",.?!:")
-  , typeProto .literal (LiteralNode "the")
-  , typeProto .charRange (CharRangeNode 'A' 'Z')
-
   , typeProto .set (SetNode (Array.fromList []))
+
+  , typeProto .literal (LiteralNode "the")
   , typeProto .sequence (SequenceNode (Array.fromList []))
 
-
-  , symbolProto .nonWhitespace (SymbolNode NonWhitespaceChar)
-  , typeProto .notInCharset (NotInCharSetNode ",.?!:")
+  , typeProto .charRange (CharRangeNode 'A' 'Z')
   , typeProto .notInCharRange (NotInCharRangeNode 'A' 'Z')
+  , typeProto .notInCharset (NotInCharSetNode ",.?!:")
 
   , typeProto .optional (OptionalNode Nothing)
   , typeProto .atLeastOne (AtLeastOneNode Nothing)

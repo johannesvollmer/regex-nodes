@@ -174,7 +174,7 @@ view model =
 
     connectDragging = connectDragId /= Nothing
 
-    nodeViews = (List.map (viewNode model.dragMode model.outputNode.id model.nodes) (Dict.toList model.nodes.values))
+    nodeViews = (List.map (viewNode model.dragMode model.confirmDeletion model.outputNode.id model.nodes) (Dict.toList model.nodes.values))
 
     connections = flattenList (List.map .connections nodeViews)
 
@@ -219,12 +219,19 @@ view model =
           [ img [ src "html/img/logo.svg" ] []
           , h1 [] [ text "Regex Nodes" ]
           , a
-            [ href "https://github.com/johannesvollmer/regex-nodes", target "_blank", rel "noopener noreferrer" ]
+            [ href "https://github.com/johannesvollmer/regex-nodes", target "_blank", rel "noopener noreferrer"
+            , title "github.com/regex-nodes"
+            ]
             [ text "by johannes vollmer" ]
           ]
 
         , div [ id "example-options" ]
-          [ div [ id "match-limit" ]
+          [ div
+            [ id "match-limit"
+            , title ("Display no more than " ++ String.fromInt model.exampleText.maxMatches
+              ++ " Matches from the example text, in order to perserve responsivenes"
+              )
+            ]
             [ text "Example Match Limit"
             , viewPositiveIntInput model.exampleText.maxMatches (UpdateExampleText << UpdateMaxMatchLimit)
             ]
@@ -233,6 +240,7 @@ view model =
             [ id "edit-example", class "button"
             , checked model.exampleText.isEditing
             , Mouse.onClick (always <| UpdateExampleText <| SetEditing <| not model.exampleText.isEditing)
+            , title "Edit the Text which is displayed in the background"
             ]
 
             [ text "Edit Example" ]
@@ -253,6 +261,7 @@ view model =
         , div
           [ id "lock", classes "button" [(model.outputNode.locked, "checked")]
           , Mouse.onClick (always <| SetOutputLocked <| not model.outputNode.locked)
+          , title "Always show the regex of the selected Node"
           ]
           [ lockSvg ]
         ]
@@ -355,10 +364,10 @@ viewExampleTexts matches =
   in matches |> List.concatMap render
 
 
-viewNode : Maybe DragMode -> Maybe NodeId -> Nodes -> (NodeId, Model.NodeView) -> NodeView
-viewNode dragMode outputNode nodes (nodeId, nodeView) =
+viewNode : Maybe DragMode -> Maybe NodeId -> Maybe NodeId -> Nodes -> (NodeId, Model.NodeView) -> NodeView
+viewNode dragMode confirmDeletion outputNode nodes (nodeId, nodeView) =
   let props = properties nodeView.node in
-  NodeView (viewNodeContent dragMode outputNode nodeId props nodeView) (viewNodeConnections nodes props nodeView)
+  NodeView (viewNodeContent dragMode outputNode confirmDeletion nodeId props nodeView) (viewNodeConnections nodes props nodeView)
 
 
 viewNodeConnections : Nodes -> List PropertyView -> Model.NodeView -> List (Svg Message)
@@ -438,9 +447,11 @@ hasDragConnectionPrototype dragMode nodeId = case dragMode of
     Just (CreateConnection { supplier }) -> nodeId == supplier
     _ -> False
 
-viewNodeContent : Maybe DragMode -> Maybe NodeId -> NodeId -> List PropertyView -> Model.NodeView -> Html Message
-viewNodeContent dragMode outputNode nodeId props nodeView =
+viewNodeContent : Maybe DragMode -> Maybe NodeId -> Maybe NodeId -> NodeId -> List PropertyView -> Model.NodeView -> Html Message
+viewNodeContent dragMode confirmDeletion outputNode nodeId props nodeView =
   let
+    contentWidth = (nodeWidth nodeView.node |> String.fromFloat) ++ "px"
+
     mayDragConnect = case dragMode of
       Just (PrepareEditingConnection { node }) -> nodeId == node
       Just (RetainPrototypedConnection { node }) -> nodeId == node -- TODO test
@@ -452,8 +463,9 @@ viewNodeContent dragMode outputNode nodeId props nodeView =
 
       else DragModeMessage (StartNodeMove { node = nodeId, mouse = Vec2.fromTuple event.clientPos })
 
+
   in div
-    [ style "width" ((String.fromFloat (nodeWidth nodeView.node)) ++ "px")
+    [ style "width" contentWidth
     , translateHTML nodeView.position
     , classes "graph-node"
       [ (hasDragConnectionPrototype dragMode nodeId, "connecting")
@@ -466,20 +478,23 @@ viewNodeContent dragMode outputNode nodeId props nodeView =
         (viewProperties nodeId dragMode props)
 
     , div
-        [ class "menu" ]
-        [ div
-            [ Mouse.onClick <| always <| DuplicateNode <| nodeId
-            , class "duplicate button"
-            ]
-            [ img [ src "html/img/copy.svg" ] [] ]
+      [ class "menu" ]
+      [ div
+          [ Mouse.onClick <| always <| DuplicateNode <| nodeId
+          , class "duplicate button"
+          , title "Duplicate this Node"
+          ]
+          [ img [ src "html/img/copy.svg" ] [] ]
 
-        , div
-            [ Mouse.onClick <| always <| DeleteNode <| nodeId
-            , class "delete button"
-            ]
-            [ img [ src "html/img/bin.svg" ] [] ]
+      , div
+          [ Mouse.onClick <| always <| DeleteNode <| nodeId
+          , class "delete button"
+          , title "Delete this Node"
+          ]
+          [ img [ src "html/img/bin.svg" ] [] ]
 
-        ]
+      ]
+
     ]
 
 
