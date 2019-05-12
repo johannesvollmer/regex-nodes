@@ -6923,6 +6923,47 @@ var author$project$View$classes = F2(
 var author$project$View$flattenList = function (list) {
 	return A3(elm$core$List$foldr, elm$core$Basics$append, _List_Nil, list);
 };
+var elm$svg$Svg$trustedNode = _VirtualDom_nodeNS('http://www.w3.org/2000/svg');
+var elm$svg$Svg$path = elm$svg$Svg$trustedNode('path');
+var elm$svg$Svg$rect = elm$svg$Svg$trustedNode('rect');
+var elm$svg$Svg$svg = elm$svg$Svg$trustedNode('svg');
+var elm$svg$Svg$Attributes$d = _VirtualDom_attribute('d');
+var elm$svg$Svg$Attributes$height = _VirtualDom_attribute('height');
+var elm$svg$Svg$Attributes$id = _VirtualDom_attribute('id');
+var elm$svg$Svg$Attributes$viewBox = _VirtualDom_attribute('viewBox');
+var elm$svg$Svg$Attributes$width = _VirtualDom_attribute('width');
+var elm$svg$Svg$Attributes$x = _VirtualDom_attribute('x');
+var elm$svg$Svg$Attributes$y = _VirtualDom_attribute('y');
+var author$project$View$lockSvg = A2(
+	elm$svg$Svg$svg,
+	_List_fromArray(
+		[
+			elm$svg$Svg$Attributes$width('50'),
+			elm$svg$Svg$Attributes$height('50'),
+			elm$svg$Svg$Attributes$viewBox('0 0 10 10')
+		]),
+	_List_fromArray(
+		[
+			A2(
+			elm$svg$Svg$path,
+			_List_fromArray(
+				[
+					elm$svg$Svg$Attributes$id('bracket'),
+					elm$svg$Svg$Attributes$d('M 3,3 v -1.5 c 0,-2 4,-2 4,0 v 4')
+				]),
+			_List_Nil),
+			A2(
+			elm$svg$Svg$rect,
+			_List_fromArray(
+				[
+					elm$svg$Svg$Attributes$x('2'),
+					elm$svg$Svg$Attributes$y('5'),
+					elm$svg$Svg$Attributes$width('6'),
+					elm$svg$Svg$Attributes$height('4'),
+					elm$svg$Svg$Attributes$id('body')
+				]),
+			_List_Nil)
+		]));
 var elm$core$String$fromFloat = _String_fromNumber;
 var author$project$View$magnifyAndOffset = F2(
 	function (unit, transformView) {
@@ -7066,7 +7107,6 @@ var author$project$Vec2$inverseTransform = F2(
 			1 / transformation.dK,
 			A2(author$project$Vec2$sub, value, transformation.dV));
 	});
-var elm$svg$Svg$Attributes$d = _VirtualDom_attribute('d');
 var author$project$View$svgConnectionPath = F4(
 	function (from, fromTangent, toTangent, to) {
 		var vec2ToString = function (vec) {
@@ -7186,8 +7226,6 @@ var author$project$View$nodeWidth = function (node) {
 			return author$project$View$mainTextWidth(author$project$Model$typeNames.ch);
 	}
 };
-var elm$svg$Svg$trustedNode = _VirtualDom_nodeNS('http://www.w3.org/2000/svg');
-var elm$svg$Svg$path = elm$svg$Svg$trustedNode('path');
 var elm$svg$Svg$Attributes$class = _VirtualDom_attribute('class');
 var author$project$View$viewConnectDrag = F4(
 	function (viewTransformation, nodes, dragId, mouse) {
@@ -9369,7 +9407,6 @@ var elm$html$Html$Attributes$target = elm$html$Html$Attributes$stringProperty('t
 var elm$virtual_dom$VirtualDom$lazy = _VirtualDom_lazy;
 var elm$html$Html$Lazy$lazy = elm$virtual_dom$VirtualDom$lazy;
 var elm$svg$Svg$g = elm$svg$Svg$trustedNode('g');
-var elm$svg$Svg$svg = elm$svg$Svg$trustedNode('svg');
 var mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$onMove = A2(mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$onWithOptions, 'mousemove', mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$defaultOptions);
 var mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$onUp = A2(mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$onWithOptions, 'mouseup', mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$defaultOptions);
 var mpizenberg$elm_pointer_events$Html$Events$Extra$Wheel$defaultOptions = {aY: true, a0: false};
@@ -9698,10 +9735,7 @@ var author$project$View$view = function (model) {
 											author$project$Update$SetOutputLocked(!model.cy.cc)))
 									]),
 								_List_fromArray(
-									[
-										elm$html$Html$text(
-										model.cy.cc ? 'Locked' : 'Lock')
-									]))
+									[author$project$View$lockSvg]))
 							]))
 					]))
 			]));

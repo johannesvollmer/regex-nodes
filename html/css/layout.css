@@ -177,9 +177,13 @@ header img {
 }
 
 #expression-result #lock {
-  text-align: center;
-  width: 8ch;
-  padding: 12px 24px;
+  height 100%;
+}
+
+#lock svg {
+  padding: 0 32px;
+  height: 100%;
+  transform: scale(0.5);
 }
 
 

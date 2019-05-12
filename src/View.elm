@@ -254,12 +254,23 @@ view model =
           [ id "lock", classes "button" [(model.outputNode.locked, "checked")]
           , Mouse.onClick (always <| SetOutputLocked <| not model.outputNode.locked)
           ]
-          [ text (if model.outputNode.locked then "Locked" else "Lock") ]
+          [ lockSvg ]
         ]
       ]
 
     ]
 
+
+lockSvg =
+  Svg.svg
+    [ Svg.Attributes.width "50", Svg.Attributes.height "50", Svg.Attributes.viewBox "0 0 10 10" ]
+    [ Svg.path [ Svg.Attributes.id "bracket", Svg.Attributes.d "M 3,3 v -1.5 c 0,-2 4,-2 4,0 v 4" ] []
+    , Svg.rect
+      [ Svg.Attributes.x "2", Svg.Attributes.y "5"
+      , Svg.Attributes.width "6", Svg.Attributes.height "4"
+      , Svg.Attributes.id "body"
+      ] [ ]
+    ]
 
 preventContextMenu message = Mouse.onWithOptions "contextmenu"
   { preventDefault = True, stopPropagation = True }

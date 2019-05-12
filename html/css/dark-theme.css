@@ -95,14 +95,16 @@ nav {
   font: inherit;
 }
 #expression-result #lock {
-  color: #666;
+  fill: #666;
+  stroke: #666;
 }
 #expression-result #lock:hover {
   background-color: #242424;
 }
 #expression-result #lock.checked {
   background-color: #111;
-  color: #ddd;
+  fill: #ddd;
+  stroke: #ddd;
 }
 
 #match-limit  {
@@ -165,14 +167,12 @@ nav {
 }
 
 .graph-node .menu {
-  background-color: #222;
+  background-color: #00000044;
   color: #888;
-  opacity: 0.5;
 }
 .graph-node .menu:hover {
   background-color: #814;
   color: #ddd;
-  opacity: 1;
 }
 
 .property:hover {
@@ -302,3 +302,33 @@ nav {
     stroke: teal;
   }
 }
+
+
+
+
+/* LOCK */
+
+#lock #bracket {
+  fill: none;
+  stroke: inherit;
+  stroke-width: 1;
+
+  /*animation: closeBracket 0.6s forwards reverse; FIXME */
+}
+
+#lock #body {
+  fill: inherit;
+}
+
+.checked#lock #bracket {
+  animation: closeBracket 0.4s forwards;
+}
+
+@keyframes closeBracket {
+  0% { transform: translate(0,0) }
+  40% { transform: translate(0,-0.5px) }
+  70% { transform: translate(0,2.5px) }
+  100% { transform: translate(0,2px)  }
+}
+
+
