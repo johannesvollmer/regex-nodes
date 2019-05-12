@@ -442,8 +442,7 @@ viewNodeContent dragMode outputNode nodeId props nodeView =
       else DragModeMessage (StartNodeMove { node = nodeId, mouse = Vec2.fromTuple event.clientPos })
 
   in div
-    [ Mouse.onDown onClick
-    , style "width" ((String.fromFloat (nodeWidth nodeView.node)) ++ "px")
+    [ style "width" ((String.fromFloat (nodeWidth nodeView.node)) ++ "px")
     , translateHTML nodeView.position
     , classes "graph-node"
       [ (hasDragConnectionPrototype dragMode nodeId, "connecting")
@@ -452,7 +451,18 @@ viewNodeContent dragMode outputNode nodeId props nodeView =
       ]
     ]
 
-    (viewProperties nodeId dragMode props)
+    [ div [ class "properties", Mouse.onDown onClick ]
+        (viewProperties nodeId dragMode props)
+
+    , div
+        [ class "menu" ]
+        [ div
+            [ Mouse.onClick <| always <| DeleteNode <| nodeId
+            , class "button"
+            ]
+            [ text "×" ]
+        ]
+    ]
 
 
 -- TODO pattern match only once inside this function

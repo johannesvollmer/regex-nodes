@@ -16,8 +16,9 @@
 
 
 /* FIXME will not work when removing parent classes! */
-.property, .graph-node, .connector, #search > input, #match-limit, #match-limit input,
-.property > .chars.input,.property > .int.input, #edit-example-container
+.property, .graph-node, .connector, #search input, #match-limit, #match-limit input,
+.property .chars.input,.property .int.input, #edit-example-container,
+.graph-node:hover .menu, .graph-node .menu:hover
 {
   transition: background-color 250ms, opacity 100ms;
 }
@@ -26,8 +27,12 @@
   transition: border-color 150ms;
 }
 
-.property, nav a, #example-text {
+.property, nav a, #example-text, .graph-node .menu {
   transition: color 150ms;
+}
+
+.graph-node .menu, .graph-node:hover .menu {
+  transition: height 100ms, top 100ms;
 }
 
 
@@ -142,14 +147,14 @@ nav {
 }
 
 
-.graph-node {
+.graph-node .properties {
 	background-color: #eee;
 	box-shadow: 2px 2px 0 0 #00000044;
 }
 .graph-node {
 	cursor: pointer;
 }
-.output.graph-node {
+.output.graph-node .property {
   color: teal;
 }
 .move-dragging * {
@@ -159,6 +164,16 @@ nav {
 	cursor: pointer;
 }
 
+.graph-node .menu {
+  background-color: #222;
+  color: #888;
+  opacity: 0.5;
+}
+.graph-node .menu:hover {
+  background-color: #814;
+  color: #ddd;
+  opacity: 1;
+}
 
 .property:hover {
 	background-color: #fff;
@@ -184,7 +199,7 @@ nav {
 	opacity: 0;
 }
 
-.graph-node {
+.graph-node .properties {
 	color: #333;
 }
 .graph-node input {
@@ -194,7 +209,7 @@ nav {
 .connect-dragging .graph-node:not(.connecting) .property.connectable-input {
 	background-color: #ddd;
 }
-.connect-dragging .graph-node {
+.connect-dragging .graph-node .properties {
 	background-color: #444;
 }
 

@@ -229,6 +229,40 @@ viewTransform { magnification, offset} =
 
 defaultFlags = RegexFlags True True True
 
+onNodeDeleted : NodeId -> Node -> Node
+onNodeDeleted deleted node =
+  case node of
+    SymbolNode _ -> node
+    CharSetNode _ -> node
+    NotInCharSetNode _ -> node
+    LiteralNode _ -> node
+    CharRangeNode _ _ -> node
+    NotInCharRangeNode _ _ -> node
+
+    SetNode members -> SetNode <| Array.filter ((/=) deleted) members
+    SequenceNode members -> SequenceNode <| Array.filter ((/=) deleted) members
+    CaptureNode child -> CaptureNode <| ifNotDeleted deleted child
+    IfAtEndNode child -> IfAtEndNode <| ifNotDeleted deleted child
+    IfAtStartNode child -> IfAtStartNode <| ifNotDeleted deleted child
+    OptionalNode child -> OptionalNode <| ifNotDeleted deleted child
+    AtLeastOneNode child -> AtLeastOneNode <| ifNotDeleted deleted child
+    AnyRepetitionNode child -> AnyRepetitionNode <| ifNotDeleted deleted child
+
+    FlagsNode value -> FlagsNode <| ifExpressionNotDeleted deleted value
+    IfFollowedByNode value -> IfFollowedByNode <| ifExpressionNotDeleted deleted value
+    IfNotFollowedByNode value -> IfNotFollowedByNode <| ifExpressionNotDeleted deleted value
+    RangedRepetitionNode value -> RangedRepetitionNode <| ifExpressionNotDeleted deleted value
+    MinimumRepetitionNode value -> MinimumRepetitionNode <| ifExpressionNotDeleted deleted value
+    MaximumRepetitionNode value -> MaximumRepetitionNode <| ifExpressionNotDeleted deleted value
+    ExactRepetitionNode value -> ExactRepetitionNode <| ifExpressionNotDeleted deleted value
+
+
+ifNotDeleted deleted node =
+  if node == Just deleted
+    then Nothing else node
+
+ifExpressionNotDeleted deleted values =
+  { values | expression = ifNotDeleted deleted values.expression }
 
 symbolName symbol = case symbol of
   WhitespaceChar -> symbolNames.whitespace

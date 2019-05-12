@@ -18,6 +18,7 @@ type Message
   | UpdateNodeMessage NodeId Node
   | UpdateView ViewMessage
   | UpdateExampleText ExampleTextMessage
+  | DeleteNode NodeId
 
 type ExampleTextMessage
   = UpdateContents String
@@ -80,6 +81,8 @@ update message model =
 
     UpdateNodeMessage id value ->
       updateCache { model | nodes = updateNode model.nodes id value }
+
+    DeleteNode id -> deleteNode model id
 
     SearchMessage searchMessage ->
       case searchMessage of
@@ -149,6 +152,21 @@ update message model =
           { model | dragMode = Nothing }
 
 
+deleteNode: Model -> NodeId -> Model
+deleteNode model nodeId =
+  let
+    nodes = model.nodes
+    output = if model.outputNode.id == Just nodeId
+      then Nothing else model.outputNode.id
+
+    newNodeValues = Dict.remove nodeId model.nodes.values
+      |> Dict.map (\_ view -> { view | node = onNodeDeleted nodeId view.node })
+
+  in updateCache { model
+    | nodes = { nodes | values = newNodeValues }
+    , outputNode = { id = output, locked = model.outputNode.locked }
+    , dragMode = Nothing
+    }
 
 stopEditingExampleText model =
   enableEditingExampleText model False

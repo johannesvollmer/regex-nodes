@@ -25,7 +25,9 @@ Alternatively, use [modd](https://github.com/cortesi/modd) in this directory to 
 - [x] Build Scripts + Build to Github Pages
     - [x] Use optimized builds instead of debug builds for github pages
 - [ ] Parse regex code in "Add Nodes"
-- [ ] How to delete nodes
+- [x] How to delete nodes
+    - [ ] When deleting a node, try to retain connections 
+          (If the deleted node is a single property node, connect the otherwise now opened connections)
 - [x] Do not adjust example for every node move
 - [ ] Middle mouse button view movement
 - [ ] Simplify UX of changing order in "Set Node"s
