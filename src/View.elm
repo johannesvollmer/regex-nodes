@@ -210,7 +210,6 @@ properties node =
 
 propertyHeight = 25
 
--- TODO dry
 nodeWidth node = case node of
   SymbolNode symbol -> symbol |> symbolName |> mainTextWidth
   CharSetNode chars -> mainTextWidth typeNames.charset + codeTextWidth chars + 3
@@ -245,7 +244,6 @@ mainTextWidth text =
 
 -- VIEW
 
--- TODO use lazy html!
 
 view : Model -> Html Message
 view model =
@@ -425,8 +423,6 @@ viewSearch query =
   in prependListIf (not isEmpty) asRegex results
 
 
--- TODO use Html.Lazy!!!
-
 viewExampleText example =
   if example.isEditing
     then textarea [ id "example-text", onInput (UpdateExampleText << UpdateContents) ]
@@ -487,6 +483,7 @@ viewNodeConnections nodes props nodeView =
 
         _ ->  [ always Nothing ]
 
+    -- TODO use lazy html!
     flattened = props |> List.map viewInputConnection |> flattenList
     indexed = flattened |> List.indexedMap (\index at -> at index)
     filtered = List.filterMap identity indexed
@@ -534,6 +531,7 @@ hasDragConnectionPrototype dragMode nodeId = case dragMode of
     Just (CreateConnection { supplier }) -> nodeId == supplier
     _ -> False
 
+-- TODO use lazy html!
 viewNodeContent : Maybe DragMode -> Maybe NodeId -> NodeId -> List PropertyView -> Model.NodeView -> Html Message
 viewNodeContent dragMode outputNode nodeId props nodeView =
   let
@@ -541,7 +539,7 @@ viewNodeContent dragMode outputNode nodeId props nodeView =
 
     mayDragConnect = case dragMode of
       Just (PrepareEditingConnection { node }) -> nodeId == node
-      Just (RetainPrototypedConnection { node }) -> nodeId == node -- TODO test
+      Just (RetainPrototypedConnection { node }) -> nodeId == node
       _ -> False
 
     onClick event =
@@ -584,8 +582,6 @@ viewNodeContent dragMode outputNode nodeId props nodeView =
 
     ]
 
-
--- TODO pattern match only once inside this function
 
 viewProperties : NodeId -> Maybe DragMode -> List PropertyView -> List (Html Message)
 viewProperties nodeId dragMode props =
@@ -632,7 +628,7 @@ viewProperties nodeId dragMode props =
 
     propertyHTML: List (Attribute Message) -> Html Message -> String -> String -> Bool -> Html Message -> Html Message -> Html Message
     propertyHTML attributes directInput name description connectableInput left right = div
-      ((classes "property" [(connectableInput, "connectable-input")]) :: (title description :: attributes)) -- FIXME only on leave if property.connectoutput
+      ((classes "property" [(connectableInput, "connectable-input")]) :: (title description :: attributes))
 
       [ left
       , span [ class "title" ] [ text name ]

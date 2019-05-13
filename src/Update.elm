@@ -92,7 +92,6 @@ update message model =
       then { model | confirmDeletion = Nothing }
       else deleteNode model
 
-
     SearchMessage searchMessage ->
       case searchMessage of
         UpdateSearch query -> { model | search = Just query }
