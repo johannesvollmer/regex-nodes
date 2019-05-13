@@ -5756,6 +5756,14 @@ var elm$core$Basics$composeR = F3(
 		return g(
 			f(x));
 	});
+var elm$core$Basics$not = _Basics_not;
+var elm$core$List$isEmpty = function (xs) {
+	if (!xs.b) {
+		return true;
+	} else {
+		return false;
+	}
+};
 var elm$core$Result$andThen = F2(
 	function (callback, result) {
 		if (!result.$) {
@@ -5845,7 +5853,12 @@ var author$project$Build$buildExpression = F3(
 	});
 var author$project$Build$buildNodeExpression = F2(
 	function (nodes, node) {
-		var set = elm$core$String$join('|');
+		var set = function (options) {
+			return (!elm$core$List$isEmpty(options)) ? A2(elm$core$String$join, '|', options) : '(nothing)';
+		};
+		var sequence = function (members) {
+			return (!elm$core$List$isEmpty(members)) ? elm$core$String$concat(members) : '(nothing)';
+		};
 		var rangedRepetition = F3(
 			function (minimum, maximum, expression) {
 				return expression + ('{' + (elm$core$String$fromInt(minimum) + (',' + (elm$core$String$fromInt(maximum) + '}'))));
@@ -5966,7 +5979,7 @@ var author$project$Build$buildNodeExpression = F2(
 						literal(chars));
 				case 7:
 					var members = node.a;
-					return A2(buildMembers, elm$core$String$concat, members);
+					return A2(buildMembers, sequence, members);
 				case 6:
 					var options = node.a;
 					return A2(buildMembers, set, options);
@@ -6084,7 +6097,6 @@ var author$project$Build$buildRegex = F2(
 			},
 			expression);
 	});
-var elm$core$Basics$not = _Basics_not;
 var elm$core$Maybe$withDefault = F2(
 	function (_default, maybe) {
 		if (!maybe.$) {
@@ -8997,8 +9009,8 @@ var elm$html$Html$Attributes$src = function (url) {
 };
 var mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$onClick = A2(mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$onWithOptions, 'click', mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$defaultOptions);
 var mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$onDown = A2(mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$onWithOptions, 'mousedown', mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$defaultOptions);
-var author$project$View$viewNodeContent = F6(
-	function (dragMode, confirmDeletion, outputNode, nodeId, props, nodeView) {
+var author$project$View$viewNodeContent = F5(
+	function (dragMode, outputNode, nodeId, props, nodeView) {
 		var onClick = function (event) {
 			return (event.c4 === 3) ? author$project$Update$DragModeMessage(
 				author$project$Update$StartPrepareEditingConnection(
@@ -9117,14 +9129,14 @@ var author$project$View$viewNodeContent = F6(
 						]))
 				]));
 	});
-var author$project$View$viewNode = F5(
-	function (dragMode, confirmDeletion, outputNode, nodes, _n0) {
+var author$project$View$viewNode = F4(
+	function (dragMode, outputNode, nodes, _n0) {
 		var nodeId = _n0.a;
 		var nodeView = _n0.b;
 		var props = author$project$View$properties(nodeView.bi);
 		return A2(
 			author$project$View$NodeView,
-			A6(author$project$View$viewNodeContent, dragMode, outputNode, confirmDeletion, nodeId, props, nodeView),
+			A5(author$project$View$viewNodeContent, dragMode, outputNode, nodeId, props, nodeView),
 			A3(author$project$View$viewNodeConnections, nodes, props, nodeView));
 	});
 var author$project$Update$FinishSearch = function (a) {
@@ -9614,7 +9626,7 @@ var author$project$View$view = function (model) {
 		model.cB.b2);
 	var nodeViews = A2(
 		elm$core$List$map,
-		A4(author$project$View$viewNode, model.bV, model.bQ, model.cB.b2, model.cs),
+		A3(author$project$View$viewNode, model.bV, model.cB.b2, model.cs),
 		author$project$IdMap$toList(model.cs));
 	var expressionResult = A2(
 		elm$core$Maybe$map,

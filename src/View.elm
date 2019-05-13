@@ -246,7 +246,7 @@ view model =
 
     connectDragging = connectDragId /= Nothing
 
-    nodeViews = (List.map (viewNode model.dragMode model.confirmDeletion model.outputNode.id model.nodes) (IdMap.toList model.nodes))
+    nodeViews = (List.map (viewNode model.dragMode model.outputNode.id model.nodes) (IdMap.toList model.nodes))
 
     connections = flattenList (List.map .connections nodeViews)
 
@@ -436,10 +436,10 @@ viewExampleTexts matches =
   in matches |> List.concatMap render
 
 
-viewNode : Maybe DragMode -> Maybe NodeId -> Maybe NodeId -> Nodes -> (NodeId, Model.NodeView) -> NodeView
-viewNode dragMode confirmDeletion outputNode nodes (nodeId, nodeView) =
+viewNode : Maybe DragMode -> Maybe NodeId -> Nodes -> (NodeId, Model.NodeView) -> NodeView
+viewNode dragMode outputNode nodes (nodeId, nodeView) =
   let props = properties nodeView.node in
-  NodeView (viewNodeContent dragMode outputNode confirmDeletion nodeId props nodeView) (viewNodeConnections nodes props nodeView)
+  NodeView (viewNodeContent dragMode outputNode nodeId props nodeView) (viewNodeConnections nodes props nodeView)
 
 
 viewNodeConnections : Nodes -> List PropertyView -> Model.NodeView -> List (Svg Message)
@@ -519,8 +519,8 @@ hasDragConnectionPrototype dragMode nodeId = case dragMode of
     Just (CreateConnection { supplier }) -> nodeId == supplier
     _ -> False
 
-viewNodeContent : Maybe DragMode -> Maybe NodeId -> Maybe NodeId -> NodeId -> List PropertyView -> Model.NodeView -> Html Message
-viewNodeContent dragMode confirmDeletion outputNode nodeId props nodeView =
+viewNodeContent : Maybe DragMode -> Maybe NodeId -> NodeId -> List PropertyView -> Model.NodeView -> Html Message
+viewNodeContent dragMode outputNode nodeId props nodeView =
   let
     contentWidth = (nodeWidth nodeView.node |> String.fromFloat) ++ "px"
 

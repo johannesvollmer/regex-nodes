@@ -1,14 +1,12 @@
 module Build exposing (..)
 
 import Array
-import Dict exposing (Dict)
 import IdMap
 import Regex
 
 import Model exposing (..)
 
 
--- TODO precedence and empty sets need braces
 -- TODO detect cycles??
 
 type alias BuildResult a = Result String a
@@ -21,8 +19,15 @@ buildNodeExpression nodes node =
     escapeLiteral = escapeChars "[]{}()|^.-+*?!$/\\"
 
 
-    set = String.join "|"
+    set options = if not (List.isEmpty options)
+      then String.join "|" options
+      else "(nothing)"
+
     capture child = "(" ++ child ++ ")"
+
+    sequence members = if not (List.isEmpty members)
+       then String.concat members
+       else "(nothing)"
 
     optional expression = expression ++ "?"
     atLeastOne expression = expression ++ "+"
@@ -49,8 +54,6 @@ buildNodeExpression nodes node =
 
 
 
-
-
     ownPrecedence = precedence node
 
     build child = buildExpression nodes ownPrecedence child
@@ -61,6 +64,7 @@ buildNodeExpression nodes node =
      |> List.map (Just >> build) |> collapseResults
      |> Result.map join |> Result.mapError (String.join ", ")
 
+
     string = case node of
       SymbolNode symbol -> symbol |> buildSymbol |> Ok
       CharSetNode chars -> Ok (charset chars)
@@ -69,7 +73,7 @@ buildNodeExpression nodes node =
       NotInCharRangeNode start end -> Ok (notInCharRange start end)
       LiteralNode chars -> Ok (literal chars)
 
-      SequenceNode members -> buildMembers String.concat members
+      SequenceNode members -> buildMembers sequence members
       SetNode options -> buildMembers set options
       CaptureNode child -> buildSingleChild capture child
 
@@ -154,8 +158,8 @@ precedence node = case node of
 
     SequenceNode _ -> 2
 
-    IfAtEndNode _ -> 3 -- TODO test
-    IfAtStartNode _ -> 3 -- TODO test
+    IfAtEndNode _ -> 3
+    IfAtStartNode _ -> 3
     IfNotFollowedByNode _ -> 3
     IfFollowedByNode _ -> 3
 
