@@ -144,12 +144,18 @@ properties node =
 
     AtLeastOneNode counted ->
       [ PropertyView typeNames.atLeastOne "Allow this expression to occur multiple times"
-        (ConnectingProperty counted AtLeastOneNode) True
+          (ConnectingProperty counted.expression (updateAtLeastOneExpression counted)) True
+
+      , PropertyView "Minimize Count" "Match as few occurences as possible"
+          (BoolProperty counted.minimal (updateAtLeastOneMinimal counted)) False
       ]
 
     AnyRepetitionNode counted ->
       [ PropertyView typeNames.anyRepetition "Allow this expression to occur multiple times or not at all"
-        (ConnectingProperty counted AnyRepetitionNode) True
+        (ConnectingProperty counted.expression (updateAnyRepetitionExpression counted)) True
+
+      , PropertyView "Minimize Count" "Match as few occurences as possible"
+          (BoolProperty counted.minimal (updateAnyRepetitionMinimal counted)) False
       ]
 
     ExactRepetitionNode repetition ->
@@ -172,6 +178,9 @@ properties node =
       , PropertyView "Maximum"
           ("Match only if the expression is repeated no more than " ++ String.fromInt counted.maximum ++ " times")
           (IntProperty counted.maximum (updateRangedRepetitionMaximum counted)) False
+
+      , PropertyView "Minimize Count" "Match as few occurences as possible"
+          (BoolProperty counted.minimal (updateRangedRepetitionMinimal counted)) False
       ]
 
     MinimumRepetitionNode counted ->
@@ -181,6 +190,9 @@ properties node =
 
       , PropertyView "Count" "Minimum number of repetitions"
           (IntProperty counted.minimum (updateMinimumRepetitionCount counted)) False
+
+      , PropertyView "Minimize Count" "Match as few occurences as possible"
+          (BoolProperty counted.minimal (updateMinimumRepetitionMinimal counted)) False
       ]
 
     MaximumRepetitionNode counted ->
@@ -190,6 +202,9 @@ properties node =
 
       , PropertyView "Count" "Maximum number of repetitions"
           (IntProperty counted.maximum (updateMaximumRepetitionCount counted)) False
+
+      , PropertyView "Minimize Count" "Match as few occurences as possible"
+          (BoolProperty counted.minimal (updateMaximumRepetitionMinimal counted)) False
       ]
 
 

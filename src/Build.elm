@@ -17,6 +17,8 @@ buildNodeExpression nodes node =
   let
     escapeCharset = escapeChars "[^-.\\]"
     escapeLiteral = escapeChars "[]{}()|^.-+*?!$/\\"
+    andMinimal min expression = if min
+      then expression ++ "?" else expression
 
 
     set options = if not (List.isEmpty options)
@@ -30,16 +32,16 @@ buildNodeExpression nodes node =
        else "(nothing)"
 
     optional expression = expression ++ "?"
-    atLeastOne expression = expression ++ "+"
-    anyRepetition expression = expression ++ "*"
+    atLeastOne min expression = expression ++ "+" |> andMinimal min
+    anyRepetition min expression = expression ++ "*" |> andMinimal min
 
     exactRepetition count expression = expression ++ "{" ++ String.fromInt count ++ "}"
-    minimumRepetition minimum expression = expression ++ "{" ++ String.fromInt minimum ++ ",}"
-    maximumRepetition maximum expression = expression ++ "{0," ++ String.fromInt maximum ++ "}"
-    rangedRepetition minimum maximum expression = expression
+    minimumRepetition min minimum expression = expression ++ "{" ++ String.fromInt minimum ++ ",}"  |> andMinimal min
+    maximumRepetition min maximum expression = expression ++ "{0," ++ String.fromInt maximum ++ "}"  |> andMinimal min
+    rangedRepetition min minimum maximum expression = expression
         ++ "{" ++ String.fromInt minimum
         ++ "," ++ String.fromInt maximum
-        ++ "}"
+        ++ "}" |> andMinimal min
 
     ifFollowedBy successor expression = expression ++ "(?=" ++ successor ++ ")"
     ifNotFollowedBy successor expression = expression ++ "(?!" ++ successor ++ ")"
@@ -85,12 +87,12 @@ buildNodeExpression nodes node =
       IfFollowedByNode { expression, successor } -> Result.map2 ifFollowedBy (build successor) (build expression)
 
       OptionalNode child -> buildSingleChild optional child
-      AtLeastOneNode child -> buildSingleChild atLeastOne child
-      AnyRepetitionNode child -> buildSingleChild anyRepetition child
+      AtLeastOneNode { expression, minimal } -> buildSingleChild (atLeastOne minimal) expression
+      AnyRepetitionNode { expression, minimal } -> buildSingleChild (anyRepetition minimal) expression
       ExactRepetitionNode { expression, count } -> buildSingleChild (exactRepetition count) expression
-      RangedRepetitionNode { expression, minimum, maximum } -> buildSingleChild (rangedRepetition minimum maximum) expression
-      MinimumRepetitionNode { expression, minimum } -> buildSingleChild (minimumRepetition minimum) expression
-      MaximumRepetitionNode { expression, maximum } -> buildSingleChild (maximumRepetition maximum) expression
+      RangedRepetitionNode { expression, minimum, maximum, minimal } -> buildSingleChild (rangedRepetition minimal minimum maximum) expression
+      MinimumRepetitionNode { expression, minimum, minimal } -> buildSingleChild (minimumRepetition minimal minimum) expression
+      MaximumRepetitionNode { expression, maximum, minimal } -> buildSingleChild (maximumRepetition minimal maximum) expression
 
 
   in string

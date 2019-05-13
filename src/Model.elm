@@ -60,7 +60,7 @@ type DragMode
   = MoveNodeDrag { node : NodeId, mouse : Vec2 }
   | PrepareEditingConnection { node: NodeId, mouse: Vec2 }
   | CreateConnection { supplier : NodeId, openEnd : Vec2 }
-  | RetainPrototypedConnection { node: NodeId, previousNodeValue: Maybe Node, mouse: Vec2 } -- FIXME same as createOrRemove??
+  | RetainPrototypedConnection { node: NodeId, previousNodeValue: Maybe Node, mouse: Vec2 }
 
 
 type alias NodeView =
@@ -88,12 +88,12 @@ type Node
   | IfNotFollowedByNode { expression : Maybe NodeId, successor : Maybe NodeId }
 
   | OptionalNode (Maybe NodeId)
-  | AtLeastOneNode (Maybe NodeId) -- TODO lazy repetition counts!
-  | AnyRepetitionNode (Maybe NodeId) -- TODO lazy repetition counts!
-  | RangedRepetitionNode { expression : Maybe NodeId, minimum: Int, maximum: Int } -- TODO lazy repetition counts!
-  | MinimumRepetitionNode { expression : Maybe NodeId, minimum: Int  } -- TODO lazy repetition counts!
-  | MaximumRepetitionNode { expression : Maybe NodeId, maximum: Int  } -- TODO lazy repetition counts!
-  | ExactRepetitionNode { expression : Maybe NodeId, count : Int  } -- TODO lazy repetition counts!
+  | AtLeastOneNode { expression: Maybe NodeId, minimal: Bool }
+  | AnyRepetitionNode { expression: Maybe NodeId, minimal: Bool }
+  | RangedRepetitionNode { expression : Maybe NodeId, minimum: Int, maximum: Int, minimal: Bool }
+  | MinimumRepetitionNode { expression : Maybe NodeId, minimum: Int, minimal: Bool }
+  | MaximumRepetitionNode { expression : Maybe NodeId, maximum: Int, minimal: Bool }
+  | ExactRepetitionNode { expression : Maybe NodeId, count : Int }
 
 
   | FlagsNode { expression : Maybe NodeId, flags : RegexFlags }
@@ -140,8 +140,8 @@ prototypes =
   , typeProto .notInCharset (NotInCharSetNode ",.?!:")
 
   , typeProto .optional (OptionalNode Nothing)
-  , typeProto .atLeastOne (AtLeastOneNode Nothing)
-  , typeProto .anyRepetition (AnyRepetitionNode Nothing)
+  , typeProto .atLeastOne (AtLeastOneNode { expression = Nothing, minimal = False })
+  , typeProto .anyRepetition (AnyRepetitionNode { expression = Nothing, minimal = False })
 
   , typeProto .ifAtEnd (IfAtEndNode Nothing)
   , typeProto .ifAtStart (IfAtStartNode Nothing)
@@ -151,9 +151,9 @@ prototypes =
   , symbolProto .wordBoundary (SymbolNode WordBoundary)
   , symbolProto .nonWordBoundary (SymbolNode NonWordBoundary)
 
-  , typeProto .rangedRepetition (RangedRepetitionNode { expression = Nothing, minimum = 2, maximum = 4 })
-  , typeProto .minimumRepetition (MinimumRepetitionNode { expression = Nothing, minimum = 2 })
-  , typeProto .maximumRepetition (MaximumRepetitionNode { expression = Nothing, maximum = 4 })
+  , typeProto .rangedRepetition (RangedRepetitionNode { expression = Nothing, minimum = 2, maximum = 4, minimal = False })
+  , typeProto .minimumRepetition (MinimumRepetitionNode { expression = Nothing, minimum = 2, minimal = False })
+  , typeProto .maximumRepetition (MaximumRepetitionNode { expression = Nothing, maximum = 4, minimal = False })
   , typeProto .exactRepetition (ExactRepetitionNode { expression = Nothing, count = 3 })
 
   , symbolProto .word (SymbolNode WordChar)
@@ -243,9 +243,9 @@ onNodeDeleted deleted node =
     IfAtEndNode child -> IfAtEndNode <| ifNotDeleted deleted child
     IfAtStartNode child -> IfAtStartNode <| ifNotDeleted deleted child
     OptionalNode child -> OptionalNode <| ifNotDeleted deleted child
-    AtLeastOneNode child -> AtLeastOneNode <| ifNotDeleted deleted child
-    AnyRepetitionNode child -> AnyRepetitionNode <| ifNotDeleted deleted child
 
+    AtLeastOneNode child -> AtLeastOneNode <| ifExpressionNotDeleted deleted child
+    AnyRepetitionNode child -> AnyRepetitionNode <| ifExpressionNotDeleted deleted child
     FlagsNode value -> FlagsNode <| ifExpressionNotDeleted deleted value
     IfFollowedByNode value -> IfFollowedByNode <| ifExpressionNotDeleted deleted value
     IfNotFollowedByNode value -> IfNotFollowedByNode <| ifExpressionNotDeleted deleted value
