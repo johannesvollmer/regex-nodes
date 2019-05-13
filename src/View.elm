@@ -8,6 +8,7 @@ import Html.Events exposing (onInput, onBlur, onFocus)
 import Dict exposing (Dict)
 import Html.Events.Extra.Mouse as Mouse
 import Html.Events.Extra.Wheel as Wheel
+import IdMap
 import Svg exposing (Svg, svg, line, g)
 import Svg.Attributes exposing (x1, x2, y1, y2)
 import Regex
@@ -174,7 +175,7 @@ view model =
 
     connectDragging = connectDragId /= Nothing
 
-    nodeViews = (List.map (viewNode model.dragMode model.confirmDeletion model.outputNode.id model.nodes) (Dict.toList model.nodes.values))
+    nodeViews = (List.map (viewNode model.dragMode model.confirmDeletion model.outputNode.id model.nodes) (IdMap.toList model.nodes))
 
     connections = flattenList (List.map .connections nodeViews)
 
@@ -384,7 +385,7 @@ viewNodeConnections nodes props nodeView =
     connect : NodeId -> Model.NodeView -> (Int -> Maybe (Svg Message))
     connect supplierId node index =
       let
-        supplier = Dict.get supplierId nodes.values
+        supplier = IdMap.get supplierId nodes
         viewSupplier supplierNodeView =
           connectionLine supplierNodeView.position (nodeWidth supplierNodeView.node) node.position index
 
@@ -410,7 +411,7 @@ viewNodeConnections nodes props nodeView =
 viewConnectDrag : View -> Nodes -> Maybe NodeId -> Vec2 -> Html Message
 viewConnectDrag viewTransformation nodes dragId mouse =
   let
-    node = Maybe.andThen (\id -> Dict.get id nodes.values) dragId
+    node = Maybe.andThen (\id -> IdMap.get id nodes) dragId
     nodePosition = Maybe.map (.position) node |> Maybe.withDefault (Vec2 0 0)
 
     nodeAnchor = Vec2

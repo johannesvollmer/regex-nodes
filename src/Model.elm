@@ -1,9 +1,8 @@
 module Model exposing (..)
 
 import Array exposing (Array)
-import Dict exposing (Dict)
 import Vec2 exposing (Vec2)
-
+import IdMap exposing (IdMap)
 
 -- MODEL
 
@@ -23,7 +22,7 @@ type alias Model =
 
 init : Model
 init =
-  { nodes = { values = Dict.empty, nextId = 0 }
+  { nodes = IdMap.empty
   , outputNode = { id = Nothing, locked = False }
   , dragMode = Nothing
   , search = Nothing
@@ -36,6 +35,9 @@ init =
     , cachedMatches = Nothing
     }
   }
+
+type alias NodeId = IdMap.Id
+type alias Nodes = IdMap NodeView
 
 type alias OutputNode =
   { id: Maybe NodeId
@@ -60,12 +62,6 @@ type DragMode
   | CreateConnection { supplier : NodeId, openEnd : Vec2 }
   | RetainPrototypedConnection { node: NodeId, previousNodeValue: Maybe Node, mouse: Vec2 } -- FIXME same as createOrRemove??
 
-type alias NodeId = Int
-
-type alias Nodes =
-  { values : Dict NodeId NodeView
-  , nextId : NodeId
-  }
 
 type alias NodeView =
   { position : Vec2

@@ -2,6 +2,7 @@ module Build exposing (..)
 
 import Array
 import Dict exposing (Dict)
+import IdMap
 import Regex
 
 import Model exposing (..)
@@ -94,7 +95,7 @@ buildNodeExpression nodes node =
 buildExpression : Nodes -> Int -> Maybe NodeId -> BuildResult String
 buildExpression nodes ownPrecedence nodeId = case nodeId of
   Nothing -> Ok "(nothing)"
-  Just id -> Dict.get id nodes.values
+  Just id -> IdMap.get id nodes
     |> okOrErr "Internal Error: Invalid Node Id"
     |> Result.andThen
       (\nodeView -> nodeView.node
@@ -114,7 +115,7 @@ buildRegex : Nodes -> NodeId -> BuildResult RegexBuild
 buildRegex nodes id =
   let
     expression = buildExpression nodes 0 (Just id)
-    nodeView = Dict.get id nodes.values
+    nodeView = IdMap.get id nodes
     options = case nodeView |> Maybe.map .node of
       Just (FlagsNode { flags }) -> flags
       _ -> defaultFlags

@@ -6,7 +6,7 @@ import Dict exposing (Dict)
 import Vec2 exposing (Vec2)
 import Parse exposing (..)
 import Regex
-
+import IdMap exposing (IdMap)
 
 
 -- UPDATE
@@ -71,7 +71,7 @@ update message model =
 
     UpdateView viewMessage ->
       if model.exampleText.isEditing
-        || Dict.isEmpty model.nodes.values
+        || IdMap.isEmpty model.nodes
       then model
 
       else case viewMessage of
@@ -97,7 +97,7 @@ update message model =
       case searchMessage of
         UpdateSearch query -> { model | search = Just query }
         FinishSearch result -> case result of
-          InsertPrototype prototype -> stopEditingExampleText { model | nodes = addNode model.nodes prototype, search = Nothing }
+          InsertPrototype prototype -> stopEditingExampleText { model | nodes = IdMap.insert prototype model.nodes, search = Nothing }
           ParseRegex regex -> stopEditingExampleText { model | search = Nothing, nodes = addParsedRegexNode model.nodes regex }
           NoResult -> { model | search = Nothing }
 
@@ -154,7 +154,7 @@ update message model =
         -- but also already make the connection real
         RealizeConnection { nodeId, newNode, mouse } ->
           updateCache { model | nodes = updateNode model.nodes nodeId newNode
-          , dragMode = Just (RetainPrototypedConnection { mouse = mouse, node = nodeId, previousNodeValue = Dict.get nodeId model.nodes.values |> Maybe.map .node })
+          , dragMode = Just (RetainPrototypedConnection { mouse = mouse, node = nodeId, previousNodeValue = IdMap.get nodeId model.nodes |> Maybe.map .node })
           }
 
         FinishDrag ->
@@ -164,16 +164,15 @@ update message model =
 deleteNode: Model -> Model
 deleteNode model =
   let
-    nodes = model.nodes
     nodeId = model.confirmDeletion |> Maybe.withDefault -1
     output = if model.outputNode.id == model.confirmDeletion
       then Nothing else model.outputNode.id
 
-    newNodeValues = model.nodes.values |> Dict.remove nodeId
-      |> Dict.map (\_ view -> { view | node = onNodeDeleted nodeId view.node })
+    newNodeValues = model.nodes |> IdMap.remove nodeId
+      |> IdMap.updateAll (\view -> { view | node = onNodeDeleted nodeId view.node })
 
   in updateCache { model
-    | nodes = { nodes | values = newNodeValues }
+    | nodes = newNodeValues
     , outputNode = { id = output, locked = model.outputNode.locked }
     , confirmDeletion = Nothing
     , dragMode = Nothing
@@ -184,7 +183,7 @@ duplicateNode: Model -> NodeId -> Model
 duplicateNode model nodeId =
   let
     nodes = model.nodes
-    node = Dict.get nodeId nodes.values
+    node = IdMap.get nodeId nodes
 
   in case node of
       Nothing -> model
@@ -193,7 +192,7 @@ duplicateNode model nodeId =
           position = Vec2.add original.position (Vec2 0 -28)
           clone = { original | position = position }
 
-        in { model | nodes = addNode nodes clone }
+        in { model | nodes = IdMap.insert clone nodes }
 
 
 
@@ -204,25 +203,18 @@ enableEditingExampleText model enabled =
   let old = model.exampleText in
   { model | exampleText = { old | isEditing = enabled } }
 
-addNode : Nodes -> NodeView -> Nodes
-addNode nodes node =
-  { values = Dict.insert nodes.nextId node nodes.values
-  , nextId = nodes.nextId + 1
-  }
 
 updateNode : Nodes -> NodeId -> Node -> Nodes
 updateNode nodes id newNode =
-  let updateNodeContents nodeview = Maybe.map (\n -> { n | node = newNode }) nodeview
-  in { nodes | values = Dict.update id updateNodeContents nodes.values }
-
+  nodes |> IdMap.update id (\nodeView -> { nodeView | node = newNode })
 
 moveNode : View -> Nodes -> NodeId -> Vec2 -> Nodes
 moveNode view nodes nodeId movement =
   let
     transform = viewTransform view
     viewMovement = Vec2.scale (1 / transform.scale) movement
-    updateNodePosition node = Maybe.map (\n -> { n | position = Vec2.add n.position viewMovement }) node
-  in { nodes | values = Dict.update nodeId updateNodePosition nodes.values }
+    updateNodePosition nodeView = { nodeView | position = Vec2.add nodeView.position viewMovement }
+  in IdMap.update nodeId updateNodePosition nodes
 
 
 updateView amount focus oldView =
