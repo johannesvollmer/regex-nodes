@@ -398,12 +398,11 @@ viewSearch query =
     test name = isEmpty || String.contains lowercaseQuery (String.toLower name) || (Regex.contains regex name)
     matches prototype = test prototype.name
 
-    position = Vec2 (400) (300)
     render prototype = div
       [ Mouse.onWithOptions
         "mousedown"
         { stopPropagation = False, preventDefault = False } -- do not prevent blurring the textbox on selecting a result
-        (\_ -> SearchMessage (FinishSearch (InsertPrototype (Model.NodeView position prototype.node))))
+        (\_ -> SearchMessage (FinishSearch (InsertPrototype prototype.node)))
       ]
       [ text prototype.name ]
 

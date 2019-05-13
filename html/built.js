@@ -4626,12 +4626,39 @@ var author$project$IdMap$get = F2(
 	function (id, idMap) {
 		return A2(elm$core$Dict$get, id, idMap.n);
 	});
-var elm$core$Basics$add = _Basics_add;
+var elm$core$Basics$True = 0;
+var elm$core$Dict$isEmpty = function (dict) {
+	if (dict.$ === -2) {
+		return true;
+	} else {
+		return false;
+	}
+};
+var author$project$IdMap$isEmpty = function (idMap) {
+	return elm$core$Dict$isEmpty(idMap.n);
+};
+var author$project$Model$CreateConnection = function (a) {
+	return {$: 2, a: a};
+};
+var author$project$Model$MoveNodeDrag = function (a) {
+	return {$: 0, a: a};
+};
+var author$project$Model$PrepareEditingConnection = function (a) {
+	return {$: 1, a: a};
+};
+var author$project$Model$RetainPrototypedConnection = function (a) {
+	return {$: 3, a: a};
+};
+var author$project$Parse$addParsedRegexNode = F2(
+	function (nodes, regex) {
+		return nodes;
+	});
 var elm$core$Dict$Black = 1;
 var elm$core$Dict$RBNode_elm_builtin = F5(
 	function (a, b, c, d, e) {
 		return {$: -1, a: a, b: b, c: c, d: d, e: e};
 	});
+var elm$core$Basics$lt = _Utils_lt;
 var elm$core$Dict$Red = 0;
 var elm$core$Dict$balance = F5(
 	function (color, key, value, left, right) {
@@ -4687,89 +4714,6 @@ var elm$core$Dict$balance = F5(
 			}
 		}
 	});
-var elm$core$Dict$insertHelp = F3(
-	function (key, value, dict) {
-		if (dict.$ === -2) {
-			return A5(elm$core$Dict$RBNode_elm_builtin, 0, key, value, elm$core$Dict$RBEmpty_elm_builtin, elm$core$Dict$RBEmpty_elm_builtin);
-		} else {
-			var nColor = dict.a;
-			var nKey = dict.b;
-			var nValue = dict.c;
-			var nLeft = dict.d;
-			var nRight = dict.e;
-			var _n1 = A2(elm$core$Basics$compare, key, nKey);
-			switch (_n1) {
-				case 0:
-					return A5(
-						elm$core$Dict$balance,
-						nColor,
-						nKey,
-						nValue,
-						A3(elm$core$Dict$insertHelp, key, value, nLeft),
-						nRight);
-				case 1:
-					return A5(elm$core$Dict$RBNode_elm_builtin, nColor, nKey, value, nLeft, nRight);
-				default:
-					return A5(
-						elm$core$Dict$balance,
-						nColor,
-						nKey,
-						nValue,
-						nLeft,
-						A3(elm$core$Dict$insertHelp, key, value, nRight));
-			}
-		}
-	});
-var elm$core$Dict$insert = F3(
-	function (key, value, dict) {
-		var _n0 = A3(elm$core$Dict$insertHelp, key, value, dict);
-		if ((_n0.$ === -1) && (!_n0.a)) {
-			var _n1 = _n0.a;
-			var k = _n0.b;
-			var v = _n0.c;
-			var l = _n0.d;
-			var r = _n0.e;
-			return A5(elm$core$Dict$RBNode_elm_builtin, 1, k, v, l, r);
-		} else {
-			var x = _n0;
-			return x;
-		}
-	});
-var author$project$IdMap$insert = F2(
-	function (value, idMap) {
-		return {
-			n: A3(elm$core$Dict$insert, idMap.aE, value, idMap.n),
-			aE: idMap.aE + 1
-		};
-	});
-var elm$core$Basics$True = 0;
-var elm$core$Dict$isEmpty = function (dict) {
-	if (dict.$ === -2) {
-		return true;
-	} else {
-		return false;
-	}
-};
-var author$project$IdMap$isEmpty = function (idMap) {
-	return elm$core$Dict$isEmpty(idMap.n);
-};
-var author$project$Model$CreateConnection = function (a) {
-	return {$: 2, a: a};
-};
-var author$project$Model$MoveNodeDrag = function (a) {
-	return {$: 0, a: a};
-};
-var author$project$Model$PrepareEditingConnection = function (a) {
-	return {$: 1, a: a};
-};
-var author$project$Model$RetainPrototypedConnection = function (a) {
-	return {$: 3, a: a};
-};
-var author$project$Parse$addParsedRegexNode = F2(
-	function (nodes, regex) {
-		return nodes;
-	});
-var elm$core$Basics$lt = _Utils_lt;
 var elm$core$Dict$getMin = function (dict) {
 	getMin:
 	while (true) {
@@ -5319,6 +5263,7 @@ var elm$core$Array$treeFromBuilder = F2(
 			}
 		}
 	});
+var elm$core$Basics$add = _Basics_add;
 var elm$core$Basics$floor = _Basics_floor;
 var elm$core$Basics$gt = _Utils_gt;
 var elm$core$Basics$max = F2(
@@ -6348,6 +6293,61 @@ var author$project$Update$deleteNode = function (model) {
 				cC: {b3: output, ch: model.cC.ch}
 			}));
 };
+var elm$core$Dict$insertHelp = F3(
+	function (key, value, dict) {
+		if (dict.$ === -2) {
+			return A5(elm$core$Dict$RBNode_elm_builtin, 0, key, value, elm$core$Dict$RBEmpty_elm_builtin, elm$core$Dict$RBEmpty_elm_builtin);
+		} else {
+			var nColor = dict.a;
+			var nKey = dict.b;
+			var nValue = dict.c;
+			var nLeft = dict.d;
+			var nRight = dict.e;
+			var _n1 = A2(elm$core$Basics$compare, key, nKey);
+			switch (_n1) {
+				case 0:
+					return A5(
+						elm$core$Dict$balance,
+						nColor,
+						nKey,
+						nValue,
+						A3(elm$core$Dict$insertHelp, key, value, nLeft),
+						nRight);
+				case 1:
+					return A5(elm$core$Dict$RBNode_elm_builtin, nColor, nKey, value, nLeft, nRight);
+				default:
+					return A5(
+						elm$core$Dict$balance,
+						nColor,
+						nKey,
+						nValue,
+						nLeft,
+						A3(elm$core$Dict$insertHelp, key, value, nRight));
+			}
+		}
+	});
+var elm$core$Dict$insert = F3(
+	function (key, value, dict) {
+		var _n0 = A3(elm$core$Dict$insertHelp, key, value, dict);
+		if ((_n0.$ === -1) && (!_n0.a)) {
+			var _n1 = _n0.a;
+			var k = _n0.b;
+			var v = _n0.c;
+			var l = _n0.d;
+			var r = _n0.e;
+			return A5(elm$core$Dict$RBNode_elm_builtin, 1, k, v, l, r);
+		} else {
+			var x = _n0;
+			return x;
+		}
+	});
+var author$project$IdMap$insert = F2(
+	function (value, idMap) {
+		return {
+			n: A3(elm$core$Dict$insert, idMap.aE, value, idMap.n),
+			aE: idMap.aE + 1
+		};
+	});
 var author$project$Vec2$add = F2(
 	function (a, b) {
 		return A2(author$project$Vec2$Vec2, a.a7 + b.a7, a.a8 + b.a8);
@@ -6385,6 +6385,50 @@ var author$project$Update$enableEditingExampleText = F2(
 					{cc: enabled})
 			});
 	});
+var author$project$Model$NodeView = F2(
+	function (position, node) {
+		return {bj: node, dJ: position};
+	});
+var elm$core$Basics$pow = _Basics_pow;
+var author$project$Model$viewTransform = function (_n0) {
+	var magnification = _n0.ci;
+	var offset = _n0.cw;
+	return {
+		dN: A2(elm$core$Basics$pow, 2, magnification * 0.4),
+		dY: offset
+	};
+};
+var author$project$Vec2$scale = F2(
+	function (s, v) {
+		return A2(author$project$Vec2$Vec2, v.a7 * s, v.a8 * s);
+	});
+var author$project$Vec2$sub = F2(
+	function (a, b) {
+		return A2(author$project$Vec2$Vec2, a.a7 - b.a7, a.a8 - b.a8);
+	});
+var author$project$Vec2$inverseTransform = F2(
+	function (value, transformation) {
+		return A2(
+			author$project$Vec2$scale,
+			1 / transformation.dN,
+			A2(author$project$Vec2$sub, value, transformation.dY));
+	});
+var author$project$Update$insertNode = F2(
+	function (node, model) {
+		var position = A2(
+			author$project$Vec2$inverseTransform,
+			A2(author$project$Vec2$Vec2, 800, 400),
+			author$project$Model$viewTransform(model.d0));
+		return _Utils_update(
+			model,
+			{
+				ct: A2(
+					author$project$IdMap$insert,
+					A2(author$project$Model$NodeView, position, node),
+					model.ct),
+				cP: elm$core$Maybe$Nothing
+			});
+	});
 var elm$core$Dict$update = F3(
 	function (targetKey, alter, dictionary) {
 		var _n0 = alter(
@@ -6406,19 +6450,6 @@ var author$project$IdMap$update = F3(
 			{
 				n: A3(elm$core$Dict$update, id, updateDictValue, idMap.n)
 			});
-	});
-var elm$core$Basics$pow = _Basics_pow;
-var author$project$Model$viewTransform = function (_n0) {
-	var magnification = _n0.ci;
-	var offset = _n0.cw;
-	return {
-		dN: A2(elm$core$Basics$pow, 2, magnification * 0.4),
-		dY: offset
-	};
-};
-var author$project$Vec2$scale = F2(
-	function (s, v) {
-		return A2(author$project$Vec2$Vec2, v.a7 * s, v.a8 * s);
 	});
 var author$project$Update$moveNode = F4(
 	function (view, nodes, nodeId, movement) {
@@ -6461,10 +6492,6 @@ var author$project$Update$updateView = F3(
 			cw: {a7: ((oldView.cw.a7 - focus.a7) * deltaScale) + focus.a7, a8: ((oldView.cw.a8 - focus.a8) * deltaScale) + focus.a8}
 		};
 		return newView;
-	});
-var author$project$Vec2$sub = F2(
-	function (a, b) {
-		return A2(author$project$Vec2$Vec2, a.a7 - b.a7, a.a8 - b.a8);
 	});
 var author$project$Update$update = F2(
 	function (message, model) {
@@ -6557,12 +6584,7 @@ var author$project$Update$update = F2(
 						case 0:
 							var prototype = result.a;
 							return author$project$Update$stopEditingExampleText(
-								_Utils_update(
-									model,
-									{
-										ct: A2(author$project$IdMap$insert, prototype, model.ct),
-										cP: elm$core$Maybe$Nothing
-									}));
+								A2(author$project$Update$insertNode, prototype, model));
 						case 1:
 							var regex = result.a;
 							return author$project$Update$stopEditingExampleText(
@@ -7205,13 +7227,6 @@ var author$project$View$preventContextMenu = function (message) {
 		{a0: true, a4: true},
 		elm$core$Basics$always(message));
 };
-var author$project$Vec2$inverseTransform = F2(
-	function (value, transformation) {
-		return A2(
-			author$project$Vec2$scale,
-			1 / transformation.dN,
-			A2(author$project$Vec2$sub, value, transformation.dY));
-	});
 var author$project$View$svgConnectionPath = F4(
 	function (from, fromTangent, toTangent, to) {
 		var vec2ToString = function (vec) {
@@ -9321,10 +9336,6 @@ var author$project$View$viewSearchBar = function (search) {
 			]),
 		_List_Nil);
 };
-var author$project$Model$NodeView = F2(
-	function (position, node) {
-		return {bj: node, dJ: position};
-	});
 var author$project$Model$Always = 12;
 var author$project$Model$DigitChar = 2;
 var author$project$Model$LinebreakChar = 8;
@@ -9597,14 +9608,6 @@ var elm$core$String$isEmpty = function (string) {
 var elm$core$String$toLower = _String_toLower;
 var elm$regex$Regex$contains = _Regex_contains;
 var author$project$View$viewSearch = function (query) {
-	var regex = A2(
-		elm$core$Maybe$withDefault,
-		elm$regex$Regex$never,
-		A2(
-			elm$regex$Regex$fromStringWith,
-			{c6: true, bi: false},
-			query));
-	var position = A2(author$project$Vec2$Vec2, 400, 300);
 	var render = function (prototype) {
 		return A2(
 			elm$html$Html$div,
@@ -9617,8 +9620,7 @@ var author$project$View$viewSearch = function (query) {
 					function (_n1) {
 						return author$project$Update$SearchMessage(
 							author$project$Update$FinishSearch(
-								author$project$Update$InsertPrototype(
-									A2(author$project$Model$NodeView, position, prototype.bj))));
+								author$project$Update$InsertPrototype(prototype.bj)));
 					})
 				]),
 			_List_fromArray(
@@ -9626,6 +9628,13 @@ var author$project$View$viewSearch = function (query) {
 					elm$html$Html$text(prototype.dw)
 				]));
 	};
+	var regex = A2(
+		elm$core$Maybe$withDefault,
+		elm$regex$Regex$never,
+		A2(
+			elm$regex$Regex$fromStringWith,
+			{c6: true, bi: false},
+			query));
 	var lowercaseQuery = elm$core$String$toLower(query);
 	var isEmpty = elm$core$String$isEmpty(query);
 	var test = function (name) {

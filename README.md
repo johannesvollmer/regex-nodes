@@ -34,6 +34,7 @@ Alternatively, use [modd](https://github.com/cortesi/modd) in this directory to 
 - [ ] Tooltips and explanations!!
 - [ ] Reconnect replaced connections 
       when reverting connection prototype
-- [ ] Instantiate Nodes centered to the screen
+- [x] Instantiate Nodes centered to the screen
+    - [ ] Using the real window size
 - [ ] Consider rewriting Css to Sass
 - [ ] Node Groups!

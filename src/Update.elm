@@ -32,7 +32,7 @@ type SearchMessage
   | FinishSearch SearchResult
 
 type SearchResult
-  = InsertPrototype NodeView
+  = InsertPrototype Node
   | ParseRegex String
   | NoResult
 
@@ -96,7 +96,7 @@ update message model =
       case searchMessage of
         UpdateSearch query -> { model | search = Just query }
         FinishSearch result -> case result of
-          InsertPrototype prototype -> stopEditingExampleText { model | nodes = IdMap.insert prototype model.nodes, search = Nothing }
+          InsertPrototype prototype -> stopEditingExampleText (insertNode prototype model)
           ParseRegex regex -> stopEditingExampleText { model | search = Nothing, nodes = addParsedRegexNode model.nodes regex }
           NoResult -> { model | search = Nothing }
 
@@ -193,6 +193,9 @@ duplicateNode model nodeId =
 
         in { model | nodes = IdMap.insert clone nodes }
 
+insertNode node model =
+    let position = Vec2.inverseTransform (Vec2 800 400) (viewTransform model.view)
+    in { model | nodes = IdMap.insert (NodeView position node) model.nodes, search = Nothing }
 
 
 stopEditingExampleText model =
