@@ -22,6 +22,7 @@ import Update exposing (..)
 
 type alias PropertyView =
   { name : String
+  , description: String
   , contents : PropertyViewContents
   , connectOutput : Bool
   }
@@ -46,79 +47,149 @@ type alias NodeView =
 properties : Node -> List PropertyView
 properties node =
   case node of
-    SymbolNode symbol -> [ PropertyView (symbolName symbol) TitleProperty True ]
-    CharSetNode chars -> [ PropertyView typeNames.charset (CharsProperty chars CharSetNode) True ]
-    NotInCharSetNode chars -> [ PropertyView typeNames.notInCharset (CharsProperty chars NotInCharSetNode) True ]
-    LiteralNode literal -> [ PropertyView typeNames.literal (CharsProperty literal LiteralNode) True ]
+    SymbolNode symbol -> [ PropertyView (symbolName symbol) "" TitleProperty True ]
 
-    CaptureNode captured -> [ PropertyView typeNames.capture (ConnectingProperty captured CaptureNode) True ]
+    CharSetNode chars ->
+      [ PropertyView typeNames.charset
+          ("Matches " ++ String.join ", " (String.toList chars |> List.map String.fromChar))
+          (CharsProperty chars CharSetNode) True
+      ]
+
+    NotInCharSetNode chars -> [ PropertyView typeNames.notInCharset
+          ("Matches any char but " ++ String.join ", " (String.toList chars |> List.map String.fromChar))
+          (CharsProperty chars NotInCharSetNode) True ]
+
+    LiteralNode literal ->
+      [ PropertyView typeNames.literal ("Matches exactly `" ++ literal ++ "` and nothing else")
+          (CharsProperty literal LiteralNode) True
+      ]
+
+    CaptureNode captured ->
+      [ PropertyView typeNames.capture "Capture this expression for later use"
+          (ConnectingProperty captured CaptureNode) True
+      ]
 
     CharRangeNode start end ->
-      [ PropertyView typeNames.charRange TitleProperty True
-      , PropertyView "First Char" (CharProperty start (updateCharRangeFirst end)) False
-      , PropertyView "Last Char" (CharProperty end (updateCharRangeLast start)) False
+      [ PropertyView typeNames.charRange
+          ("Match any char whose integer value is equal to or between " ++ String.fromChar start ++ " and " ++ String.fromChar end)
+          TitleProperty True
+
+      , PropertyView "First Char" "The lower range bound char, will match itself" (CharProperty start (updateCharRangeFirst end)) False
+      , PropertyView "Last Char" "The upper range bound char, will match itself" (CharProperty end (updateCharRangeLast start)) False
       ]
 
     NotInCharRangeNode start end ->
-      [ PropertyView typeNames.notInCharRange TitleProperty True
-      , PropertyView "First Char" (CharProperty start (updateNotInCharRangeFirst end)) False
-      , PropertyView "Last Char" (CharProperty end (updateNotInCharRangeLast start)) False
+      [ PropertyView typeNames.notInCharRange
+          ("Match any char whose integer value is neither equal to nor between " ++ String.fromChar start ++ " and " ++ String.fromChar end)
+          TitleProperty True
+
+      , PropertyView "First Char" "The lower range bound char, will not match itself" (CharProperty start (updateNotInCharRangeFirst end)) False
+      , PropertyView "Last Char""The upper range bound char, will not match itself " (CharProperty end (updateNotInCharRangeLast start)) False
       ]
 
     SetNode options ->
-      [ PropertyView typeNames.set TitleProperty True
-      , PropertyView "Option" (ConnectingProperties options SetNode) False
+      [ PropertyView typeNames.set "Match any of the following options" TitleProperty True
+      , PropertyView "Option" "Match if this or any other option is matched" (ConnectingProperties options SetNode) False
       ]
 
     SequenceNode members ->
-      [ PropertyView typeNames.sequence TitleProperty True
-      , PropertyView "And Then" (ConnectingProperties members SequenceNode) False
+      [ PropertyView typeNames.sequence "Match where all members in this order are matched" TitleProperty True
+      , PropertyView "And Then" "A member of the sequence" (ConnectingProperties members SequenceNode) False
       ]
 
     FlagsNode flagsNode ->
-      [ PropertyView typeNames.flags (ConnectingProperty flagsNode.expression (updateFlagsExpression flagsNode)) False
-      , PropertyView "Multiple Matches" (BoolProperty flagsNode.flags.multiple (updateFlagsMultiple flagsNode)) False
-      , PropertyView "Case Insensitive" (BoolProperty flagsNode.flags.caseSensitive (updateFlagsInsensitivity flagsNode)) False
-      , PropertyView "Multiline Matches" (BoolProperty flagsNode.flags.multiline (updateFlagsMultiline flagsNode)) False
+      [ PropertyView typeNames.flags "Configure how the whole regex operates"
+          (ConnectingProperty flagsNode.expression (updateFlagsExpression flagsNode)) False
+
+      , PropertyView "Multiple Matches" "Do not stop after the first match"
+          (BoolProperty flagsNode.flags.multiple (updateFlagsMultiple flagsNode)) False
+
+      , PropertyView "Case Insensitive" "Match as if everything had the same case"
+          (BoolProperty flagsNode.flags.caseSensitive (updateFlagsInsensitivity flagsNode)) False
+
+      , PropertyView "Multiline Matches" "Allow every matches to be found across multiple lines"
+          (BoolProperty flagsNode.flags.multiline (updateFlagsMultiline flagsNode)) False
       ]
 
     IfFollowedByNode followed ->
-      [ PropertyView typeNames.ifFollowedBy (ConnectingProperty followed.expression (updateFollowedByExpression followed)) True
-      , PropertyView "Successor" (ConnectingProperty followed.successor (updateFollowedBySuccessor followed)) False
+      [ PropertyView typeNames.ifFollowedBy "Match this expression only if the successor is matched"
+          (ConnectingProperty followed.expression (updateFollowedByExpression followed)) True
+
+      , PropertyView "Successor" "What needs to follow the expression"
+          (ConnectingProperty followed.successor (updateFollowedBySuccessor followed)) False
       ]
 
     IfNotFollowedByNode followed ->
-      [ PropertyView typeNames.ifNotFollowedBy (ConnectingProperty followed.expression (updateNotFollowedByExpression followed)) True
-      , PropertyView "Successor" (ConnectingProperty followed.successor (updateNotFollowedBySuccessor followed)) False
+      [ PropertyView typeNames.ifNotFollowedBy "Match this expression only if the successor is not matched"
+          (ConnectingProperty followed.expression (updateNotFollowedByExpression followed)) True
+
+      , PropertyView "Successor" "What must not follow the expression"
+          (ConnectingProperty followed.successor (updateNotFollowedBySuccessor followed)) False
       ]
 
-    IfAtEndNode atEnd ->  [ PropertyView typeNames.ifAtEnd (ConnectingProperty atEnd IfAtEndNode) True ]
-    IfAtStartNode atStart ->  [ PropertyView typeNames.ifAtStart (ConnectingProperty atStart IfAtStartNode) True ]
+    IfAtEndNode atEnd ->
+      [ PropertyView typeNames.ifAtEnd "Match this expression only if a linebreak follows"
+        (ConnectingProperty atEnd IfAtEndNode) True
+      ]
 
+    IfAtStartNode atStart ->
+      [ PropertyView typeNames.ifAtStart "Match this expression only if it follows a linebreak"
+        (ConnectingProperty atStart IfAtStartNode) True
+      ]
 
-    OptionalNode option -> [ PropertyView typeNames.optional (ConnectingProperty option OptionalNode) True ]
-    AtLeastOneNode counted -> [ PropertyView typeNames.atLeastOne (ConnectingProperty counted AtLeastOneNode) True ]
-    AnyRepetitionNode counted -> [ PropertyView typeNames.anyRepetition (ConnectingProperty counted AnyRepetitionNode) True ]
+    OptionalNode option ->
+      [ PropertyView typeNames.optional "Allow omitting this expression"
+        (ConnectingProperty option OptionalNode) True
+      ]
+
+    AtLeastOneNode counted ->
+      [ PropertyView typeNames.atLeastOne "Allow this expression to occur multiple times"
+        (ConnectingProperty counted AtLeastOneNode) True
+      ]
+
+    AnyRepetitionNode counted ->
+      [ PropertyView typeNames.anyRepetition "Allow this expression to occur multiple times or not at all"
+        (ConnectingProperty counted AnyRepetitionNode) True
+      ]
 
     ExactRepetitionNode repetition ->
-      [ PropertyView typeNames.exactRepetition (ConnectingProperty repetition.expression (updateExactRepetitionExpression repetition)) True
-      , PropertyView "Count" (IntProperty repetition.count (updateExactRepetitionCount repetition)) False
+      [ PropertyView typeNames.exactRepetition
+          ("Match only if this expression is repeated exactly " ++ String.fromInt repetition.count ++ " times")
+          (ConnectingProperty repetition.expression (updateExactRepetitionExpression repetition)) True
+
+      , PropertyView "Count" "How often the expression is required"
+          (IntProperty repetition.count (updateExactRepetitionCount repetition)) False
       ]
 
     RangedRepetitionNode counted ->
-      [ PropertyView typeNames.rangedRepetition (ConnectingProperty counted.expression (updateRangedRepetitionExpression counted)) True
-      , PropertyView "Minimum" (IntProperty counted.minimum (updateRangedRepetitionMinimum counted)) False
-      , PropertyView "Maximum" (IntProperty counted.maximum (updateRangedRepetitionMaximum counted)) False
+      [ PropertyView typeNames.rangedRepetition "Only match if the expression is repeated as specified"
+          (ConnectingProperty counted.expression (updateRangedRepetitionExpression counted)) True
+
+      , PropertyView "Minimum"
+          ("Match only if the expression is repeated no less than " ++ String.fromInt counted.minimum ++ " times")
+          (IntProperty counted.minimum (updateRangedRepetitionMinimum counted)) False
+
+      , PropertyView "Maximum"
+          ("Match only if the expression is repeated no more than " ++ String.fromInt counted.maximum ++ " times")
+          (IntProperty counted.maximum (updateRangedRepetitionMaximum counted)) False
       ]
 
     MinimumRepetitionNode counted ->
-      [ PropertyView typeNames.minimumRepetition (ConnectingProperty counted.expression (updateMinimumRepetitionExpression counted)) True
-      , PropertyView "Count" (IntProperty counted.minimum (updateMinimumRepetitionCount counted)) False
+      [ PropertyView typeNames.minimumRepetition
+          ("Match only if the expression is repeated no less than " ++ String.fromInt counted.minimum ++ " times")
+          (ConnectingProperty counted.expression (updateMinimumRepetitionExpression counted)) True
+
+      , PropertyView "Count" "Minimum number of repetitions"
+          (IntProperty counted.minimum (updateMinimumRepetitionCount counted)) False
       ]
 
     MaximumRepetitionNode counted ->
-      [ PropertyView typeNames.maximumRepetition (ConnectingProperty counted.expression (updateMaximumRepetitionExpression counted)) True
-      , PropertyView "Count" (IntProperty counted.maximum (updateMaximumRepetitionCount counted)) False
+      [ PropertyView typeNames.maximumRepetition
+          ("Match only if the expression is repeated no more than " ++ String.fromInt counted.maximum ++ " times")
+          (ConnectingProperty counted.expression (updateMaximumRepetitionExpression counted)) True
+
+      , PropertyView "Count" "Maximum number of repetitions"
+          (IntProperty counted.maximum (updateMaximumRepetitionCount counted)) False
       ]
 
 
@@ -544,9 +615,9 @@ viewProperties nodeId dragMode props =
       []
 
 
-    propertyHTML: List (Attribute Message) -> Html Message -> String -> Bool -> Html Message -> Html Message -> Html Message
-    propertyHTML attributes directInput name connectableInput left right = div
-      ((classes "property" [(connectableInput, "connectable-input")]) :: attributes) -- FIXME only on leave if property.connectoutput
+    propertyHTML: List (Attribute Message) -> Html Message -> String -> String -> Bool -> Html Message -> Html Message -> Html Message
+    propertyHTML attributes directInput name description connectableInput left right = div
+      ((classes "property" [(connectableInput, "connectable-input")]) :: (title description :: attributes)) -- FIXME only on leave if property.connectoutput
 
       [ left
       , span [ class "title" ] [ text name ]
@@ -557,7 +628,7 @@ viewProperties nodeId dragMode props =
     updateNode = UpdateNodeMessage nodeId
 
     simpleInputProperty property directInput = propertyHTML
-      [ Mouse.onLeave (onLeave Nothing property.connectOutput) ] directInput property.name False (leftConnector False) (rightConnector property.connectOutput)
+      [ Mouse.onLeave (onLeave Nothing property.connectOutput) ] directInput property.name property.description False (leftConnector False) (rightConnector property.connectOutput)
 
     connectInputProperty property currentSupplier onChange =
       let
@@ -576,7 +647,7 @@ viewProperties nodeId dragMode props =
 
         left = leftConnector True
 
-      in propertyHTML (onEnter ++ onLeaveHandlers) (div[][]) property.name True left (rightConnector property.connectOutput)
+      in propertyHTML (onEnter ++ onLeaveHandlers) (div[][]) property.name property.description True left (rightConnector property.connectOutput)
 
     singleProperty property = case property.contents of
       BoolProperty value onChange -> [ simpleInputProperty property (viewBoolInput value (onChange (not value) |> updateNode)) ]
@@ -603,7 +674,14 @@ viewProperties nodeId dragMode props =
         in realProperties ++ [ stubProperty ]
 
 
-      TitleProperty -> [ propertyHTML [ Mouse.onLeave (onLeave Nothing True) ] (div[][]) property.name False (leftConnector False) (rightConnector property.connectOutput) ]
+      TitleProperty ->
+        [ propertyHTML
+            [ Mouse.onLeave (onLeave Nothing True) ]
+            (div[][])
+            property.name property.description
+            False
+            (leftConnector False) (rightConnector property.connectOutput)
+        ]
 
   in
     flattenList (List.map singleProperty props)
