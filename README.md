@@ -17,6 +17,12 @@ Also, see [compiling elm with optimization enabled](https://elm-lang.org/0.19.0/
 Alternatively, use [modd](https://github.com/cortesi/modd) in this directory to compile on every file save.
 
 
+# BrowserStack loves Open Source, Open Source loves BrowserStack
+
+[![BrowserStack Logo](/readme/browser-stack.png?raw=true "BrowserStack")](https://www.browserstack.com/)
+Thanks to BrowserStack, we can make sure this website runs on any browser, for free. 
+
+
 # To Do
 - [x] Example text for instant feedback
 - [x] Implement all node types
