@@ -600,11 +600,11 @@ function _Debug_crash_UNUSED(identifier, fact1, fact2, fact3, fact4)
 
 function _Debug_regionToString(region)
 {
-	if (region.bt.aC === region.bZ.aC)
+	if (region.bu.aC === region.bZ.aC)
 	{
-		return 'on line ' + region.bt.aC;
+		return 'on line ' + region.bu.aC;
 	}
-	return 'on lines ' + region.bt.aC + ' through ' + region.bZ.aC;
+	return 'on lines ' + region.bu.aC + ' through ' + region.bZ.aC;
 }
 
 
@@ -1208,7 +1208,7 @@ var _Regex_never = /.^/;
 var _Regex_fromStringWith = F2(function(options, string)
 {
 	var flags = 'g';
-	if (options.bi) { flags += 'm'; }
+	if (options.bj) { flags += 'm'; }
 	if (options.c7) { flags += 'i'; }
 
 	try
@@ -5788,8 +5788,8 @@ var author$project$Build$buildExpression = F3(
 						A2(
 							author$project$Build$parenthesesForPrecedence,
 							ownPrecedence,
-							author$project$Build$precedence(nodeView.bj)),
-						A2(author$project$Build$buildNodeExpression, nodes, nodeView.bj));
+							author$project$Build$precedence(nodeView.bk)),
+						A2(author$project$Build$buildNodeExpression, nodes, nodeView.bk));
 				},
 				A2(
 					author$project$Build$okOrErr,
@@ -6027,7 +6027,7 @@ var author$project$Build$buildNodeExpression = F2(
 	});
 var author$project$Model$RegexFlags = F3(
 	function (multiple, caseSensitive, multiline) {
-		return {bO: caseSensitive, bi: multiline, dw: multiple};
+		return {bO: caseSensitive, bj: multiline, dw: multiple};
 	});
 var author$project$Model$defaultFlags = A3(author$project$Model$RegexFlags, true, true, true);
 var elm$core$Maybe$map = F2(
@@ -6047,7 +6047,7 @@ var author$project$Build$buildRegex = F2(
 			var _n0 = A2(
 				elm$core$Maybe$map,
 				function ($) {
-					return $.bj;
+					return $.bk;
 				},
 				nodeView);
 			if ((!_n0.$) && (_n0.a.$ === 20)) {
@@ -6085,7 +6085,7 @@ var elm$regex$Regex$Match = F4(
 var elm$regex$Regex$fromStringWith = _Regex_fromStringWith;
 var elm$regex$Regex$never = _Regex_never;
 var author$project$Build$compileRegex = function (build) {
-	var options = {c7: !build.L.bO, bi: build.L.bi};
+	var options = {c7: !build.L.bO, bj: build.L.bj};
 	return A2(
 		elm$core$Maybe$withDefault,
 		elm$regex$Regex$never,
@@ -6280,7 +6280,7 @@ var author$project$Update$deleteNode = function (model) {
 			return _Utils_update(
 				view,
 				{
-					bj: A2(author$project$Model$onNodeDeleted, nodeId, view.bj)
+					bk: A2(author$project$Model$onNodeDeleted, nodeId, view.bk)
 				});
 		},
 		A2(author$project$IdMap$remove, nodeId, model.cu));
@@ -6388,7 +6388,7 @@ var author$project$Update$enableEditingExampleText = F2(
 	});
 var author$project$Model$NodeView = F2(
 	function (position, node) {
-		return {bj: node, dK: position};
+		return {bk: node, dK: position};
 	});
 var elm$core$Basics$pow = _Basics_pow;
 var author$project$Model$viewTransform = function (_n0) {
@@ -6476,7 +6476,7 @@ var author$project$Update$moveNodeInModel = F4(
 			{
 				bX: elm$core$Maybe$Just(
 					author$project$Model$MoveNodeDrag(
-						{q: newMouse, bj: node})),
+						{q: newMouse, bk: node})),
 				cu: A4(author$project$Update$moveNode, model.d1, model.cu, node, delta)
 			});
 	});
@@ -6505,7 +6505,7 @@ var author$project$Update$startNodeMove = F3(
 			{
 				bX: elm$core$Maybe$Just(
 					author$project$Model$MoveNodeDrag(
-						{q: mouse, bj: node})),
+						{q: mouse, bk: node})),
 				cD: ((!model.cD.ci) || _Utils_eq(model.cD.b4, elm$core$Maybe$Nothing)) ? {
 					b4: elm$core$Maybe$Just(node),
 					ci: model.cD.ci
@@ -6525,7 +6525,7 @@ var author$project$Update$updateNode = F3(
 			function (nodeView) {
 				return _Utils_update(
 					nodeView,
-					{bj: newNode});
+					{bk: newNode});
 			},
 			nodes);
 	});
@@ -6654,7 +6654,7 @@ var author$project$Update$update = F2(
 				var modeMessage = message.a;
 				switch (modeMessage.$) {
 					case 0:
-						var node = modeMessage.a.bj;
+						var node = modeMessage.a.bk;
 						var mouse = modeMessage.a.q;
 						return A3(author$project$Update$startNodeMove, mouse, node, model);
 					case 1:
@@ -6667,7 +6667,7 @@ var author$project$Update$update = F2(
 							});
 					case 3:
 						var nodeId = modeMessage.a.ct;
-						var node = modeMessage.a.bj;
+						var node = modeMessage.a.bk;
 						var supplier = modeMessage.a.ao;
 						var mouse = modeMessage.a.q;
 						return A2(
@@ -6682,7 +6682,7 @@ var author$project$Update$update = F2(
 											{
 												bX: elm$core$Maybe$Just(
 													author$project$Model$CreateConnection(
-														{br: mouse, ao: oldSupplier})),
+														{bs: mouse, ao: oldSupplier})),
 												cu: A3(author$project$Update$updateNode, model.cu, nodeId, node)
 											}));
 								},
@@ -6695,17 +6695,17 @@ var author$project$Update$update = F2(
 							{
 								bX: elm$core$Maybe$Just(
 									author$project$Model$CreateConnection(
-										{br: mouse, ao: supplier}))
+										{bs: mouse, ao: supplier}))
 							});
 					case 2:
-						var node = modeMessage.a.bj;
+						var node = modeMessage.a.bk;
 						var mouse = modeMessage.a.q;
 						return _Utils_update(
 							model,
 							{
 								bX: elm$core$Maybe$Just(
 									author$project$Model$PrepareEditingConnection(
-										{q: mouse, bj: node}))
+										{q: mouse, bk: node}))
 							});
 					case 7:
 						var newMouse = modeMessage.a.dy;
@@ -6715,7 +6715,7 @@ var author$project$Update$update = F2(
 							if (!_n6.$) {
 								switch (_n6.a.$) {
 									case 0:
-										var node = _n6.a.a.bj;
+										var node = _n6.a.a.bk;
 										var mouse = _n6.a.a.q;
 										return A4(author$project$Update$moveNodeInModel, newMouse, mouse, node, model);
 									case 1:
@@ -6728,7 +6728,7 @@ var author$project$Update$update = F2(
 											{
 												bX: elm$core$Maybe$Just(
 													author$project$Model$CreateConnection(
-														{br: newMouse, ao: supplier}))
+														{bs: newMouse, ao: supplier}))
 											});
 									default:
 										break _n6$3;
@@ -6750,11 +6750,11 @@ var author$project$Update$update = F2(
 										author$project$Model$RetainPrototypedConnection(
 											{
 												q: mouse,
-												bj: nodeId,
+												bk: nodeId,
 												dM: A2(
 													elm$core$Maybe$map,
 													function ($) {
-														return $.bj;
+														return $.bk;
 													},
 													A2(author$project$IdMap$get, nodeId, model.cu))
 											})),
@@ -6768,7 +6768,7 @@ var author$project$Update$update = F2(
 		}
 	});
 var author$project$Build$constructRegexLiteral = function (regex) {
-	return '/' + (regex.p + ('/' + ((regex.L.dw ? 'g' : '') + ((regex.L.bO ? '' : 'i') + (regex.L.bi ? 'm' : '')))));
+	return '/' + (regex.p + ('/' + ((regex.L.dw ? 'g' : '') + ((regex.L.bO ? '' : 'i') + (regex.L.bj ? 'm' : '')))));
 };
 var author$project$IdMap$toList = function (idMap) {
 	return elm$core$Dict$toList(idMap.n);
@@ -7173,7 +7173,7 @@ var elm$html$Html$Events$custom = F2(
 var elm$json$Json$Decode$map6 = _Json_map6;
 var mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$Event = F6(
 	function (keys, button, clientPos, offsetPos, pagePos, screenPos) {
-		return {bK: button, s: clientPos, dt: keys, dB: offsetPos, dF: pagePos, dP: screenPos};
+		return {bb: button, s: clientPos, dt: keys, dB: offsetPos, dF: pagePos, dP: screenPos};
 	});
 var elm$json$Json$Decode$field = _Json_decodeField;
 var elm$json$Json$Decode$int = _Json_decodeInt;
@@ -7312,38 +7312,38 @@ var author$project$View$bezierSvgConnectionpath = F2(
 			A2(author$project$Vec2$Vec2, tangentX2, to.a8),
 			to);
 	});
-var author$project$Model$symbolNames = {a9: 'Anything', bb: 'Digit Char', bg: 'Linebreak Char', bk: 'Non Digit Char', bl: 'Non Linebreak Char', bm: 'Non Whitespace Char', bn: 'Non Word Char', bo: 'Non Word Boundary', bp: 'Nothing', bu: 'Tab Char', bw: 'Whitespace Char', bx: 'Word Char', by: 'Word Boundary'};
+var author$project$Model$symbolNames = {a9: 'Anything', bc: 'Digit Char', bh: 'Linebreak Char', bl: 'Non Digit Char', bm: 'Non Linebreak Char', bn: 'Non Whitespace Char', bo: 'Non Word Char', bp: 'Non Word Boundary', bq: 'Nothing', bv: 'Tab Char', bx: 'Whitespace Char', by: 'Word Char', bz: 'Word Boundary'};
 var author$project$Model$symbolName = function (symbol) {
 	switch (symbol) {
 		case 0:
-			return author$project$Model$symbolNames.bw;
-		case 1:
-			return author$project$Model$symbolNames.bm;
-		case 2:
-			return author$project$Model$symbolNames.bb;
-		case 3:
-			return author$project$Model$symbolNames.bk;
-		case 4:
 			return author$project$Model$symbolNames.bx;
-		case 5:
+		case 1:
 			return author$project$Model$symbolNames.bn;
-		case 6:
-			return author$project$Model$symbolNames.by;
-		case 7:
-			return author$project$Model$symbolNames.bo;
-		case 8:
-			return author$project$Model$symbolNames.bg;
-		case 9:
+		case 2:
+			return author$project$Model$symbolNames.bc;
+		case 3:
 			return author$project$Model$symbolNames.bl;
-		case 10:
-			return author$project$Model$symbolNames.bu;
-		case 11:
+		case 4:
+			return author$project$Model$symbolNames.by;
+		case 5:
+			return author$project$Model$symbolNames.bo;
+		case 6:
+			return author$project$Model$symbolNames.bz;
+		case 7:
 			return author$project$Model$symbolNames.bp;
+		case 8:
+			return author$project$Model$symbolNames.bh;
+		case 9:
+			return author$project$Model$symbolNames.bm;
+		case 10:
+			return author$project$Model$symbolNames.bv;
+		case 11:
+			return author$project$Model$symbolNames.bq;
 		default:
 			return author$project$Model$symbolNames.a9;
 	}
 };
-var author$project$Model$typeNames = {bD: 'Any Repetition', bE: 'At Least One', bN: 'Capture', bQ: 'Any of Char Range', bR: 'Any of Chars', b$: 'Exact Repetition', L: 'Configuration', b5: 'If At End Of Line', b6: 'If At Start Of Line', b7: 'If Followed By', b8: 'If Not Followed By', ch: 'Char Sequence', cn: 'Maximum Repetition', cp: 'Minimum Repetition', cv: 'None of Char Range', cw: 'None of Chars', cC: 'Optional', cL: 'Ranged Repetition', cS: 'Sequence', cT: 'Any Of'};
+var author$project$Model$typeNames = {bE: 'Any Repetition', bF: 'At Least One', bN: 'Capture', bQ: 'Any of Char Range', bR: 'Any of Chars', b$: 'Exact Repetition', L: 'Configuration', b5: 'If At End Of Line', b6: 'If At Start Of Line', b7: 'If Followed By', b8: 'If Not Followed By', ch: 'Char Sequence', cn: 'Maximum Repetition', cp: 'Minimum Repetition', cv: 'None of Char Range', cw: 'None of Chars', cC: 'Optional', cL: 'Ranged Repetition', cS: 'Sequence', cT: 'Any Of'};
 var author$project$View$codeTextWidth = A2(
 	elm$core$Basics$composeR,
 	elm$core$String$length,
@@ -7395,9 +7395,9 @@ var author$project$View$nodeWidth = function (node) {
 		case 12:
 			return author$project$View$mainTextWidth(author$project$Model$typeNames.b8);
 		case 14:
-			return author$project$View$mainTextWidth(author$project$Model$typeNames.bE);
+			return author$project$View$mainTextWidth(author$project$Model$typeNames.bF);
 		case 15:
-			return author$project$View$mainTextWidth(author$project$Model$typeNames.bD);
+			return author$project$View$mainTextWidth(author$project$Model$typeNames.bE);
 		case 16:
 			return author$project$View$mainTextWidth(author$project$Model$typeNames.cL);
 		case 17:
@@ -7436,7 +7436,7 @@ var author$project$View$viewConnectDrag = F4(
 					A2(
 						elm$core$Basics$composeR,
 						function ($) {
-							return $.bj;
+							return $.bk;
 						},
 						author$project$View$nodeWidth),
 					node)),
@@ -7548,7 +7548,7 @@ var author$project$View$viewExampleText = function (example) {
 };
 var author$project$View$NodeView = F2(
 	function (node, connections) {
-		return {bT: connections, bj: node};
+		return {bT: connections, bk: node};
 	});
 var author$project$Model$CharSetNode = function (a) {
 	return {$: 1, a: a};
@@ -7662,7 +7662,7 @@ var author$project$Update$updateFlagsMultiline = F2(
 			expression,
 			_Utils_update(
 				flags,
-				{bi: multiline}));
+				{bj: multiline}));
 	});
 var author$project$Update$updateFlagsMultiple = F2(
 	function (_n0, multiple) {
@@ -8056,7 +8056,7 @@ var author$project$View$properties = function (node) {
 					'Allow every matches to be found across multiple lines',
 					A2(
 						author$project$View$BoolProperty,
-						flagsNode.L.bi,
+						flagsNode.L.bj,
 						author$project$Update$updateFlagsMultiline(flagsNode)),
 					false)
 				]);
@@ -8145,7 +8145,7 @@ var author$project$View$properties = function (node) {
 				[
 					A4(
 					author$project$View$PropertyView,
-					author$project$Model$typeNames.bE,
+					author$project$Model$typeNames.bF,
 					'Allow this expression to occur multiple times',
 					A2(
 						author$project$View$ConnectingProperty,
@@ -8168,7 +8168,7 @@ var author$project$View$properties = function (node) {
 				[
 					A4(
 					author$project$View$PropertyView,
-					author$project$Model$typeNames.bD,
+					author$project$Model$typeNames.bE,
 					'Allow this expression to occur multiple times or not at all',
 					A2(
 						author$project$View$ConnectingProperty,
@@ -8338,7 +8338,7 @@ var author$project$View$viewNodeConnections = F3(
 					return A4(
 						connectionLine,
 						supplierNodeView.dK,
-						author$project$View$nodeWidth(supplierNodeView.bj),
+						author$project$View$nodeWidth(supplierNodeView.bk),
 						node.dK,
 						index);
 				};
@@ -8948,7 +8948,7 @@ var author$project$View$viewProperties = F3(
 								return ((_Utils_cmp(event.s.a, mouse.a7) < 0) && (!_Utils_eq(supplier, elm$core$Maybe$Nothing))) ? author$project$Update$StartEditingConnection(
 									{
 										q: author$project$Vec2$fromTuple(event.s),
-										bj: onChange(elm$core$Maybe$Nothing),
+										bk: onChange(elm$core$Maybe$Nothing),
 										ct: nodeId,
 										ao: supplier
 									}) : (output ? author$project$Update$StartCreateConnection(
@@ -8977,10 +8977,10 @@ var author$project$View$viewProperties = F3(
 				if (!dragMode.$) {
 					switch (dragMode.a.$) {
 						case 2:
-							var node = dragMode.a.a.bj;
+							var node = dragMode.a.a.bk;
 							return _Utils_eq(nodeId, node);
 						case 4:
-							var node = dragMode.a.a.bj;
+							var node = dragMode.a.a.bk;
 							return _Utils_eq(nodeId, node);
 						default:
 							break _n5$2;
@@ -9225,18 +9225,18 @@ var mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$onClick = A2(mpizenber
 var mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$onDown = A2(mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$onWithOptions, 'mousedown', mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$defaultOptions);
 var author$project$View$viewNodeContent = F6(
 	function (dragMode, selectedNode, outputNode, nodeId, props, nodeView) {
-		var onClick = function (event) {
-			return (event.bK === 3) ? author$project$Update$DragModeMessage(
+		var onMouseDown = function (event) {
+			return (event.bb === 3) ? author$project$Update$DragModeMessage(
 				author$project$Update$StartPrepareEditingConnection(
 					{
 						q: author$project$Vec2$fromTuple(event.s),
-						bj: nodeId
-					})) : author$project$Update$DragModeMessage(
+						bk: nodeId
+					})) : ((event.bb === 1) ? author$project$Update$DragModeMessage(
 				author$project$Update$StartNodeMove(
 					{
 						q: author$project$Vec2$fromTuple(event.s),
-						bj: nodeId
-					}));
+						bk: nodeId
+					})) : author$project$Update$DoNothing);
 		};
 		var mayDragConnect = function () {
 			_n0$2:
@@ -9244,10 +9244,10 @@ var author$project$View$viewNodeContent = F6(
 				if (!dragMode.$) {
 					switch (dragMode.a.$) {
 						case 2:
-							var node = dragMode.a.a.bj;
+							var node = dragMode.a.a.bk;
 							return _Utils_eq(nodeId, node);
 						case 4:
-							var node = dragMode.a.a.bj;
+							var node = dragMode.a.a.bk;
 							return _Utils_eq(nodeId, node);
 						default:
 							break _n0$2;
@@ -9259,7 +9259,7 @@ var author$project$View$viewNodeContent = F6(
 			return false;
 		}();
 		var contentWidth = elm$core$String$fromFloat(
-			author$project$View$nodeWidth(nodeView.bj)) + 'px';
+			author$project$View$nodeWidth(nodeView.bk)) + 'px';
 		return A2(
 			elm$html$Html$div,
 			_List_fromArray(
@@ -9294,7 +9294,7 @@ var author$project$View$viewNodeContent = F6(
 					_List_fromArray(
 						[
 							elm$html$Html$Attributes$class('properties'),
-							mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$onDown(onClick)
+							mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$onDown(onMouseDown)
 						]),
 					A3(author$project$View$viewProperties, nodeId, dragMode, props)),
 					A2(
@@ -9352,7 +9352,7 @@ var author$project$View$viewNode = F5(
 	function (dragMode, selectedNode, outputNode, nodes, _n0) {
 		var nodeId = _n0.a;
 		var nodeView = _n0.b;
-		var props = author$project$View$properties(nodeView.bj);
+		var props = author$project$View$properties(nodeView.bk);
 		return A2(
 			author$project$View$NodeView,
 			A6(author$project$View$viewNodeContent, dragMode, selectedNode, outputNode, nodeId, props, nodeView),
@@ -9436,7 +9436,7 @@ var author$project$Model$WordBoundary = 6;
 var author$project$Model$WordChar = 4;
 var author$project$Model$Prototype = F2(
 	function (name, node) {
-		return {dx: name, bj: node};
+		return {dx: name, bk: node};
 	});
 var author$project$Model$symbolProto = function (getter) {
 	return author$project$Model$Prototype(
@@ -9451,25 +9451,25 @@ var author$project$Model$prototypes = _List_fromArray(
 		A2(
 		author$project$Model$symbolProto,
 		function ($) {
-			return $.bw;
+			return $.bx;
 		},
 		author$project$Model$SymbolNode(0)),
 		A2(
 		author$project$Model$symbolProto,
 		function ($) {
-			return $.bm;
+			return $.bn;
 		},
 		author$project$Model$SymbolNode(1)),
 		A2(
 		author$project$Model$symbolProto,
 		function ($) {
-			return $.bb;
+			return $.bc;
 		},
 		author$project$Model$SymbolNode(2)),
 		A2(
 		author$project$Model$symbolProto,
 		function ($) {
-			return $.bk;
+			return $.bl;
 		},
 		author$project$Model$SymbolNode(3)),
 		A2(
@@ -9525,14 +9525,14 @@ var author$project$Model$prototypes = _List_fromArray(
 		A2(
 		author$project$Model$typeProto,
 		function ($) {
-			return $.bE;
+			return $.bF;
 		},
 		author$project$Model$AtLeastOneNode(
 			{p: elm$core$Maybe$Nothing, aD: false})),
 		A2(
 		author$project$Model$typeProto,
 		function ($) {
-			return $.bD;
+			return $.bE;
 		},
 		author$project$Model$AnyRepetitionNode(
 			{p: elm$core$Maybe$Nothing, aD: false})),
@@ -9565,13 +9565,13 @@ var author$project$Model$prototypes = _List_fromArray(
 		A2(
 		author$project$Model$symbolProto,
 		function ($) {
-			return $.by;
+			return $.bz;
 		},
 		author$project$Model$SymbolNode(6)),
 		A2(
 		author$project$Model$symbolProto,
 		function ($) {
-			return $.bo;
+			return $.bp;
 		},
 		author$project$Model$SymbolNode(7)),
 		A2(
@@ -9605,31 +9605,31 @@ var author$project$Model$prototypes = _List_fromArray(
 		A2(
 		author$project$Model$symbolProto,
 		function ($) {
-			return $.bx;
+			return $.by;
 		},
 		author$project$Model$SymbolNode(4)),
 		A2(
 		author$project$Model$symbolProto,
 		function ($) {
-			return $.bn;
+			return $.bo;
 		},
 		author$project$Model$SymbolNode(5)),
 		A2(
 		author$project$Model$symbolProto,
 		function ($) {
-			return $.bg;
+			return $.bh;
 		},
 		author$project$Model$SymbolNode(8)),
 		A2(
 		author$project$Model$symbolProto,
 		function ($) {
-			return $.bl;
+			return $.bm;
 		},
 		author$project$Model$SymbolNode(9)),
 		A2(
 		author$project$Model$symbolProto,
 		function ($) {
-			return $.bu;
+			return $.bv;
 		},
 		author$project$Model$SymbolNode(10)),
 		A2(
@@ -9648,7 +9648,7 @@ var author$project$Model$prototypes = _List_fromArray(
 		A2(
 		author$project$Model$symbolProto,
 		function ($) {
-			return $.bp;
+			return $.bq;
 		},
 		author$project$Model$SymbolNode(11)),
 		A2(
@@ -9699,7 +9699,7 @@ var author$project$View$viewSearch = function (query) {
 					function (_n1) {
 						return author$project$Update$SearchMessage(
 							author$project$Update$FinishSearch(
-								author$project$Update$InsertPrototype(prototype.bj)));
+								author$project$Update$InsertPrototype(prototype.bk)));
 					})
 				]),
 			_List_fromArray(
@@ -9712,7 +9712,7 @@ var author$project$View$viewSearch = function (query) {
 		elm$regex$Regex$never,
 		A2(
 			elm$regex$Regex$fromStringWith,
-			{c7: true, bi: false},
+			{c7: true, bj: false},
 			query));
 	var lowercaseQuery = elm$core$String$toLower(query);
 	var isEmpty = elm$core$String$isEmpty(query);
@@ -9868,7 +9868,7 @@ var author$project$View$view = function (model) {
 						return _Utils_Tuple3(true, elm$core$Maybe$Nothing, mouse);
 					case 3:
 						var supplier = _n1.a.a.ao;
-						var openEnd = _n1.a.a.br;
+						var openEnd = _n1.a.a.bs;
 						return _Utils_Tuple3(
 							false,
 							elm$core$Maybe$Just(supplier),
@@ -9959,7 +9959,7 @@ var author$project$View$view = function (model) {
 						author$project$Update$DragModeMessage(author$project$Update$FinishDrag)),
 						mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$onDown(
 						function (event) {
-							return (event.bK === 2) ? author$project$Update$DragModeMessage(
+							return (event.bb === 2) ? author$project$Update$DragModeMessage(
 								author$project$Update$StartViewMove(
 									{
 										q: author$project$Vec2$fromTuple(event.s)
@@ -9978,7 +9978,7 @@ var author$project$View$view = function (model) {
 						A2(
 							elm$core$List$map,
 							function ($) {
-								return $.bj;
+								return $.bk;
 							},
 							nodeViews))
 					])),

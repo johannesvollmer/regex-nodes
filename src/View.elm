@@ -585,11 +585,14 @@ viewNodeContent dragMode selectedNode outputNode nodeId props nodeView =
       Just (RetainPrototypedConnection { node }) -> nodeId == node
       _ -> False
 
-    onClick event =
+    onMouseDown event =
       if event.button == Mouse.SecondButton then
         DragModeMessage (StartPrepareEditingConnection { node = nodeId, mouse = Vec2.fromTuple event.clientPos })
 
-      else DragModeMessage (StartNodeMove { node = nodeId, mouse = Vec2.fromTuple event.clientPos })
+      else if event.button == Mouse.MainButton then
+        DragModeMessage (StartNodeMove { node = nodeId, mouse = Vec2.fromTuple event.clientPos })
+
+      else DoNothing
 
 
   in div
@@ -603,7 +606,7 @@ viewNodeContent dragMode selectedNode outputNode nodeId props nodeView =
       ]
     ]
 
-    [ div [ class "properties", Mouse.onDown onClick ]
+    [ div [ class "properties", Mouse.onDown onMouseDown ]
         (viewProperties nodeId dragMode props)
 
     , div
