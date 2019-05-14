@@ -195,7 +195,7 @@ header img {
 }
 
 #dialog-box {
-  margin: auto;
+  margin: 25vh auto auto auto;
   font-size: 1.4em;
 
   display: flex;
