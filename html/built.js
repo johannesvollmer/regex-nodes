@@ -7273,6 +7273,10 @@ var author$project$View$onMouseWithStopPropagation = F2(
 			{a8: false, bc: true},
 			eventHandler);
 	});
+var author$project$View$prependListIf = F3(
+	function (condition, element, list) {
+		return condition ? A2(elm$core$List$cons, element, list) : list;
+	});
 var elm$core$Basics$always = F2(
 	function (a, _n0) {
 		return a;
@@ -9647,10 +9651,6 @@ var author$project$Update$InsertPrototype = function (a) {
 var author$project$Update$ParseRegex = function (a) {
 	return {$: 1, a: a};
 };
-var author$project$View$prependListIf = F3(
-	function (condition, element, list) {
-		return condition ? A2(elm$core$List$cons, element, list) : list;
-	});
 var elm$core$List$filter = F2(
 	function (isGood, list) {
 		return A3(
@@ -9840,6 +9840,13 @@ var mpizenberg$elm_pointer_events$Html$Events$Extra$Wheel$onWithOptions = F2(
 	});
 var mpizenberg$elm_pointer_events$Html$Events$Extra$Wheel$onWheel = mpizenberg$elm_pointer_events$Html$Events$Extra$Wheel$onWithOptions(mpizenberg$elm_pointer_events$Html$Events$Extra$Wheel$defaultOptions);
 var author$project$View$view = function (model) {
+	var startViewMove = function (event) {
+		return (event.bo === 2) ? author$project$Update$DragModeMessage(
+			author$project$Update$StartViewMove(
+				{
+					q: author$project$Vec2$fromTuple(event.s)
+				})) : author$project$Update$DoNothing;
+	};
 	var regex = A2(
 		elm$core$Maybe$map,
 		author$project$Build$buildRegex(model.cz),
@@ -9946,28 +9953,24 @@ var author$project$View$view = function (model) {
 					])),
 				A2(
 				elm$html$Html$div,
-				_List_fromArray(
-					[
-						elm$html$Html$Attributes$id('node-graph'),
-						mpizenberg$elm_pointer_events$Html$Events$Extra$Wheel$onWheel(
-						function (event) {
-							return author$project$Update$UpdateView(
-								{
-									c2: (event.dg < 0) ? 1 : (-1),
-									dl: author$project$Vec2$fromTuple(event.dv.s)
-								});
-						}),
-						author$project$View$preventContextMenu(
-						author$project$Update$DragModeMessage(author$project$Update$FinishDrag)),
-						mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$onDown(
-						function (event) {
-							return (event.bo === 2) ? author$project$Update$DragModeMessage(
-								author$project$Update$StartViewMove(
+				A3(
+					author$project$View$prependListIf,
+					_Utils_eq(model.cR, elm$core$Maybe$Nothing),
+					mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$onDown(startViewMove),
+					_List_fromArray(
+						[
+							elm$html$Html$Attributes$id('node-graph'),
+							mpizenberg$elm_pointer_events$Html$Events$Extra$Wheel$onWheel(
+							function (event) {
+								return author$project$Update$UpdateView(
 									{
-										q: author$project$Vec2$fromTuple(event.s)
-									})) : author$project$Update$DoNothing;
-						})
-					]),
+										c2: (event.dg < 0) ? 1 : (-1),
+										dl: author$project$Vec2$fromTuple(event.dv.s)
+									});
+							}),
+							author$project$View$preventContextMenu(
+							author$project$Update$DragModeMessage(author$project$Update$FinishDrag))
+						])),
 				_List_fromArray(
 					[
 						A2(

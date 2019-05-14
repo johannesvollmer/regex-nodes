@@ -267,6 +267,10 @@ view model =
 
     connections = flattenList (List.map .connections nodeViews)
 
+    startViewMove event =
+      if event.button == Mouse.MiddleButton
+        then DragModeMessage <| StartViewMove { mouse = Vec2.fromTuple event.clientPos }
+        else DoNothing -- TODO SearchMessage <| FinishSearch NoResult
 
 
   in div
@@ -290,18 +294,16 @@ view model =
       ]
 
     , div
-      [ id "node-graph"
-      , Wheel.onWheel (\event -> UpdateView (MagnifyView
-        { amount = (if event.deltaY < 0 then 1 else -1)
-        , focus = (Vec2.fromTuple event.mouseEvent.clientPos)
-        }))
-      , preventContextMenu (DragModeMessage FinishDrag)
-      , Mouse.onDown (\event ->
-          if event.button == Mouse.MiddleButton
-            then DragModeMessage <| StartViewMove { mouse = Vec2.fromTuple event.clientPos }
-            else DoNothing
-        )
-      ]
+
+      (prependListIf (model.search == Nothing) (Mouse.onDown startViewMove) -- mouse down will prevent input blur on click
+        [ id "node-graph"
+        , Wheel.onWheel (\event -> UpdateView (MagnifyView
+          { amount = (if event.deltaY < 0 then 1 else -1)
+          , focus = (Vec2.fromTuple event.mouseEvent.clientPos)
+          }))
+        , preventContextMenu (DragModeMessage FinishDrag)
+        ]
+      )
 
       [ div [ class "transform-wrapper", magnifyAndOffsetHTML model.view ]
         (List.map .node nodeViews)
