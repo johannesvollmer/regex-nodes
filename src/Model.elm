@@ -59,9 +59,11 @@ type alias View =
   }
 
 type DragMode
-  = MoveNodeDrag { node : NodeId, mouse : Vec2 }
+  = MoveNodeDrag { node: NodeId, mouse: Vec2 }
+  | MoveViewDrag { mouse: Vec2 }
+
   | PrepareEditingConnection { node: NodeId, mouse: Vec2 }
-  | CreateConnection { supplier : NodeId, openEnd : Vec2 }
+  | CreateConnection { supplier: NodeId, openEnd: Vec2 }
   | RetainPrototypedConnection { node: NodeId, previousNodeValue: Maybe Node, mouse: Vec2 }
 
 
@@ -278,3 +280,4 @@ symbolName symbol = case symbol of
   TabChar -> symbolNames.tab
   Never -> symbolNames.none
   Always -> symbolNames.any
+

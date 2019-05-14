@@ -29,7 +29,8 @@ Alternatively, use [modd](https://github.com/cortesi/modd) in this directory to 
     - [ ] When deleting a node, try to retain connections 
           (If the deleted node is a single property node, connect the otherwise now opened connections)
 - [x] Do not adjust example for every node move
-- [ ] Middle mouse button view movement
+- [x] Middle mouse button view movement
+    - [ ] Blur text input on non-middle-mouse-clicking anywhere
 - [ ] Simplify UX of changing order in "Set Node"s
 - [ ] Tooltips and explanations!!
 - [ ] Reconnect replaced connections 

@@ -47,7 +47,7 @@ type alias NodeView =
 properties : Node -> List PropertyView
 properties node =
   case node of
-    SymbolNode symbol -> [ PropertyView (symbolName symbol) "" TitleProperty True ]
+    SymbolNode symbol -> [ PropertyView (symbolName symbol) (symbolDescription symbol) TitleProperty True ]
 
     CharSetNode chars ->
       [ PropertyView typeNames.charset
@@ -208,6 +208,22 @@ properties node =
       ]
 
 
+symbolDescription symbol = case symbol of
+  WhitespaceChar -> "Match any invisible char, such as the space between words and linebreaks"
+  NonWhitespaceChar -> "Match any char that is not invisible, for example neither space nor linebreaks"
+  DigitChar -> "Match any numerical char, from `0` to `9`, excluding punctuation"
+  NonDigitChar -> "Match any char but numerical ones, matching punctuation but not anything from `0` to ´9´"
+  WordChar -> "Match any alphabetical chars, and the underscore char `_`"
+  NonWordChar -> "Match any char, but not alphabetical ones and not the underscore char `_`"
+  WordBoundary -> "Matches where a word char has a whitespace neighbour"
+  NonWordBoundary -> "Matches anywhere but where a word char has a whitespace neighbour"
+  LinebreakChar -> "Matches the linebreak, or newline, char `\\n`"
+  NonLinebreakChar -> "Matches anything but the linebreak char `\\n`"
+  TabChar -> "Matches the tab char `\\t`"
+  Never -> "Matches nothing ever, really"
+  Always -> "Matches any char, including linebreaks and whitespace"
+
+
 propertyHeight = 25
 
 nodeWidth node = case node of
@@ -273,10 +289,6 @@ view model =
     , Mouse.onUp (always <| DragModeMessage FinishDrag)
     , Mouse.onLeave (always <| DragModeMessage FinishDrag)
 
-    , Wheel.onWheel (\event -> UpdateView (MagnifyView
-      { amount = (if event.deltaY < 0 then 1 else -1)
-      , focus = (Vec2.fromTuple event.mouseEvent.clientPos)
-      }))
 
     , id "main"
     , classes "" [(moveDragging, "move-dragging"), (connectDragging, "connect-dragging"), (model.exampleText.isEditing, "editing-example-text")]
@@ -291,7 +303,16 @@ view model =
 
     , div
       [ id "node-graph"
+      , Wheel.onWheel (\event -> UpdateView (MagnifyView
+        { amount = (if event.deltaY < 0 then 1 else -1)
+        , focus = (Vec2.fromTuple event.mouseEvent.clientPos)
+        }))
       , preventContextMenu (DragModeMessage FinishDrag)
+      , Mouse.onDown (\event ->
+          if event.button == Mouse.MiddleButton
+            then DragModeMessage <| StartViewMove { mouse = Vec2.fromTuple event.clientPos }
+            else DoNothing
+        )
       ]
 
       [ div [ class "transform-wrapper", magnifyAndOffsetHTML model.view ]
@@ -724,8 +745,8 @@ viewProperties nodeId dragMode props =
 onMouseWithStopPropagation eventName eventHandler = Mouse.onWithOptions
   eventName { preventDefault = False, stopPropagation = True } eventHandler
 
-stopMousePropagation eventName = onMouseWithStopPropagation eventName
-  (\event -> DragModeMessage (UpdateDrag { newMouse = Vec2.fromTuple event.clientPos }))
+stopMousePropagation eventName =
+  onMouseWithStopPropagation eventName (always DoNothing)
 
 viewBoolInput : Bool -> Message -> Html Message
 viewBoolInput value onToggle = input

@@ -2,7 +2,6 @@ module Update exposing (..)
 
 import Model exposing (..)
 import Build exposing (buildRegex, compileRegex)
-import Dict exposing (Dict)
 import Vec2 exposing (Vec2)
 import Parse exposing (..)
 import Regex
@@ -21,6 +20,7 @@ type Message
   | DeleteNode NodeId
   | ConfirmDeleteNode Bool
   | DuplicateNode NodeId
+  | DoNothing
 
 type ExampleTextMessage
   = UpdateContents String
@@ -41,6 +41,7 @@ type ViewMessage
 
 type DragModeMessage
   = StartNodeMove { node : NodeId, mouse : Vec2 }
+  | StartViewMove { mouse: Vec2 }
 
   | StartPrepareEditingConnection { node: NodeId, mouse: Vec2 }
   | StartEditingConnection { nodeId: NodeId, node: Node, supplier: Maybe NodeId, mouse: Vec2 }
@@ -54,6 +55,8 @@ type DragModeMessage
 update : Message -> Model -> Model
 update message model =
   case message of
+    DoNothing -> model
+
     UpdateExampleText textMessage -> case textMessage of
 
       SetEditing enabled -> if not enabled
@@ -66,7 +69,6 @@ update message model =
 
       UpdateMaxMatchLimit limit -> let old = model.exampleText in
         { model | exampleText = { old | maxMatches = limit } }
-
 
 
     UpdateView viewMessage ->
@@ -103,19 +105,10 @@ update message model =
     DragModeMessage modeMessage ->
       case modeMessage of
         StartNodeMove { node, mouse } ->
-          let
-            newModel =  { model
-              | selectedNode = Just node
-              , dragMode = Just (MoveNodeDrag { node = node, mouse = mouse })
-              , outputNode = if not model.outputNode.locked || model.outputNode.id == Nothing
-                  then { id = Just node, locked = model.outputNode.locked }
-                  else model.outputNode
-              }
+          startNodeMove mouse node model
 
-          in if model.outputNode.id /= newModel.outputNode.id
-            -- only update cache if node really changed
-            then updateCache newModel else newModel
-
+        StartViewMove drag ->
+          { model | dragMode = Just <| MoveViewDrag drag }
 
         -- update the subject node (disconnecting the input)
         -- and then start editing the connection of the old supplier
@@ -139,14 +132,13 @@ update message model =
         UpdateDrag { newMouse } ->
           case model.dragMode of
             Just (MoveNodeDrag { node, mouse }) ->
-              let delta = Vec2.sub newMouse mouse in
-              { model | nodes = moveNode model.view model.nodes node delta
-              , dragMode = Just (MoveNodeDrag { node = node, mouse = newMouse })
-              }
+              moveNodeInModel newMouse mouse node model
+
+            Just (MoveViewDrag { mouse }) ->
+              moveViewInModel newMouse mouse model
 
             Just (CreateConnection { supplier }) ->
-              let mode = CreateConnection { supplier = supplier, openEnd = newMouse } in
-              { model | dragMode = Just mode }
+              { model | dragMode = Just <| CreateConnection { supplier = supplier, openEnd = newMouse } }
 
             _ -> model
 
@@ -199,6 +191,20 @@ insertNode node model =
     in { model | nodes = IdMap.insert (NodeView position node) model.nodes, search = Nothing }
 
 
+startNodeMove mouse node model =
+  let
+    newModel =  { model
+      | selectedNode = Just node
+      , dragMode = Just (MoveNodeDrag { node = node, mouse = mouse })
+      , outputNode = if not model.outputNode.locked || model.outputNode.id == Nothing
+          then { id = Just node, locked = model.outputNode.locked }
+          else model.outputNode
+      }
+
+  in if model.outputNode.id /= newModel.outputNode.id
+    -- only update cache if node really changed
+  then updateCache newModel else newModel
+
 stopEditingExampleText model =
   enableEditingExampleText model False
 
@@ -210,6 +216,22 @@ enableEditingExampleText model enabled =
 updateNode : Nodes -> NodeId -> Node -> Nodes
 updateNode nodes id newNode =
   nodes |> IdMap.update id (\nodeView -> { nodeView | node = newNode })
+
+
+moveNodeInModel newMouse mouse node model =
+  let delta = Vec2.sub newMouse mouse in
+  { model | nodes = moveNode model.view model.nodes node delta
+  , dragMode = Just (MoveNodeDrag { node = node, mouse = newMouse })
+  }
+
+moveViewInModel newMouse mouse model =
+  let
+    view = model.view
+    delta = Vec2.sub newMouse mouse
+
+  in { model | dragMode = Just <| MoveViewDrag { mouse = newMouse }
+     , view = { view | offset = Vec2.add view.offset delta }
+     }
 
 moveNode : View -> Nodes -> NodeId -> Vec2 -> Nodes
 moveNode view nodes nodeId movement =
