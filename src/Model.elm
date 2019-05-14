@@ -122,6 +122,7 @@ type Symbol
 type alias Prototype =
   { name : String
   , node : Node
+  , description: String
   }
 
 
@@ -174,8 +175,8 @@ prototypes =
   ]
 
 
-typeProto getter = Prototype <| getter typeNames
-symbolProto getter = Prototype <| getter symbolNames
+typeProto getter prototype = Prototype (getter typeNames) prototype (getter typeDescriptions)
+symbolProto getter prototype = Prototype (getter symbolNames) prototype (getter symbolDescriptions)
 
 
 symbolNames =
@@ -217,6 +218,47 @@ typeNames =
   , ifFollowedBy = "If Followed By"
   }
 
+symbolDescriptions =
+  { whitespace = "Match any invisible char, such as the space between words and linebreaks"
+  , nonWhitespace = "Match any char that is not invisible, for example neither space nor linebreaks"
+  , digit = "Match any numerical char, from `0` to `9`, excluding punctuation"
+  , nonDigit = "Match any char but numerical ones, matching punctuation"
+  , word = "Match any alphabetical chars, and the underscore char `_`"
+  , nonWord = "Match any char, but not alphabetical ones and not the underscore char `_`"
+  , wordBoundary = "Matches where a word char has a whitespace neighbour"
+  , nonWordBoundary = "Matches anywhere but not where a word char has a whitespace neighbour"
+  , lineBreak = "Matches the linebreak, or newline, char `\\n`"
+  , nonLineBreak = "Matches anything but the linebreak char `\\n`"
+  , tab = "Matches the tab char `\\t`"
+  , none = "Matches nothing ever, really"
+  , any = "Matches any char, including linebreaks and whitespace"
+  }
+
+
+typeDescriptions =
+  { charset = "Matches, where any char of the set is matched"
+  , notInCharset = "Matches anywhere, where no char of the set is matched"
+  , literal = "Matches where the exact sequence of chars are found"
+  , charRange = "Matches any char between the lower and upper range bound"
+  , notInCharRange = "Matches any char outside of the range"
+  , optional = "Allow omitting this expression and match anyways"
+  , set = "Matches, where at least one of the options matches"
+  , capture = "Capture this expression for later use"
+  , ifAtEnd = "Match this expression only if a linebreak follows"
+  , ifAtStart = "Match this expression only if it follows a linebreak"
+  , ifNotFollowedBy = "Match this expression only if the successor is not matched"
+  , sequence = "Matches, where all members in the exact order are matched one after another"
+  , flags = "Configure how the whole regex operates"
+  , exactRepetition = "Match where an expression is repeated exactly n times"
+  , atLeastOne = "Allow this expression to occur multiple times"
+  , anyRepetition = "Allow this expression to occur multiple times or not at all"
+  , minimumRepetition = "Match where an expression is repeated at least n times"
+  , maximumRepetition = "Match where an expression is repeated no more than n times"
+  , rangedRepetition = "Only match if the expression is repeated in range"
+  , ifFollowedBy = "Match this expression only if the successor is also matched"
+  }
+
+
 type alias RegexFlags =
   { multiple : Bool
   , caseSensitive : Bool
@@ -230,6 +272,28 @@ viewTransform { magnification, offset} =
   }
 
 defaultFlags = RegexFlags True True True
+
+
+
+symbolName = symbolProperty symbolNames
+symbolDescription = symbolProperty symbolDescriptions
+
+symbolProperty properties symbol = case symbol of
+  WhitespaceChar -> properties.whitespace
+  NonWhitespaceChar -> properties.nonWhitespace
+  DigitChar -> properties.digit
+  NonDigitChar -> properties.nonDigit
+  WordChar -> properties.word
+  NonWordChar -> properties.nonWord
+  WordBoundary -> properties.wordBoundary
+  NonWordBoundary -> properties.nonWordBoundary
+  LinebreakChar -> properties.lineBreak
+  NonLinebreakChar -> properties.nonLineBreak
+  TabChar -> properties.tab
+  Never -> properties.none
+  Always -> properties.any
+
+
 
 onNodeDeleted : NodeId -> Node -> Node
 onNodeDeleted deleted node =
@@ -265,19 +329,4 @@ ifNotDeleted deleted node =
 
 ifExpressionNotDeleted deleted values =
   { values | expression = ifNotDeleted deleted values.expression }
-
-symbolName symbol = case symbol of
-  WhitespaceChar -> symbolNames.whitespace
-  NonWhitespaceChar -> symbolNames.nonWhitespace
-  DigitChar -> symbolNames.digit
-  NonDigitChar -> symbolNames.nonDigit
-  WordChar -> symbolNames.word
-  NonWordChar -> symbolNames.nonWord
-  WordBoundary -> symbolNames.wordBoundary
-  NonWordBoundary -> symbolNames.nonWordBoundary
-  LinebreakChar -> symbolNames.lineBreak
-  NonLinebreakChar -> symbolNames.nonLineBreak
-  TabChar -> symbolNames.tab
-  Never -> symbolNames.none
-  Always -> symbolNames.any
 

@@ -74,6 +74,16 @@ nav {
   background-color: #555;
   color: #ddd;
 }
+#search #results .description {
+  display: none;
+}
+
+#search #results > *:hover .description,
+#search #results:not(:hover) > *:first-child .description
+{
+  display: block;
+}
+
 #search input, #match-limit input {
   background: #444;
   border: 2px solid #444;
@@ -85,6 +95,9 @@ nav {
 }
 #search #results #parse-regex {
   color: teal;
+}
+#search #results .description {
+  opacity: 0.3;
 }
 
 #expression-result {

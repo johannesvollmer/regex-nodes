@@ -65,7 +65,7 @@ properties node =
       ]
 
     CaptureNode captured ->
-      [ PropertyView typeNames.capture "Capture this expression for later use"
+      [ PropertyView typeNames.capture typeDescriptions.capture
           (ConnectingProperty captured CaptureNode) True
       ]
 
@@ -88,17 +88,17 @@ properties node =
       ]
 
     SetNode options ->
-      [ PropertyView typeNames.set "Match any of the following options" TitleProperty True
+      [ PropertyView typeNames.set typeDescriptions.set TitleProperty True
       , PropertyView "Option" "Match if this or any other option is matched" (ConnectingProperties options SetNode) False
       ]
 
     SequenceNode members ->
-      [ PropertyView typeNames.sequence "Match where all members in this order are matched" TitleProperty True
+      [ PropertyView typeNames.sequence typeDescriptions.sequence TitleProperty True
       , PropertyView "And Then" "A member of the sequence" (ConnectingProperties members SequenceNode) False
       ]
 
     FlagsNode flagsNode ->
-      [ PropertyView typeNames.flags "Configure how the whole regex operates"
+      [ PropertyView typeNames.flags typeDescriptions.flags
           (ConnectingProperty flagsNode.expression (updateFlagsExpression flagsNode)) False
 
       , PropertyView "Multiple Matches" "Do not stop after the first match"
@@ -112,7 +112,7 @@ properties node =
       ]
 
     IfFollowedByNode followed ->
-      [ PropertyView typeNames.ifFollowedBy "Match this expression only if the successor is matched"
+      [ PropertyView typeNames.ifFollowedBy typeDescriptions.ifFollowedBy
           (ConnectingProperty followed.expression (updateFollowedByExpression followed)) True
 
       , PropertyView "Successor" "What needs to follow the expression"
@@ -120,7 +120,7 @@ properties node =
       ]
 
     IfNotFollowedByNode followed ->
-      [ PropertyView typeNames.ifNotFollowedBy "Match this expression only if the successor is not matched"
+      [ PropertyView typeNames.ifNotFollowedBy typeDescriptions.ifNotFollowedBy
           (ConnectingProperty followed.expression (updateNotFollowedByExpression followed)) True
 
       , PropertyView "Successor" "What must not follow the expression"
@@ -128,22 +128,22 @@ properties node =
       ]
 
     IfAtEndNode atEnd ->
-      [ PropertyView typeNames.ifAtEnd "Match this expression only if a linebreak follows"
+      [ PropertyView typeNames.ifAtEnd typeDescriptions.ifAtEnd
         (ConnectingProperty atEnd IfAtEndNode) True
       ]
 
     IfAtStartNode atStart ->
-      [ PropertyView typeNames.ifAtStart "Match this expression only if it follows a linebreak"
+      [ PropertyView typeNames.ifAtStart typeDescriptions.ifAtStart
         (ConnectingProperty atStart IfAtStartNode) True
       ]
 
     OptionalNode option ->
-      [ PropertyView typeNames.optional "Allow omitting this expression"
+      [ PropertyView typeNames.optional typeDescriptions.optional
         (ConnectingProperty option OptionalNode) True
       ]
 
     AtLeastOneNode counted ->
-      [ PropertyView typeNames.atLeastOne "Allow this expression to occur multiple times"
+      [ PropertyView typeNames.atLeastOne typeDescriptions.atLeastOne
           (ConnectingProperty counted.expression (updateAtLeastOneExpression counted)) True
 
       , PropertyView "Minimize Count" "Match as few occurences as possible"
@@ -151,7 +151,7 @@ properties node =
       ]
 
     AnyRepetitionNode counted ->
-      [ PropertyView typeNames.anyRepetition "Allow this expression to occur multiple times or not at all"
+      [ PropertyView typeNames.anyRepetition typeDescriptions.anyRepetition
         (ConnectingProperty counted.expression (updateAnyRepetitionExpression counted)) True
 
       , PropertyView "Minimize Count" "Match as few occurences as possible"
@@ -168,7 +168,10 @@ properties node =
       ]
 
     RangedRepetitionNode counted ->
-      [ PropertyView typeNames.rangedRepetition "Only match if the expression is repeated as specified"
+      [ PropertyView typeNames.rangedRepetition
+          ("Match only if the expression is repeated no less than " ++ String.fromInt counted.minimum
+            ++ " and no more than " ++ String.fromInt counted.maximum ++ " times"
+          )
           (ConnectingProperty counted.expression (updateRangedRepetitionExpression counted)) True
 
       , PropertyView "Minimum"
@@ -207,21 +210,6 @@ properties node =
           (BoolProperty counted.minimal (updateMaximumRepetitionMinimal counted)) False
       ]
 
-
-symbolDescription symbol = case symbol of
-  WhitespaceChar -> "Match any invisible char, such as the space between words and linebreaks"
-  NonWhitespaceChar -> "Match any char that is not invisible, for example neither space nor linebreaks"
-  DigitChar -> "Match any numerical char, from `0` to `9`, excluding punctuation"
-  NonDigitChar -> "Match any char but numerical ones, matching punctuation but not anything from `0` to ´9´"
-  WordChar -> "Match any alphabetical chars, and the underscore char `_`"
-  NonWordChar -> "Match any char, but not alphabetical ones and not the underscore char `_`"
-  WordBoundary -> "Matches where a word char has a whitespace neighbour"
-  NonWordBoundary -> "Matches anywhere but where a word char has a whitespace neighbour"
-  LinebreakChar -> "Matches the linebreak, or newline, char `\\n`"
-  NonLinebreakChar -> "Matches anything but the linebreak char `\\n`"
-  TabChar -> "Matches the tab char `\\t`"
-  Never -> "Matches nothing ever, really"
-  Always -> "Matches any char, including linebreaks and whitespace"
 
 
 propertyHeight = 25
@@ -447,7 +435,10 @@ viewSearch query =
         { stopPropagation = False, preventDefault = False } -- do not prevent blurring the textbox on selecting a result
         (\_ -> SearchMessage (FinishSearch (InsertPrototype prototype.node)))
       ]
-      [ text prototype.name ]
+
+      [ p [ class "name" ] [ text prototype.name ]
+      , p [ class "description" ] [ text prototype.description ]
+      ]
 
     asRegex = div
       [ class "button"
