@@ -40,7 +40,9 @@ BrowserStack loves Open Source, and Open Source loves BrowserStack.
 - [x] Middle mouse button view movement
     - [ ] Blur text input on non-middle-mouse-clicking anywhere
 - [ ] Simplify UX of changing order in "Set Node"s
-- [ ] Tooltips and explanations!!
+- [x] Tooltips
+    - [ ] Custom, styled tooltips?
+- [ ] Live Explanations!!
 - [ ] Reconnect replaced connections 
       when reverting connection prototype
 - [x] Instantiate Nodes centered to the screen
