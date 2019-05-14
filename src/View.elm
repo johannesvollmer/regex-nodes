@@ -259,7 +259,7 @@ view model =
 
     connectDragging = connectDragId /= Nothing
 
-    nodeViews = (List.map (viewNode model.dragMode model.outputNode.id model.nodes) (IdMap.toList model.nodes))
+    nodeViews = (List.map (viewNode model.dragMode model.selectedNode model.outputNode.id model.nodes) (IdMap.toList model.nodes))
 
     connections = flattenList (List.map .connections nodeViews)
 
@@ -352,6 +352,27 @@ view model =
         ]
       ]
 
+    , div
+      [ id "confirm-deletion-alert"
+      , classes "" [(model.confirmDeletion /= Nothing, "show")]
+      , Mouse.onClick <| always <| ConfirmDeleteNode False
+      , stopMousePropagation "wheel"
+      ]
+
+      [ div [ id "dialog-box" ]
+        [ p [] [ text ("Delete that node?") ]
+        , div [ id "options" ]
+          [ div
+            [ id "confirm", class "button"
+            , onMouseWithStopPropagation "click" (always <| ConfirmDeleteNode True)
+            ]
+            [ text "Delete" ]
+
+          , div [ id "cancel", class "button" ] [ text "Cancel" ]
+          ]
+
+        ]
+      ]
     ]
 
 
@@ -399,7 +420,8 @@ viewSearch query =
     matches prototype = test prototype.name
 
     render prototype = div
-      [ Mouse.onWithOptions
+      [ class "button"
+      , Mouse.onWithOptions
         "mousedown"
         { stopPropagation = False, preventDefault = False } -- do not prevent blurring the textbox on selecting a result
         (\_ -> SearchMessage (FinishSearch (InsertPrototype prototype.node)))
@@ -407,7 +429,8 @@ viewSearch query =
       [ text prototype.name ]
 
     asRegex = div
-      [ Mouse.onWithOptions
+      [ class "button"
+      , Mouse.onWithOptions
         "mousedown"
         { stopPropagation = False, preventDefault = False } -- do not prevent blurring the textbox on selecting a result
         (\_ -> SearchMessage (FinishSearch (ParseRegex query)))
@@ -446,10 +469,10 @@ viewExampleTexts matches =
   in matches |> List.concatMap render
 
 
-viewNode : Maybe DragMode -> Maybe NodeId -> Nodes -> (NodeId, Model.NodeView) -> NodeView
-viewNode dragMode outputNode nodes (nodeId, nodeView) =
+viewNode : Maybe DragMode -> Maybe NodeId -> Maybe NodeId -> Nodes -> (NodeId, Model.NodeView) -> NodeView
+viewNode dragMode selectedNode outputNode nodes (nodeId, nodeView) =
   let props = properties nodeView.node in
-  NodeView (viewNodeContent dragMode outputNode nodeId props nodeView) (viewNodeConnections nodes props nodeView)
+  NodeView (viewNodeContent dragMode selectedNode outputNode nodeId props nodeView) (viewNodeConnections nodes props nodeView)
 
 
 viewNodeConnections : Nodes -> List PropertyView -> Model.NodeView -> List (Svg Message)
@@ -531,8 +554,8 @@ hasDragConnectionPrototype dragMode nodeId = case dragMode of
     _ -> False
 
 -- TODO use lazy html!
-viewNodeContent : Maybe DragMode -> Maybe NodeId -> NodeId -> List PropertyView -> Model.NodeView -> Html Message
-viewNodeContent dragMode outputNode nodeId props nodeView =
+viewNodeContent : Maybe DragMode -> Maybe NodeId -> Maybe NodeId -> NodeId -> List PropertyView -> Model.NodeView -> Html Message
+viewNodeContent dragMode selectedNode outputNode nodeId props nodeView =
   let
     contentWidth = (nodeWidth nodeView.node |> String.fromFloat) ++ "px"
 
@@ -554,6 +577,7 @@ viewNodeContent dragMode outputNode nodeId props nodeView =
     , classes "graph-node"
       [ (hasDragConnectionPrototype dragMode nodeId, "connecting")
       , (outputNode == Just nodeId, "output")
+      , (selectedNode == Just nodeId, "selected")
       , (mayDragConnect, "may-drag-connect")
       ]
     ]

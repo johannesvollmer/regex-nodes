@@ -7,7 +7,7 @@
 }
 
 
-body, #main, #overlay, #node-graph, #connection-graph, #example-text {
+body, #main, #overlay, #node-graph, #connection-graph, #example-text, #confirm-deletion-alert {
 	position: fixed;
 	top:0; left:0;
 	width: 100vw;
@@ -151,7 +151,6 @@ header img {
 }
 
 #search #results {
-  cursor: pointer;
   max-height: 80vh;
   overflow-x: hidden;
   overflow-y: auto;
@@ -186,7 +185,36 @@ header img {
   transform: scale(0.5);
 }
 
+#confirm-deletion-alert {
+  display: flex;
+  visibility: hidden;
+}
 
+.show#confirm-deletion-alert {
+  visibility: visible;
+}
+
+#dialog-box {
+  margin: auto;
+  font-size: 1.4em;
+
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  text-align: center;
+}
+#dialog-box p {
+  padding: 18px;
+}
+#dialog-box #options {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+}
+#dialog-box .button {
+  padding: 12px;
+  width: 50%;
+}
 
 .graph-node {
 	position: absolute;
@@ -211,7 +239,7 @@ header img {
   display: flex;
   flex-direction: row;
 }
-.graph-node:hover .menu,  graph-node .menu:hover {
+.selected.graph-node .menu {
   top: -25px;
   height: 25px;
 }

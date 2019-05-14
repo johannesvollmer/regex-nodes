@@ -86,7 +86,7 @@ update message model =
 
     DuplicateNode id -> duplicateNode model id
 
-    DeleteNode id -> deleteNode { model | confirmDeletion = Just id } -- TODO only: { model | confirmDeletion = Just id }
+    DeleteNode id -> { model | confirmDeletion = Just id }
 
     ConfirmDeleteNode delete -> if not delete
       then { model | confirmDeletion = Nothing }
@@ -105,10 +105,11 @@ update message model =
         StartNodeMove { node, mouse } ->
           let
             newModel =  { model
-              | dragMode = Just (MoveNodeDrag { node = node, mouse = mouse })
+              | selectedNode = Just node
+              , dragMode = Just (MoveNodeDrag { node = node, mouse = mouse })
               , outputNode = if not model.outputNode.locked || model.outputNode.id == Nothing
-                                then { id = Just node, locked = model.outputNode.locked }
-                                else model.outputNode
+                  then { id = Just node, locked = model.outputNode.locked }
+                  else model.outputNode
               }
 
           in if model.outputNode.id /= newModel.outputNode.id

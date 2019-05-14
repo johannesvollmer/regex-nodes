@@ -18,7 +18,7 @@
 /* FIXME will not work when removing parent classes! */
 .property, .graph-node, .connector, #search input, #match-limit, #match-limit input,
 .property .chars.input,.property .int.input, #edit-example-container,
-.graph-node:hover .menu, .graph-node .menu:hover
+.selected.graph-node .menu
 {
   transition: background-color 250ms, opacity 100ms;
 }
@@ -31,11 +31,8 @@
   transition: color 150ms;
 }
 
-.graph-node .menu, .graph-node:hover .menu {
+.graph-node .menu, .selected.graph-node .menu {
   transition: height 80ms, top 80ms;
-}
-.graph-node .menu {
-  transition-delay: 0.5s;
 }
 
 
@@ -148,10 +145,32 @@ nav {
   to   { color: #888; }
 }
 
+#confirm-deletion-alert {
+  background-color: #000000aa;
+}
+#confirm-deletion-alert #dialog-box p {
+  background-color: #eee;
+  font-weight: bold;
+  border-top: 5px solid #804;
+  color: #444;
+}
+#confirm-deletion-alert #confirm {
+  background-color: #804;
+  color: #eee;
+}
+#confirm-deletion-alert #cancel {
+  background-color: #fff;
+  color: #444;
+}
+
+
+
+
+
+
 .connection {
 	stroke: teal;
 }
-
 
 .graph-node .properties {
 	background-color: #eee;
@@ -173,10 +192,10 @@ nav {
 }
 
 .graph-node .menu {
-  background-color: #00000044;
+  background-color: #00000088;
 }
 .graph-node .menu .button {
-  opacity: 0.1;
+  opacity: 0.6;
 }
 .graph-node .menu .button:hover {
   background-color: #111;
