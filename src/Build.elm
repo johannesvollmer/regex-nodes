@@ -31,7 +31,7 @@ buildNodeExpression nodes node =
        then String.concat members
        else "(nothing)"
 
-    optional expression = expression ++ "?"
+    optional min expression = expression ++ "?" |> andMinimal min
     atLeastOne min expression = expression ++ "+" |> andMinimal min
     anyRepetition min expression = expression ++ "*" |> andMinimal min
 
@@ -86,7 +86,7 @@ buildNodeExpression nodes node =
       IfNotFollowedByNode { expression, successor } -> Result.map2 ifNotFollowedBy (build successor) (build expression)
       IfFollowedByNode { expression, successor } -> Result.map2 ifFollowedBy (build successor) (build expression)
 
-      OptionalNode child -> buildSingleChild optional child
+      OptionalNode { expression, minimal } -> buildSingleChild (optional minimal) expression
       AtLeastOneNode { expression, minimal } -> buildSingleChild (atLeastOne minimal) expression
       AnyRepetitionNode { expression, minimal } -> buildSingleChild (anyRepetition minimal) expression
       ExactRepetitionNode { expression, count } -> buildSingleChild (exactRepetition count) expression

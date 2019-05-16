@@ -139,7 +139,10 @@ properties node =
 
     OptionalNode option ->
       [ PropertyView typeNames.optional typeDescriptions.optional
-        (ConnectingProperty option OptionalNode) True
+        (ConnectingProperty option.expression (updateOptionalExpression option)) True
+
+      , PropertyView "Prefer None" "Prefer not to match"
+          (BoolProperty option.minimal (updateOptionalMinimal option)) False
       ]
 
     AtLeastOneNode counted ->
@@ -221,7 +224,7 @@ nodeWidth node = case node of
   CharRangeNode _ _ -> mainTextWidth typeNames.charRange
   NotInCharRangeNode _ _ -> mainTextWidth typeNames.notInCharRange
   LiteralNode chars -> mainTextWidth typeNames.literal + codeTextWidth chars + 3
-  OptionalNode _ -> mainTextWidth typeNames.optional
+  OptionalNode _ -> stringWidth 10
   SetNode _ -> mainTextWidth typeNames.set
   FlagsNode _ -> mainTextWidth typeNames.flags
   IfFollowedByNode _ -> mainTextWidth typeNames.ifFollowedBy
@@ -241,10 +244,8 @@ nodeWidth node = case node of
 
 -- Thanks, Html, for letting us hardcode those values.
 codeTextWidth = String.length >> (*) 5 >> toFloat
-mainTextWidth text =
-  let length = text |> String.length |> toFloat
-  in length * if length < 14 then 12 else 9
-
+mainTextWidth text = text |> String.length |> toFloat |> stringWidth
+stringWidth length =  length * if length < 14 then 12 else 9
 
 -- VIEW
 

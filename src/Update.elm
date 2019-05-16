@@ -337,6 +337,9 @@ updateExactRepetitionCount repetition count = ExactRepetitionNode { repetition |
 updateAtLeastOneExpression atLeast expression = AtLeastOneNode { atLeast | expression = expression }
 updateAtLeastOneMinimal atLeast minimal = AtLeastOneNode { atLeast | minimal = minimal }
 
+updateOptionalExpression node expression = OptionalNode { node | expression = expression }
+updateOptionalMinimal node minimal = OptionalNode { node | minimal = minimal }
+
 updateAnyRepetitionExpression any expression = AnyRepetitionNode { any | expression = expression }
 updateAnyRepetitionMinimal any minimal = AnyRepetitionNode { any | minimal = minimal }
 

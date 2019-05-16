@@ -91,7 +91,7 @@ type Node
   | IfFollowedByNode { expression : Maybe NodeId, successor : Maybe NodeId }
   | IfNotFollowedByNode { expression : Maybe NodeId, successor : Maybe NodeId }
 
-  | OptionalNode (Maybe NodeId)
+  | OptionalNode { expression: Maybe NodeId, minimal: Bool }
   | AtLeastOneNode { expression: Maybe NodeId, minimal: Bool }
   | AnyRepetitionNode { expression: Maybe NodeId, minimal: Bool }
   | RangedRepetitionNode { expression : Maybe NodeId, minimum: Int, maximum: Int, minimal: Bool }
@@ -144,7 +144,7 @@ prototypes =
   , typeProto .notInCharRange (NotInCharRangeNode 'A' 'Z')
   , typeProto .notInCharset (NotInCharSetNode ",.?!:")
 
-  , typeProto .optional (OptionalNode Nothing)
+  , typeProto .optional (OptionalNode { expression = Nothing, minimal = False })
   , typeProto .atLeastOne (AtLeastOneNode { expression = Nothing, minimal = False })
   , typeProto .anyRepetition (AnyRepetitionNode { expression = Nothing, minimal = False })
 
@@ -310,8 +310,8 @@ onNodeDeleted deleted node =
     CaptureNode child -> CaptureNode <| ifNotDeleted deleted child
     IfAtEndNode child -> IfAtEndNode <| ifNotDeleted deleted child
     IfAtStartNode child -> IfAtStartNode <| ifNotDeleted deleted child
-    OptionalNode child -> OptionalNode <| ifNotDeleted deleted child
 
+    OptionalNode child -> OptionalNode <| ifExpressionNotDeleted deleted child
     AtLeastOneNode child -> AtLeastOneNode <| ifExpressionNotDeleted deleted child
     AnyRepetitionNode child -> AnyRepetitionNode <| ifExpressionNotDeleted deleted child
     FlagsNode value -> FlagsNode <| ifExpressionNotDeleted deleted value
