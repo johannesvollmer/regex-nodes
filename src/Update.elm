@@ -325,12 +325,13 @@ extractMatches multiple maxMatches text regex =
 
 
 -- TOOD dry
+updateExpression node expression = { node | expression = expression }
+updateSuccessor node successor = { node | successor = successor }
+updateStart node start = { node | start = start }
+updateEnd node end = { node | end = end }
+updateMinimal node minimal = { node | minimal = minimal }
 
-updateFollowedByExpression followed expression = IfFollowedByNode { followed | expression = expression }
-updateFollowedBySuccessor followed successor = IfFollowedByNode { followed | successor = successor }
-
-updateNotFollowedByExpression followed expression = IfNotFollowedByNode { followed | expression = expression }
-updateNotFollowedBySuccessor followed successor = IfNotFollowedByNode { followed | successor = successor }
+updatePositiveCount node count = { node | count = positive count }
 
 updateCharRangeFirst end start = CharRangeNode (minChar start end) (maxChar start end) -- swaps chars if necessary
 updateCharRangeLast start end = CharRangeNode (minChar end start) (maxChar start end) -- swaps chars if necessary
@@ -338,30 +339,8 @@ updateCharRangeLast start end = CharRangeNode (minChar end start) (maxChar start
 updateNotInCharRangeFirst end start = CharRangeNode (minChar start end) (maxChar start end) -- swaps chars if necessary
 updateNotInCharRangeLast start end = CharRangeNode (minChar end start) (maxChar start end) -- swaps chars if necessary
 
-updateExactRepetitionExpression repetition expression = ExactRepetitionNode { repetition | expression = expression }
-updateExactRepetitionCount repetition count = ExactRepetitionNode { repetition | count = positive count }
-
-updateAtLeastOneExpression atLeast expression = AtLeastOneNode { atLeast | expression = expression }
-updateAtLeastOneMinimal atLeast minimal = AtLeastOneNode { atLeast | minimal = minimal }
-
-updateOptionalExpression node expression = OptionalNode { node | expression = expression }
-updateOptionalMinimal node minimal = OptionalNode { node | minimal = minimal }
-
-updateAnyRepetitionExpression any expression = AnyRepetitionNode { any | expression = expression }
-updateAnyRepetitionMinimal any minimal = AnyRepetitionNode { any | minimal = minimal }
-
-updateMinimumRepetitionExpression repetition expression = MinimumRepetitionNode { repetition | expression = expression }
-updateMinimumRepetitionCount repetition count = MinimumRepetitionNode { repetition | minimum = positive count }
-updateMinimumRepetitionMinimal any minimal = MinimumRepetitionNode { any | minimal = minimal }
-
-updateMaximumRepetitionExpression repetition expression = MaximumRepetitionNode { repetition | expression = expression }
-updateMaximumRepetitionCount repetition count = MaximumRepetitionNode { repetition | maximum = positive count }
-updateMaximumRepetitionMinimal any minimal = MaximumRepetitionNode { any | minimal = minimal }
-
-updateRangedRepetitionExpression repetition expression = RangedRepetitionNode { repetition | expression = expression }
 updateRangedRepetitionMinimum repetition count = RangedRepetitionNode { repetition | minimum = positive count, maximum = max (positive count) repetition.maximum }
 updateRangedRepetitionMaximum repetition count = RangedRepetitionNode { repetition | maximum = positive count, minimum = min (positive count) repetition.minimum }
-updateRangedRepetitionMinimal any minimal = RangedRepetitionNode { any | minimal = minimal }
 
 updateFlagsExpression flags newInput = FlagsNode { flags | expression = newInput }
 updateFlags expression newFlags = FlagsNode { expression = expression, flags = newFlags }

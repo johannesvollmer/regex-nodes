@@ -95,8 +95,8 @@ type Node
   | AtLeastOneNode { expression: Maybe NodeId, minimal: Bool }
   | AnyRepetitionNode { expression: Maybe NodeId, minimal: Bool }
   | RangedRepetitionNode { expression : Maybe NodeId, minimum: Int, maximum: Int, minimal: Bool }
-  | MinimumRepetitionNode { expression : Maybe NodeId, minimum: Int, minimal: Bool }
-  | MaximumRepetitionNode { expression : Maybe NodeId, maximum: Int, minimal: Bool }
+  | MinimumRepetitionNode { expression : Maybe NodeId, count: Int, minimal: Bool }
+  | MaximumRepetitionNode { expression : Maybe NodeId, count: Int, minimal: Bool }
   | ExactRepetitionNode { expression : Maybe NodeId, count : Int }
 
 
@@ -157,8 +157,8 @@ prototypes =
   , symbolProto .nonWordBoundary (SymbolNode NonWordBoundary)
 
   , typeProto .rangedRepetition (RangedRepetitionNode { expression = Nothing, minimum = 2, maximum = 4, minimal = False })
-  , typeProto .minimumRepetition (MinimumRepetitionNode { expression = Nothing, minimum = 2, minimal = False })
-  , typeProto .maximumRepetition (MaximumRepetitionNode { expression = Nothing, maximum = 4, minimal = False })
+  , typeProto .minimumRepetition (MinimumRepetitionNode { expression = Nothing, count = 2, minimal = False })
+  , typeProto .maximumRepetition (MaximumRepetitionNode { expression = Nothing, count = 4, minimal = False })
   , typeProto .exactRepetition (ExactRepetitionNode { expression = Nothing, count = 3 })
 
   , symbolProto .word (SymbolNode WordChar)

@@ -91,8 +91,8 @@ buildNodeExpression nodes node =
       AnyRepetitionNode { expression, minimal } -> buildSingleChild (anyRepetition minimal) expression
       ExactRepetitionNode { expression, count } -> buildSingleChild (exactRepetition count) expression
       RangedRepetitionNode { expression, minimum, maximum, minimal } -> buildSingleChild (rangedRepetition minimal minimum maximum) expression
-      MinimumRepetitionNode { expression, minimum, minimal } -> buildSingleChild (minimumRepetition minimal minimum) expression
-      MaximumRepetitionNode { expression, maximum, minimal } -> buildSingleChild (maximumRepetition minimal maximum) expression
+      MinimumRepetitionNode { expression, count, minimal } -> buildSingleChild (minimumRepetition minimal count) expression
+      MaximumRepetitionNode { expression, count, minimal } -> buildSingleChild (maximumRepetition minimal count) expression
 
 
   in string

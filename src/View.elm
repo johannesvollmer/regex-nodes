@@ -114,18 +114,18 @@ properties node =
 
     IfFollowedByNode followed ->
       [ PropertyView typeNames.ifFollowedBy typeDescriptions.ifFollowedBy
-          (ConnectingProperty followed.expression (updateFollowedByExpression followed)) True
+          (ConnectingProperty followed.expression (IfFollowedByNode << updateExpression followed)) True
 
       , PropertyView "Successor" "What needs to follow the expression"
-          (ConnectingProperty followed.successor (updateFollowedBySuccessor followed)) False
+          (ConnectingProperty followed.successor (IfFollowedByNode << updateSuccessor followed)) False
       ]
 
     IfNotFollowedByNode followed ->
       [ PropertyView typeNames.ifNotFollowedBy typeDescriptions.ifNotFollowedBy
-          (ConnectingProperty followed.expression (updateNotFollowedByExpression followed)) True
+          (ConnectingProperty followed.expression (IfNotFollowedByNode << updateExpression followed)) True
 
       , PropertyView "Successor" "What must not follow the expression"
-          (ConnectingProperty followed.successor (updateNotFollowedBySuccessor followed)) False
+          (ConnectingProperty followed.successor (IfNotFollowedByNode << updateSuccessor followed)) False
       ]
 
     IfAtEndNode atEnd ->
@@ -140,35 +140,35 @@ properties node =
 
     OptionalNode option ->
       [ PropertyView typeNames.optional typeDescriptions.optional
-        (ConnectingProperty option.expression (updateOptionalExpression option)) True
+        (ConnectingProperty option.expression (OptionalNode << updateExpression option)) True
 
       , PropertyView "Prefer None" "Prefer not to match"
-          (BoolProperty option.minimal (updateOptionalMinimal option)) False
+          (BoolProperty option.minimal (OptionalNode << updateMinimal option)) False
       ]
 
     AtLeastOneNode counted ->
       [ PropertyView typeNames.atLeastOne typeDescriptions.atLeastOne
-          (ConnectingProperty counted.expression (updateAtLeastOneExpression counted)) True
+          (ConnectingProperty counted.expression (AtLeastOneNode << updateExpression counted)) True
 
       , PropertyView "Minimize Count" "Match as few occurences as possible"
-          (BoolProperty counted.minimal (updateAtLeastOneMinimal counted)) False
+          (BoolProperty counted.minimal (AtLeastOneNode << updateMinimal counted)) False
       ]
 
     AnyRepetitionNode counted ->
       [ PropertyView typeNames.anyRepetition typeDescriptions.anyRepetition
-        (ConnectingProperty counted.expression (updateAnyRepetitionExpression counted)) True
+        (ConnectingProperty counted.expression (AnyRepetitionNode << updateExpression counted)) True
 
       , PropertyView "Minimize Count" "Match as few occurences as possible"
-          (BoolProperty counted.minimal (updateAnyRepetitionMinimal counted)) False
+          (BoolProperty counted.minimal (AnyRepetitionNode << updateMinimal counted)) False
       ]
 
     ExactRepetitionNode repetition ->
       [ PropertyView typeNames.exactRepetition
           ("Match only if this expression is repeated exactly " ++ String.fromInt repetition.count ++ " times")
-          (ConnectingProperty repetition.expression (updateExactRepetitionExpression repetition)) True
+          (ConnectingProperty repetition.expression (ExactRepetitionNode << updateExpression repetition)) True
 
       , PropertyView "Count" "How often the expression is required"
-          (IntProperty repetition.count (updateExactRepetitionCount repetition)) False
+          (IntProperty repetition.count (ExactRepetitionNode << updatePositiveCount repetition)) False
       ]
 
     RangedRepetitionNode counted ->
@@ -176,7 +176,7 @@ properties node =
           ("Match only if the expression is repeated no less than " ++ String.fromInt counted.minimum
             ++ " and no more than " ++ String.fromInt counted.maximum ++ " times"
           )
-          (ConnectingProperty counted.expression (updateRangedRepetitionExpression counted)) True
+          (ConnectingProperty counted.expression (RangedRepetitionNode << updateExpression counted)) True
 
       , PropertyView "Minimum"
           ("Match only if the expression is repeated no less than " ++ String.fromInt counted.minimum ++ " times")
@@ -187,31 +187,31 @@ properties node =
           (IntProperty counted.maximum (updateRangedRepetitionMaximum counted)) False
 
       , PropertyView "Minimize Count" "Match as few occurences as possible"
-          (BoolProperty counted.minimal (updateRangedRepetitionMinimal counted)) False
+          (BoolProperty counted.minimal (RangedRepetitionNode << updateMinimal counted)) False
       ]
 
     MinimumRepetitionNode counted ->
       [ PropertyView typeNames.minimumRepetition
-          ("Match only if the expression is repeated no less than " ++ String.fromInt counted.minimum ++ " times")
-          (ConnectingProperty counted.expression (updateMinimumRepetitionExpression counted)) True
+          ("Match only if the expression is repeated no less than " ++ String.fromInt counted.count ++ " times")
+          (ConnectingProperty counted.expression (MinimumRepetitionNode << updateExpression counted)) True
 
       , PropertyView "Count" "Minimum number of repetitions"
-          (IntProperty counted.minimum (updateMinimumRepetitionCount counted)) False
+          (IntProperty counted.count (MinimumRepetitionNode << updatePositiveCount counted)) False
 
       , PropertyView "Minimize Count" "Match as few occurences as possible"
-          (BoolProperty counted.minimal (updateMinimumRepetitionMinimal counted)) False
+          (BoolProperty counted.minimal (MinimumRepetitionNode << updateMinimal counted)) False
       ]
 
     MaximumRepetitionNode counted ->
       [ PropertyView typeNames.maximumRepetition
-          ("Match only if the expression is repeated no more than " ++ String.fromInt counted.maximum ++ " times")
-          (ConnectingProperty counted.expression (updateMaximumRepetitionExpression counted)) True
+          ("Match only if the expression is repeated no more than " ++ String.fromInt counted.count ++ " times")
+          (ConnectingProperty counted.expression (MaximumRepetitionNode << updateExpression counted)) True
 
       , PropertyView "Count" "Maximum number of repetitions"
-          (IntProperty counted.maximum (updateMaximumRepetitionCount counted)) False
+          (IntProperty counted.count (MaximumRepetitionNode << updatePositiveCount counted)) False
 
       , PropertyView "Minimize Count" "Match as few occurences as possible"
-          (BoolProperty counted.minimal (updateMaximumRepetitionMinimal counted)) False
+          (BoolProperty counted.minimal (MaximumRepetitionNode << updateMinimal counted)) False
       ]
 
 
@@ -296,8 +296,9 @@ view model =
 
     , div
 
-      (prependListIf (model.search == Nothing) (Mouse.onDown startViewMove) -- mouse down will prevent input blur on click
+      (
         [ id "node-graph"
+        , (Mouse.onWithOptions "mousedown" { stopPropagation = False, preventDefault = False } startViewMove) -- do not prevent input blur on click
         , Wheel.onWheel (\event -> UpdateView (MagnifyView
           { amount = (if event.deltaY < 0 then 1 else -1)
           , focus = (Vec2.fromTuple event.mouseEvent.clientPos)
