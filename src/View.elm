@@ -301,7 +301,7 @@ view model =
           { amount = (if event.deltaY < 0 then 1 else -1)
           , focus = (Vec2.fromTuple event.mouseEvent.clientPos)
           }))
-        , preventContextMenu (DragModeMessage FinishDrag)
+        , preventContextMenu (always DoNothing)
         ]
       )
 
@@ -398,9 +398,9 @@ lockSvg =
       ] [ ]
     ]
 
-preventContextMenu message = Mouse.onWithOptions "contextmenu"
-  { preventDefault = True, stopPropagation = True }
-  (always message)
+preventContextMenu handler = Mouse.onWithOptions "contextmenu"
+  { preventDefault = True, stopPropagation = False }
+  handler
 
 viewSearchResults search =
   div
@@ -578,6 +578,13 @@ viewNodeContent dragMode selectedNode outputNode nodeId props nodeView =
       Just (RetainPrototypedConnection { node }) -> nodeId == node
       _ -> False
 
+    -- equivalent to on right mouse down on MacOS
+    onContextMenu event =
+      if dragMode == Nothing then -- only do that on MacOs (windows mouse up will fail this check)
+        DragModeMessage (StartPrepareEditingConnection { node = nodeId, mouse = Vec2.fromTuple event.clientPos })
+
+      else DoNothing
+
     onMouseDown event =
       if event.button == Mouse.SecondButton then
         DragModeMessage (StartPrepareEditingConnection { node = nodeId, mouse = Vec2.fromTuple event.clientPos })
@@ -599,7 +606,7 @@ viewNodeContent dragMode selectedNode outputNode nodeId props nodeView =
       ]
     ]
 
-    [ div [ class "properties", Mouse.onDown onMouseDown ]
+    [ div [ class "properties", Mouse.onDown onMouseDown, preventContextMenu onContextMenu ]
         (viewProperties nodeId dragMode props)
 
     , div
