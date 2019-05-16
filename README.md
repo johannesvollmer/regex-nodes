@@ -1,8 +1,8 @@
 # Regex Nodes
 
-This is the elm rewrite of the [regex-nodes prototype](https://github.com/johannesvollmer/regex-nodes-js).
-Currently almost usable.
-
+Node based regular expression editor! 
+It helps you understand and construct regular expressions for use in Javascript.
+If your regular expressions are complex enough to give this editor relevance, you probably shouldn't use regular expressions.
 
 # Check it out
 
