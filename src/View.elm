@@ -12,6 +12,7 @@ import IdMap
 import Svg exposing (Svg, svg, line, g)
 import Svg.Attributes exposing (x1, x2, y1, y2)
 import Regex
+import Json.Decode
 
 import Vec2 exposing (Vec2)
 import Model exposing (..)
@@ -271,8 +272,7 @@ view model =
     startViewMove event =
       if event.button == Mouse.MiddleButton
         then DragModeMessage <| StartViewMove { mouse = Vec2.fromTuple event.clientPos }
-        else DoNothing -- TODO SearchMessage <| FinishSearch NoResult
-
+        else Deselect
 
   in div
     [ Mouse.onMove (\event -> DragModeMessage
@@ -349,7 +349,7 @@ view model =
         , viewSearchResults model.search
         ]
 
-      , div [ id "expression-result" ]
+      , div [ id "expression-result", classes "" [(expressionResult == Nothing, "no")] ]
         [ code []
           [ span [ id "declaration" ] [ text "const regex = " ]
           , text (expressionResult |> Maybe.withDefault (Ok "/(nothing)/") |> Result.withDefault "Error")
@@ -586,14 +586,31 @@ viewNodeContent dragMode selectedNode outputNode nodeId props nodeView =
 
       else DoNothing
 
-    onMouseDown event =
+    onMouseDownAndStopPropagation event =
       if event.button == Mouse.SecondButton then
-        DragModeMessage (StartPrepareEditingConnection { node = nodeId, mouse = Vec2.fromTuple event.clientPos })
+        (DragModeMessage (StartPrepareEditingConnection { node = nodeId, mouse = Vec2.fromTuple event.clientPos }), True)
 
       else if event.button == Mouse.MainButton then
-        DragModeMessage (StartNodeMove { node = nodeId, mouse = Vec2.fromTuple event.clientPos })
+        (DragModeMessage (StartNodeMove { node = nodeId, mouse = Vec2.fromTuple event.clientPos }), True)
 
-      else DoNothing
+      -- do not stop event propagation on middle mouse down
+      else (DoNothing, False)
+
+    -- TODO dry
+
+    duplicateAndStopPropagation event =
+      if event.button == Mouse.MainButton
+      then (DuplicateNode nodeId, True)
+      else (DoNothing, False) -- do not stop event propagation on non-primary mouse down
+
+    deleteAndStopPropagation event =
+      if event.button == Mouse.MainButton
+      then (DeleteNode nodeId, True)
+      else (DoNothing, False) -- do not stop event propagation on non-primary mouse down
+
+    mayStopPropagation : String -> (Mouse.Event -> (Message, Bool)) -> Attribute Message
+    mayStopPropagation tag handler = Html.Events.stopPropagationOn tag
+      (Mouse.eventDecoder |> Json.Decode.map handler)
 
 
   in div
@@ -607,20 +624,24 @@ viewNodeContent dragMode selectedNode outputNode nodeId props nodeView =
       ]
     ]
 
-    [ div [ class "properties", Mouse.onDown onMouseDown, preventContextMenu onContextMenu ]
-        (viewProperties nodeId dragMode props)
+    [ div
+      [ class "properties"
+      , mayStopPropagation "mousedown" onMouseDownAndStopPropagation
+      , preventContextMenu onContextMenu
+      ]
+      (viewProperties nodeId dragMode props)
 
     , div
       [ class "menu" ]
       [ div
-          [ Mouse.onClick <| always <| DuplicateNode <| nodeId
+          [ mayStopPropagation "mousedown" duplicateAndStopPropagation -- must be mousedown because click would be triggered after deselect on mouse down
           , class "duplicate button"
           , title "Duplicate this Node"
           ]
           [ img [ src "html/img/copy.svg" ] [] ]
 
       , div
-          [ Mouse.onClick <| always <| DeleteNode <| nodeId
+          [ mayStopPropagation "mousedown" deleteAndStopPropagation -- must be mousedown because click would be triggered after deselect on mouse down
           , class "delete button"
           , title "Delete this Node"
           ]

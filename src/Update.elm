@@ -20,6 +20,7 @@ type Message
   | DeleteNode NodeId
   | ConfirmDeleteNode Bool
   | DuplicateNode NodeId
+  | Deselect
   | DoNothing
 
 type ExampleTextMessage
@@ -56,6 +57,9 @@ update : Message -> Model -> Model
 update message model =
   case message of
     DoNothing -> model
+    Deselect -> if model.outputNode.locked
+      then { model | selectedNode = Nothing }
+      else updateCache { model | selectedNode = Nothing, outputNode = { locked = False, id = Nothing } }
 
     UpdateExampleText textMessage -> case textMessage of
 
@@ -318,6 +322,9 @@ extractMatches multiple maxMatches text regex =
 
   in matches |> extract |> simplify |> visualize
 
+
+
+-- TOOD dry
 
 updateFollowedByExpression followed expression = IfFollowedByNode { followed | expression = expression }
 updateFollowedBySuccessor followed successor = IfFollowedByNode { followed | successor = successor }

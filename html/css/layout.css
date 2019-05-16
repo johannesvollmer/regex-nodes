@@ -169,6 +169,10 @@ header img {
   font-size: 28px;
 }
 
+.no#expression-result {
+  visibility: hidden;
+}
+
 #expression-result code {
   text-align: center;
   flex-grow: 1;
