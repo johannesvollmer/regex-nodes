@@ -32,7 +32,7 @@ BrowserStack loves Open Source, and Open Source loves BrowserStack.
           (If the deleted node is a single property node, connect the otherwise now opened connections)
 - [x] Do not adjust example for every node move
 - [x] Middle mouse button view movement
-    - [ ] Blur text input on non-middle-mouse-clicking anywhere
+    - [x] Blur text input on non-middle-mouse-clicking anywhere
 - [ ] Simplify UX of changing order in "Set Node"s
 - [x] Tooltips
     - [ ] Custom, styled tooltips?
