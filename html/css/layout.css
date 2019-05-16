@@ -239,7 +239,7 @@ header img {
   display: flex;
   flex-direction: row;
 }
-.selected.graph-node .menu {
+#main:not(.connect-dragging) .selected.graph-node .menu {
   top: -25px;
   height: 25px;
 }
