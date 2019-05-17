@@ -275,7 +275,7 @@ view model =
         else Deselect
 
   in div
-    [ Mouse.onMove (\event -> DragModeMessage
+    [ conservativeOnMouse "mousemove" (\event -> DragModeMessage -- do not prevent default (which is text selection)
         (UpdateDrag { newMouse = Vec2.fromTuple event.clientPos })
       )
 
@@ -402,6 +402,10 @@ lockSvg =
 
 preventContextMenu handler = Mouse.onWithOptions "contextmenu"
   { preventDefault = True, stopPropagation = False }
+  handler
+
+conservativeOnMouse tag handler = Mouse.onWithOptions tag
+  { preventDefault = False, stopPropagation = False }
   handler
 
 viewSearchResults search =

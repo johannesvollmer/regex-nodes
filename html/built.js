@@ -600,11 +600,11 @@ function _Debug_crash_UNUSED(identifier, fact1, fact2, fact3, fact4)
 
 function _Debug_regionToString(region)
 {
-	if (region.dR.aE === region.df.aE)
+	if (region.dR.aG === region.df.aG)
 	{
-		return 'on line ' + region.dR.aE;
+		return 'on line ' + region.dR.aG;
 	}
-	return 'on lines ' + region.dR.aE + ' through ' + region.df.aE;
+	return 'on lines ' + region.dR.aG + ' through ' + region.df.aG;
 }
 
 
@@ -2798,8 +2798,8 @@ var _VirtualDom_mapEventRecord = F2(function(func, record)
 {
 	return {
 		G: func(record.G),
-		aJ: record.aJ,
-		aG: record.aG
+		aq: record.aq,
+		am: record.am
 	}
 });
 
@@ -3068,10 +3068,10 @@ function _VirtualDom_makeCallback(eventNode, initialHandler)
 
 		var value = result.a;
 		var message = !tag ? value : tag < 3 ? value.a : value.G;
-		var stopPropagation = tag == 1 ? value.b : tag == 3 && value.aJ;
+		var stopPropagation = tag == 1 ? value.b : tag == 3 && value.aq;
 		var currentEventNode = (
 			stopPropagation && event.stopPropagation(),
-			(tag == 2 ? value.b : tag == 3 && value.aG) && event.preventDefault(),
+			(tag == 2 ? value.b : tag == 3 && value.am) && event.preventDefault(),
 			eventNode
 		);
 		var tagger;
@@ -4061,7 +4061,7 @@ var _Browser_document = _Debugger_document || F4(function(impl, flagDecoder, deb
 		impl.d_,
 		impl.dT,
 		function(sendToApp, initialModel) {
-			var divertHrefToApp = impl.aI && impl.aI(sendToApp)
+			var divertHrefToApp = impl.aJ && impl.aJ(sendToApp)
 			var view = impl.d1;
 			var title = _VirtualDom_doc.title;
 			var bodyNode = _VirtualDom_doc.body;
@@ -4136,7 +4136,7 @@ function _Browser_application(impl)
 	var key = function() { key.a(onUrlChange(_Browser_getUrl())); };
 
 	return _Browser_document({
-		aI: function(sendToApp)
+		aJ: function(sendToApp)
 		{
 			key.a = sendToApp;
 			_Browser_window.addEventListener('popstate', key);
@@ -4329,7 +4329,7 @@ function _Browser_getViewport()
 		cX: {
 			bk: _Browser_window.pageXOffset,
 			bl: _Browser_window.pageYOffset,
-			av: _Browser_doc.documentElement.clientWidth,
+			ax: _Browser_doc.documentElement.clientWidth,
 			af: _Browser_doc.documentElement.clientHeight
 		}
 	};
@@ -4340,7 +4340,7 @@ function _Browser_getScene()
 	var body = _Browser_doc.body;
 	var elem = _Browser_doc.documentElement;
 	return {
-		av: Math.max(body.scrollWidth, body.offsetWidth, elem.scrollWidth, elem.offsetWidth, elem.clientWidth),
+		ax: Math.max(body.scrollWidth, body.offsetWidth, elem.scrollWidth, elem.offsetWidth, elem.clientWidth),
 		af: Math.max(body.scrollHeight, body.offsetHeight, elem.scrollHeight, elem.offsetHeight, elem.clientHeight)
 	};
 }
@@ -4365,13 +4365,13 @@ function _Browser_getViewportOf(id)
 	{
 		return {
 			cN: {
-				av: node.scrollWidth,
+				ax: node.scrollWidth,
 				af: node.scrollHeight
 			},
 			cX: {
 				bk: node.scrollLeft,
 				bl: node.scrollTop,
-				av: node.clientWidth,
+				ax: node.clientWidth,
 				af: node.clientHeight
 			}
 		};
@@ -4406,13 +4406,13 @@ function _Browser_getElement(id)
 			cX: {
 				bk: x,
 				bl: y,
-				av: _Browser_doc.documentElement.clientWidth,
+				ax: _Browser_doc.documentElement.clientWidth,
 				af: _Browser_doc.documentElement.clientHeight
 			},
 			de: {
 				bk: x + rect.left,
 				bl: y + rect.top,
-				av: rect.width,
+				ax: rect.width,
 				af: rect.height
 			}
 		};
@@ -4450,7 +4450,7 @@ function _Browser_load(url)
 }
 var author$project$IdMap$IdMap = F2(
 	function (dict, nextId) {
-		return {p: dict, aF: nextId};
+		return {p: dict, aH: nextId};
 	});
 var elm$core$Dict$RBEmpty_elm_builtin = {$: -2};
 var elm$core$Dict$empty = elm$core$Dict$RBEmpty_elm_builtin;
@@ -6350,8 +6350,8 @@ var elm$core$Dict$insert = F3(
 var author$project$IdMap$insert = F2(
 	function (value, idMap) {
 		return {
-			p: A3(elm$core$Dict$insert, idMap.aF, value, idMap.p),
-			aF: idMap.aF + 1
+			p: A3(elm$core$Dict$insert, idMap.aH, value, idMap.p),
+			aH: idMap.aH + 1
 		};
 	});
 var author$project$Vec2$add = F2(
@@ -6683,7 +6683,7 @@ var author$project$Update$update = F2(
 					case 3:
 						var nodeId = modeMessage.a.cv;
 						var node = modeMessage.a.bH;
-						var supplier = modeMessage.a.ap;
+						var supplier = modeMessage.a.ar;
 						var mouse = modeMessage.a.r;
 						return A2(
 							elm$core$Maybe$withDefault,
@@ -6697,20 +6697,20 @@ var author$project$Update$update = F2(
 											{
 												b8: elm$core$Maybe$Just(
 													author$project$Model$CreateConnection(
-														{bL: mouse, ap: oldSupplier})),
+														{bL: mouse, ar: oldSupplier})),
 												cw: A3(author$project$Update$updateNode, model.cw, nodeId, node)
 											}));
 								},
 								supplier));
 					case 4:
-						var supplier = modeMessage.a.ap;
+						var supplier = modeMessage.a.ar;
 						var mouse = modeMessage.a.r;
 						return _Utils_update(
 							model,
 							{
 								b8: elm$core$Maybe$Just(
 									author$project$Model$CreateConnection(
-										{bL: mouse, ap: supplier}))
+										{bL: mouse, ar: supplier}))
 							});
 					case 2:
 						var node = modeMessage.a.bH;
@@ -6737,13 +6737,13 @@ var author$project$Update$update = F2(
 										var mouse = _n6.a.a.r;
 										return A3(author$project$Update$moveViewInModel, newMouse, mouse, model);
 									case 3:
-										var supplier = _n6.a.a.ap;
+										var supplier = _n6.a.a.ar;
 										return _Utils_update(
 											model,
 											{
 												b8: elm$core$Maybe$Just(
 													author$project$Model$CreateConnection(
-														{bL: newMouse, ap: supplier}))
+														{bL: newMouse, ar: supplier}))
 											});
 									default:
 										break _n6$3;
@@ -7112,6 +7112,120 @@ var author$project$View$classes = F2(
 					},
 					elements))));
 	});
+var elm$virtual_dom$VirtualDom$Custom = function (a) {
+	return {$: 3, a: a};
+};
+var elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
+var elm$html$Html$Events$custom = F2(
+	function (event, decoder) {
+		return A2(
+			elm$virtual_dom$VirtualDom$on,
+			event,
+			elm$virtual_dom$VirtualDom$Custom(decoder));
+	});
+var elm$json$Json$Decode$map6 = _Json_map6;
+var mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$Event = F6(
+	function (keys, button, clientPos, offsetPos, pagePos, screenPos) {
+		return {aC: button, o: clientPos, dq: keys, dA: offsetPos, dE: pagePos, dO: screenPos};
+	});
+var elm$json$Json$Decode$field = _Json_decodeField;
+var elm$json$Json$Decode$int = _Json_decodeInt;
+var mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$BackButton = 4;
+var mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$ErrorButton = 0;
+var mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$ForwardButton = 5;
+var mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$MainButton = 1;
+var mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$MiddleButton = 2;
+var mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$SecondButton = 3;
+var mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$buttonFromId = function (id) {
+	switch (id) {
+		case 0:
+			return 1;
+		case 1:
+			return 2;
+		case 2:
+			return 3;
+		case 3:
+			return 4;
+		case 4:
+			return 5;
+		default:
+			return 0;
+	}
+};
+var mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$buttonDecoder = A2(
+	elm$json$Json$Decode$map,
+	mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$buttonFromId,
+	A2(elm$json$Json$Decode$field, 'button', elm$json$Json$Decode$int));
+var elm$json$Json$Decode$float = _Json_decodeFloat;
+var mpizenberg$elm_pointer_events$Internal$Decode$clientPos = A3(
+	elm$json$Json$Decode$map2,
+	F2(
+		function (a, b) {
+			return _Utils_Tuple2(a, b);
+		}),
+	A2(elm$json$Json$Decode$field, 'clientX', elm$json$Json$Decode$float),
+	A2(elm$json$Json$Decode$field, 'clientY', elm$json$Json$Decode$float));
+var elm$json$Json$Decode$bool = _Json_decodeBool;
+var elm$json$Json$Decode$map3 = _Json_map3;
+var mpizenberg$elm_pointer_events$Internal$Decode$Keys = F3(
+	function (alt, ctrl, shift) {
+		return {c_: alt, c7: ctrl, ao: shift};
+	});
+var mpizenberg$elm_pointer_events$Internal$Decode$keys = A4(
+	elm$json$Json$Decode$map3,
+	mpizenberg$elm_pointer_events$Internal$Decode$Keys,
+	A2(elm$json$Json$Decode$field, 'altKey', elm$json$Json$Decode$bool),
+	A2(elm$json$Json$Decode$field, 'ctrlKey', elm$json$Json$Decode$bool),
+	A2(elm$json$Json$Decode$field, 'shiftKey', elm$json$Json$Decode$bool));
+var mpizenberg$elm_pointer_events$Internal$Decode$offsetPos = A3(
+	elm$json$Json$Decode$map2,
+	F2(
+		function (a, b) {
+			return _Utils_Tuple2(a, b);
+		}),
+	A2(elm$json$Json$Decode$field, 'offsetX', elm$json$Json$Decode$float),
+	A2(elm$json$Json$Decode$field, 'offsetY', elm$json$Json$Decode$float));
+var mpizenberg$elm_pointer_events$Internal$Decode$pagePos = A3(
+	elm$json$Json$Decode$map2,
+	F2(
+		function (a, b) {
+			return _Utils_Tuple2(a, b);
+		}),
+	A2(elm$json$Json$Decode$field, 'pageX', elm$json$Json$Decode$float),
+	A2(elm$json$Json$Decode$field, 'pageY', elm$json$Json$Decode$float));
+var mpizenberg$elm_pointer_events$Internal$Decode$screenPos = A3(
+	elm$json$Json$Decode$map2,
+	F2(
+		function (a, b) {
+			return _Utils_Tuple2(a, b);
+		}),
+	A2(elm$json$Json$Decode$field, 'screenX', elm$json$Json$Decode$float),
+	A2(elm$json$Json$Decode$field, 'screenY', elm$json$Json$Decode$float));
+var mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$eventDecoder = A7(elm$json$Json$Decode$map6, mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$Event, mpizenberg$elm_pointer_events$Internal$Decode$keys, mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$buttonDecoder, mpizenberg$elm_pointer_events$Internal$Decode$clientPos, mpizenberg$elm_pointer_events$Internal$Decode$offsetPos, mpizenberg$elm_pointer_events$Internal$Decode$pagePos, mpizenberg$elm_pointer_events$Internal$Decode$screenPos);
+var mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$onWithOptions = F3(
+	function (event, options, tag) {
+		return A2(
+			elm$html$Html$Events$custom,
+			event,
+			A2(
+				elm$json$Json$Decode$map,
+				function (ev) {
+					return {
+						G: tag(ev),
+						am: options.am,
+						aq: options.aq
+					};
+				},
+				mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$eventDecoder));
+	});
+var author$project$View$conservativeOnMouse = F2(
+	function (tag, handler) {
+		return A3(
+			mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$onWithOptions,
+			tag,
+			{am: false, aq: false},
+			handler);
+	});
 var author$project$View$flattenList = function (list) {
 	return A3(elm$core$List$foldr, elm$core$Basics$append, _List_Nil, list);
 };
@@ -7175,125 +7289,19 @@ var author$project$View$magnifyAndOffsetSVG = function (transformView) {
 	return elm$svg$Svg$Attributes$transform(
 		A2(author$project$View$magnifyAndOffset, '', transformView));
 };
-var elm$virtual_dom$VirtualDom$Custom = function (a) {
-	return {$: 3, a: a};
-};
-var elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
-var elm$html$Html$Events$custom = F2(
-	function (event, decoder) {
-		return A2(
-			elm$virtual_dom$VirtualDom$on,
-			event,
-			elm$virtual_dom$VirtualDom$Custom(decoder));
-	});
-var elm$json$Json$Decode$map6 = _Json_map6;
-var mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$Event = F6(
-	function (keys, button, clientPos, offsetPos, pagePos, screenPos) {
-		return {aA: button, o: clientPos, dq: keys, dA: offsetPos, dE: pagePos, dO: screenPos};
-	});
-var elm$json$Json$Decode$field = _Json_decodeField;
-var elm$json$Json$Decode$int = _Json_decodeInt;
-var mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$BackButton = 4;
-var mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$ErrorButton = 0;
-var mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$ForwardButton = 5;
-var mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$MainButton = 1;
-var mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$MiddleButton = 2;
-var mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$SecondButton = 3;
-var mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$buttonFromId = function (id) {
-	switch (id) {
-		case 0:
-			return 1;
-		case 1:
-			return 2;
-		case 2:
-			return 3;
-		case 3:
-			return 4;
-		case 4:
-			return 5;
-		default:
-			return 0;
-	}
-};
-var mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$buttonDecoder = A2(
-	elm$json$Json$Decode$map,
-	mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$buttonFromId,
-	A2(elm$json$Json$Decode$field, 'button', elm$json$Json$Decode$int));
-var elm$json$Json$Decode$float = _Json_decodeFloat;
-var mpizenberg$elm_pointer_events$Internal$Decode$clientPos = A3(
-	elm$json$Json$Decode$map2,
-	F2(
-		function (a, b) {
-			return _Utils_Tuple2(a, b);
-		}),
-	A2(elm$json$Json$Decode$field, 'clientX', elm$json$Json$Decode$float),
-	A2(elm$json$Json$Decode$field, 'clientY', elm$json$Json$Decode$float));
-var elm$json$Json$Decode$bool = _Json_decodeBool;
-var elm$json$Json$Decode$map3 = _Json_map3;
-var mpizenberg$elm_pointer_events$Internal$Decode$Keys = F3(
-	function (alt, ctrl, shift) {
-		return {c_: alt, c7: ctrl, an: shift};
-	});
-var mpizenberg$elm_pointer_events$Internal$Decode$keys = A4(
-	elm$json$Json$Decode$map3,
-	mpizenberg$elm_pointer_events$Internal$Decode$Keys,
-	A2(elm$json$Json$Decode$field, 'altKey', elm$json$Json$Decode$bool),
-	A2(elm$json$Json$Decode$field, 'ctrlKey', elm$json$Json$Decode$bool),
-	A2(elm$json$Json$Decode$field, 'shiftKey', elm$json$Json$Decode$bool));
-var mpizenberg$elm_pointer_events$Internal$Decode$offsetPos = A3(
-	elm$json$Json$Decode$map2,
-	F2(
-		function (a, b) {
-			return _Utils_Tuple2(a, b);
-		}),
-	A2(elm$json$Json$Decode$field, 'offsetX', elm$json$Json$Decode$float),
-	A2(elm$json$Json$Decode$field, 'offsetY', elm$json$Json$Decode$float));
-var mpizenberg$elm_pointer_events$Internal$Decode$pagePos = A3(
-	elm$json$Json$Decode$map2,
-	F2(
-		function (a, b) {
-			return _Utils_Tuple2(a, b);
-		}),
-	A2(elm$json$Json$Decode$field, 'pageX', elm$json$Json$Decode$float),
-	A2(elm$json$Json$Decode$field, 'pageY', elm$json$Json$Decode$float));
-var mpizenberg$elm_pointer_events$Internal$Decode$screenPos = A3(
-	elm$json$Json$Decode$map2,
-	F2(
-		function (a, b) {
-			return _Utils_Tuple2(a, b);
-		}),
-	A2(elm$json$Json$Decode$field, 'screenX', elm$json$Json$Decode$float),
-	A2(elm$json$Json$Decode$field, 'screenY', elm$json$Json$Decode$float));
-var mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$eventDecoder = A7(elm$json$Json$Decode$map6, mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$Event, mpizenberg$elm_pointer_events$Internal$Decode$keys, mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$buttonDecoder, mpizenberg$elm_pointer_events$Internal$Decode$clientPos, mpizenberg$elm_pointer_events$Internal$Decode$offsetPos, mpizenberg$elm_pointer_events$Internal$Decode$pagePos, mpizenberg$elm_pointer_events$Internal$Decode$screenPos);
-var mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$onWithOptions = F3(
-	function (event, options, tag) {
-		return A2(
-			elm$html$Html$Events$custom,
-			event,
-			A2(
-				elm$json$Json$Decode$map,
-				function (ev) {
-					return {
-						G: tag(ev),
-						aG: options.aG,
-						aJ: options.aJ
-					};
-				},
-				mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$eventDecoder));
-	});
 var author$project$View$onMouseWithStopPropagation = F2(
 	function (eventName, eventHandler) {
 		return A3(
 			mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$onWithOptions,
 			eventName,
-			{aG: false, aJ: true},
+			{am: false, aq: true},
 			eventHandler);
 	});
 var author$project$View$preventContextMenu = function (handler) {
 	return A3(
 		mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$onWithOptions,
 		'contextmenu',
-		{aG: true, aJ: false},
+		{am: true, aq: false},
 		handler);
 };
 var elm$core$Basics$always = F2(
@@ -8364,7 +8372,7 @@ var author$project$Update$StartPrepareEditingConnection = function (a) {
 var author$project$View$hasDragConnectionPrototype = F2(
 	function (dragMode, nodeId) {
 		if ((!dragMode.$) && (dragMode.a.$ === 3)) {
-			var supplier = dragMode.a.a.ap;
+			var supplier = dragMode.a.a.ar;
 			return _Utils_eq(nodeId, supplier);
 		} else {
 			return false;
@@ -8841,7 +8849,7 @@ var elm$core$Array$set = F3(
 			tail));
 	});
 var elm$html$Html$Attributes$title = elm$html$Html$Attributes$stringProperty('title');
-var mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$defaultOptions = {aG: true, aJ: false};
+var mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$defaultOptions = {am: true, aq: false};
 var mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$onEnter = A2(mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$onWithOptions, 'mouseenter', mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$defaultOptions);
 var mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$onLeave = A2(mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$onWithOptions, 'mouseleave', mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$defaultOptions);
 var author$project$View$viewProperties = F3(
@@ -8903,24 +8911,24 @@ var author$project$View$viewProperties = F3(
 						if ((!dragMode.$) && (dragMode.a.$ === 2)) {
 							var mouse = dragMode.a.a.r;
 							if (!input.$) {
-								var supplier = input.a.ap;
+								var supplier = input.a.ar;
 								var onChange = input.a.cy;
 								return ((_Utils_cmp(event.o.a, mouse.bk) < 0) && (!_Utils_eq(supplier, elm$core$Maybe$Nothing))) ? author$project$Update$StartEditingConnection(
 									{
 										r: author$project$Vec2$fromTuple(event.o),
 										bH: onChange(elm$core$Maybe$Nothing),
 										cv: nodeId,
-										ap: supplier
+										ar: supplier
 									}) : (output ? author$project$Update$StartCreateConnection(
 									{
 										r: author$project$Vec2$fromTuple(event.o),
-										ap: nodeId
+										ar: nodeId
 									}) : author$project$Update$FinishDrag);
 							} else {
 								return output ? author$project$Update$StartCreateConnection(
 									{
 										r: author$project$Vec2$fromTuple(event.o),
-										ap: nodeId
+										ar: nodeId
 									}) : author$project$Update$FinishDrag;
 							}
 						} else {
@@ -9008,7 +9016,7 @@ var author$project$View$viewProperties = F3(
 						A2(
 							onLeave,
 							elm$core$Maybe$Just(
-								{cy: onChange, ap: currentSupplier}),
+								{cy: onChange, ar: currentSupplier}),
 							property._))
 					]) : _List_Nil;
 				var left = leftConnector(true);
@@ -9025,7 +9033,7 @@ var author$project$View$viewProperties = F3(
 					});
 				var onEnter = function () {
 					if ((!dragMode.$) && (dragMode.a.$ === 3)) {
-						var supplier = dragMode.a.a.ap;
+						var supplier = dragMode.a.a.ar;
 						return _Utils_eq(supplier, nodeId) ? _List_Nil : _List_fromArray(
 							[
 								mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$onEnter(
@@ -9184,14 +9192,14 @@ var elm$html$Html$Attributes$src = function (url) {
 var author$project$View$viewNodeContent = F6(
 	function (dragMode, selectedNode, outputNode, nodeId, props, nodeView) {
 		var onMouseDownAndStopPropagation = function (event) {
-			return (event.aA === 3) ? _Utils_Tuple2(
+			return (event.aC === 3) ? _Utils_Tuple2(
 				author$project$Update$DragModeMessage(
 					author$project$Update$StartPrepareEditingConnection(
 						{
 							r: author$project$Vec2$fromTuple(event.o),
 							bH: nodeId
 						})),
-				true) : ((event.aA === 1) ? _Utils_Tuple2(
+				true) : ((event.aC === 1) ? _Utils_Tuple2(
 				author$project$Update$DragModeMessage(
 					author$project$Update$StartNodeMove(
 						{
@@ -9236,12 +9244,12 @@ var author$project$View$viewNodeContent = F6(
 			return false;
 		}();
 		var duplicateAndStopPropagation = function (event) {
-			return (event.aA === 1) ? _Utils_Tuple2(
+			return (event.aC === 1) ? _Utils_Tuple2(
 				author$project$Update$DuplicateNode(nodeId),
 				true) : _Utils_Tuple2(author$project$Update$DoNothing, false);
 		};
 		var deleteAndStopPropagation = function (event) {
-			return (event.aA === 1) ? _Utils_Tuple2(
+			return (event.aC === 1) ? _Utils_Tuple2(
 				author$project$Update$DeleteNode(nodeId),
 				true) : _Utils_Tuple2(author$project$Update$DoNothing, false);
 		};
@@ -9689,7 +9697,7 @@ var author$project$View$viewSearch = function (query) {
 					A3(
 					mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$onWithOptions,
 					'mousedown',
-					{aG: false, aJ: false},
+					{am: false, aq: false},
 					function (_n1) {
 						return author$project$Update$SearchMessage(
 							author$project$Update$FinishSearch(
@@ -9750,7 +9758,7 @@ var author$project$View$viewSearch = function (query) {
 				A3(
 				mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$onWithOptions,
 				'mousedown',
-				{aG: false, aJ: false},
+				{am: false, aq: false},
 				function (_n0) {
 					return author$project$Update$SearchMessage(
 						author$project$Update$FinishSearch(
@@ -9804,9 +9812,8 @@ var elm$virtual_dom$VirtualDom$lazy = _VirtualDom_lazy;
 var elm$html$Html$Lazy$lazy = elm$virtual_dom$VirtualDom$lazy;
 var elm$svg$Svg$g = elm$svg$Svg$trustedNode('g');
 var mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$onClick = A2(mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$onWithOptions, 'click', mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$defaultOptions);
-var mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$onMove = A2(mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$onWithOptions, 'mousemove', mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$defaultOptions);
 var mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$onUp = A2(mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$onWithOptions, 'mouseup', mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$defaultOptions);
-var mpizenberg$elm_pointer_events$Html$Events$Extra$Wheel$defaultOptions = {aG: true, aJ: false};
+var mpizenberg$elm_pointer_events$Html$Events$Extra$Wheel$defaultOptions = {am: true, aq: false};
 var mpizenberg$elm_pointer_events$Html$Events$Extra$Wheel$Event = F3(
 	function (mouseEvent, deltaY, deltaMode) {
 		return {db: deltaMode, dc: deltaY, du: mouseEvent};
@@ -9843,8 +9850,8 @@ var mpizenberg$elm_pointer_events$Html$Events$Extra$Wheel$onWithOptions = F2(
 				function (ev) {
 					return {
 						G: tag(ev),
-						aG: options.aG,
-						aJ: options.aJ
+						am: options.am,
+						aq: options.aq
 					};
 				},
 				mpizenberg$elm_pointer_events$Html$Events$Extra$Wheel$eventDecoder));
@@ -9852,7 +9859,7 @@ var mpizenberg$elm_pointer_events$Html$Events$Extra$Wheel$onWithOptions = F2(
 var mpizenberg$elm_pointer_events$Html$Events$Extra$Wheel$onWheel = mpizenberg$elm_pointer_events$Html$Events$Extra$Wheel$onWithOptions(mpizenberg$elm_pointer_events$Html$Events$Extra$Wheel$defaultOptions);
 var author$project$View$view = function (model) {
 	var startViewMove = function (event) {
-		return (event.aA === 2) ? author$project$Update$DragModeMessage(
+		return (event.aC === 2) ? author$project$Update$DragModeMessage(
 			author$project$Update$StartViewMove(
 				{
 					r: author$project$Vec2$fromTuple(event.o)
@@ -9887,7 +9894,7 @@ var author$project$View$view = function (model) {
 						var mouse = _n1.a.a.r;
 						return _Utils_Tuple3(true, elm$core$Maybe$Nothing, mouse);
 					case 3:
-						var supplier = _n1.a.a.ap;
+						var supplier = _n1.a.a.ar;
 						var openEnd = _n1.a.a.bL;
 						return _Utils_Tuple3(
 							false,
@@ -9913,7 +9920,9 @@ var author$project$View$view = function (model) {
 		elm$html$Html$div,
 		_List_fromArray(
 			[
-				mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$onMove(
+				A2(
+				author$project$View$conservativeOnMouse,
+				'mousemove',
 				function (event) {
 					return author$project$Update$DragModeMessage(
 						author$project$Update$UpdateDrag(
@@ -9970,7 +9979,7 @@ var author$project$View$view = function (model) {
 						A3(
 						mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$onWithOptions,
 						'mousedown',
-						{aG: false, aJ: false},
+						{am: false, aq: false},
 						startViewMove),
 						mpizenberg$elm_pointer_events$Html$Events$Extra$Wheel$onWheel(
 						function (event) {
