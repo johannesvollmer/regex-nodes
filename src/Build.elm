@@ -10,7 +10,7 @@ import Model exposing (..)
 -- TODO detect cycles??
 
 type alias BuildResult a = Result String a
-maxStackDepth = 1000
+maxStackDepth = 200
 
 
 buildNodeExpression : Int -> Nodes -> Node -> BuildResult String

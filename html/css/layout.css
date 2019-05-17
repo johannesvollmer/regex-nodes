@@ -189,16 +189,20 @@ header img {
   transform: scale(0.5);
 }
 
-#confirm-deletion-alert {
+.alert {
+  position: absolute;
+  top:0; left:0;
+  width: 100vw; height: 100vh;
+
   display: flex;
   visibility: hidden;
 }
 
-.show#confirm-deletion-alert {
+.show.alert {
   visibility: visible;
 }
 
-#dialog-box {
+.dialog-box {
   margin: 25vh auto auto auto;
   font-size: 1.4em;
 
@@ -207,17 +211,27 @@ header img {
   align-items: stretch;
   text-align: center;
 }
-#dialog-box p {
+.dialog-box p {
   padding: 18px;
 }
-#dialog-box #options {
+.dialog-box .options {
   display: flex;
   flex-direction: row;
   align-items: stretch;
 }
-#dialog-box .button {
+.dialog-box .button {
   padding: 12px;
   width: 50%;
+}
+.notification {
+  position: absolute;
+  bottom: 80px;
+  right: 40px;
+  visibility: hidden;
+  padding: 12px;
+}
+.show.notification {
+  visibility: visible;
 }
 
 .graph-node {

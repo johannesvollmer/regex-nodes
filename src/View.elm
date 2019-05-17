@@ -178,25 +178,35 @@ view model =
       ]
 
     , div
-      [ id "confirm-deletion-alert"
-      , classes "" [(model.confirmDeletion /= Nothing, "show")]
+      [ id "confirm-deletion"
+      , classes "alert" [(model.confirmDeletion /= Nothing, "show")]
       , Mouse.onClick <| always <| ConfirmDeleteNode False
       , stopMousePropagation "wheel"
       ]
 
-      [ div [ id "dialog-box" ]
+      [ div [ class "dialog-box" ]
         [ p [] [ text ("Delete that node?") ]
-        , div [ id "options" ]
+        , div [ class "options" ]
           [ div
-            [ id "confirm", class "button"
+            [ class "confirm", class "button"
             , onMouseWithStopPropagation "click" (always <| ConfirmDeleteNode True)
             ]
             [ text "Delete" ]
 
-          , div [ id "cancel", class "button" ] [ text "Cancel" ]
+          , div [ class "cancel", class "button" ] [ text "Cancel" ]
           ]
 
         ]
+      ]
+
+    , div
+      [ id "cycles-detected"
+      , classes "notification button" [(model.cyclesError, "show")]
+      , Mouse.onClick <| always <| DismissCyclesError
+      ]
+
+      [ text ("This action cannot be performed due to cycles in the node graph.")
+      , div [] [ text ("Make sure there are no cyclic connections. Click to dismiss.") ]
       ]
     ]
 

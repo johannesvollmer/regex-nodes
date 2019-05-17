@@ -158,25 +158,30 @@ nav {
   to   { color: #888; }
 }
 
-#confirm-deletion-alert {
-  background-color: #000000aa;
+.alert {
+  background-color: #00000066;
 }
-#confirm-deletion-alert #dialog-box p {
+.alert .dialog-box p {
   background-color: #eee;
   font-weight: bold;
   border-top: 5px solid #804;
   color: #444;
 }
-#confirm-deletion-alert #confirm {
-  background-color: #804;
-  color: #eee;
-}
-#confirm-deletion-alert #cancel {
+.alert .button {
   background-color: #fff;
   color: #444;
 }
-
-
+.alert .confirm {
+  background-color: #804;
+  color: #eee;
+}
+.notification {
+  background: #111;
+  color: #da0;
+}
+.notification div {
+  color: #dddddd77;
+}
 
 
 

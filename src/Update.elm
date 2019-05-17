@@ -20,6 +20,7 @@ type Message
   | DeleteNode NodeId
   | ConfirmDeleteNode Bool
   | DuplicateNode NodeId
+  | DismissCyclesError
   | Deselect
   | DoNothing
 
@@ -57,6 +58,9 @@ update : Message -> Model -> Model
 update message model =
   case message of
     DoNothing -> model
+
+    DismissCyclesError -> { model | cyclesError = False }
+
     Deselect -> if model.outputNode.locked
       then { model | selectedNode = Nothing }
       else updateCache { model | selectedNode = Nothing, outputNode = { locked = False, id = Nothing } } model
@@ -288,7 +292,7 @@ updateCache model fallback =
     regex = model.outputNode.id |> Maybe.map (buildRegex 0 model.nodes)
 
   in if regex == Just (Err cycles)
-    then fallback else
+    then { fallback | cyclesError = True } else
     let
       multiple = regex |> Maybe.map
         (Result.map (.flags >> .multiple) >> Result.withDefault False)
@@ -297,7 +301,7 @@ updateCache model fallback =
       compiled = regex |> Maybe.andThen (Result.map compileRegex >> Result.map Just >> Result.withDefault Nothing)
       newExample = { example | cachedMatches = Maybe.map (extractMatches multiple example.maxMatches example.contents) compiled }
 
-    in { model | exampleText = newExample }
+    in { model | exampleText = newExample, cyclesError = False } -- hide error on success
 
 
 extractMatches : Bool -> Int -> String -> Regex.Regex -> List (String, String)
