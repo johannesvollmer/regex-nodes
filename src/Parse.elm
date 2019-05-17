@@ -34,27 +34,26 @@ type ParsedElement
 
 
 
-addParsedRegexNodeOrNothing : Nodes -> String -> Nodes
-addParsedRegexNodeOrNothing nodes regex =
-  parse regex |> Result.map (addParsedElement nodes) |> Result.withDefault nodes
+addParsedRegexNodeOrNothing : Vec2 -> Nodes -> String -> Nodes
+addParsedRegexNodeOrNothing position nodes regex =
+  parse regex |> Result.map (addParsedElement position nodes) |> Result.withDefault nodes
 
 
-addParsedElement : Nodes -> ParsedElement -> Nodes
-addParsedElement nodes parsed = insert parsed nodes |> Tuple.second
+addParsedElement : Vec2 -> Nodes -> ParsedElement -> Nodes
+addParsedElement position nodes parsed = insert position parsed nodes |> Tuple.second
 
-insert : ParsedElement -> Nodes -> (NodeId, Nodes)
-insert element nodes = case element of
+insert : Vec2 -> ParsedElement -> Nodes -> (NodeId, Nodes)
+insert position element nodes = case element of
   Sequence elements ->
     let
-
-      (children, newNodes) = IdMap.insertListWith (List.map insert elements) nodes
-      node = children |> Array.fromList |> SequenceNode |> NodeView (Vec2 0 0)
-
+      insertChild index child = insert (Vec2 -200 (75 * toFloat index) |> Vec2.add position) child
+      (children, newNodes) = IdMap.insertListWith (List.indexedMap insertChild elements) nodes
+      node = children |> Array.fromList |> SequenceNode |> NodeView position
     in IdMap.insertValue node newNodes
 
   SingleCharOrSymbol charOrSymbol -> case charOrSymbol of
-    Plain char -> IdMap.insertValue (NodeView (Vec2 0 0) (LiteralNode (String.fromChar char))) nodes
-    Escaped symbol -> IdMap.insertValue (NodeView (Vec2 0 0) (SymbolNode symbol)) nodes
+    Plain char -> IdMap.insertValue (NodeView position (LiteralNode (String.fromChar char))) nodes -- TODO collapse consecutive literals
+    Escaped symbol -> IdMap.insertValue (NodeView position (SymbolNode symbol)) nodes
 
   todo -> (-1, nodes) -- TODO
 
@@ -69,15 +68,18 @@ set text = sequence (String.startsWith "|") text  -- TODO
 
 
 sequence: (String -> Bool) -> String -> ParseSubResult ParsedElement
-sequence stop text = extendSequence (Ok ([], text)) stop
+sequence stop text = extendSequence stop (Ok ([], text))
   |> Result.map (Tuple.mapFirst Sequence)
 
-extendSequence : ParseSubResult (List ParsedElement) -> (String -> Bool) -> ParseSubResult (List ParsedElement)
-extendSequence current stop = case current of
+extendSequence : (String -> Bool) -> ParseSubResult (List ParsedElement) -> ParseSubResult (List ParsedElement)
+extendSequence stop current = case current of
   Err error -> Err error
   Ok (members, text) ->
-    if stop text then Ok (members, text) else
-      positioned text |> Result.map (Tuple.mapFirst (appendTo members))
+    if String.isEmpty text || stop text
+      then Ok (members, text)
+      else positioned text
+        |> Result.map (Tuple.mapFirst (appendTo members))
+        |> extendSequence stop
 
 
 
@@ -114,7 +116,7 @@ group text =
 genericAtomicChar : String -> ParseSubResult ParsedElement
 genericAtomicChar text = case text |> skipIfNext "." of
 
-  (True, rest) -> Ok (SingleCharOrSymbol <| Escaped LinebreakChar, rest)
+  (True, rest) -> Ok (SingleCharOrSymbol <| Escaped NonLinebreakChar, rest)
 
   (False, rest) -> rest
       |> atomicChar (maybeOptions symbolizeLetterbased symbolizeTabLinebreak)

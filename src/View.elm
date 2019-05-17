@@ -624,11 +624,11 @@ viewNodeContent dragMode selectedNode outputNode nodeId props nodeView =
       tag (Mouse.eventDecoder |> Json.Decode.map handler)
 
 
-    prevendDefaultAndMayStopPropagation : String ->
+    preventDefaultAndMayStopPropagation : String ->
       (Mouse.Event -> { message: Message, preventDefault: Bool, stopPropagation: Bool })
         -> Attribute Message
 
-    prevendDefaultAndMayStopPropagation tag handler = Html.Events.custom
+    preventDefaultAndMayStopPropagation tag handler = Html.Events.custom
       tag (Mouse.eventDecoder |> Json.Decode.map handler)
 
   in div
@@ -644,7 +644,7 @@ viewNodeContent dragMode selectedNode outputNode nodeId props nodeView =
 
     [ div
       [ class "properties"
-      , prevendDefaultAndMayStopPropagation "mousedown" onMouseDownAndStopPropagation -- TODO always prevent default (to prevent native drag)?
+      , preventDefaultAndMayStopPropagation "mousedown" onMouseDownAndStopPropagation -- always prevent default (to prevent native drag)?
       , preventContextMenu onContextMenu
       ]
       (viewProperties nodeId dragMode props)
@@ -805,8 +805,8 @@ viewBoolInput value onToggle = input
 viewCharsInput : String -> (String -> Message) -> Html Message
 viewCharsInput chars onChange = input
   [ type_ "text"
-  , placeholder "!?:;aeiou"
-  , value chars
+  , placeholder "AEIOU"
+  , value chars -- TODO  |> cleanString
   , onInput onChange
   , class "chars input"
   , stopMousePropagation "mousedown"
@@ -818,7 +818,7 @@ viewCharInput : Char -> (Char -> Message) -> Html Message
 viewCharInput char onChange = input
   [ type_ "text"
   , placeholder "a"
-  , value (String.fromChar char)
+  , value (String.fromChar char) -- TODO  |> cleanString
 
   -- Take the last char of the string
   , onInput (onChange << stringToChar char)

@@ -105,7 +105,7 @@ update message model =
           NoResult -> { model | search = Nothing }
           InsertPrototype prototype -> stopEditingExampleText (insertNode prototype model)
           ParseRegex regex -> stopEditingExampleText
-            { model | search = Nothing, nodes = addParsedRegexNodeOrNothing model.nodes regex }
+            { model | search = Nothing, nodes = parseRegexNodes model.view model.nodes regex }
 
     DragModeMessage modeMessage ->
       case modeMessage of
@@ -196,6 +196,9 @@ insertNode node model =
     let position = Vec2.inverseTransform (Vec2 800 400) (viewTransform model.view)
     in { model | nodes = IdMap.insert (NodeView position node) model.nodes, search = Nothing }
 
+parseRegexNodes view nodes regex =
+    let position = Vec2.inverseTransform (Vec2 800 400) (viewTransform view)
+    in addParsedRegexNodeOrNothing position nodes regex
 
 startNodeMove mouse node model =
   let
@@ -328,6 +331,7 @@ extractMatches multiple maxMatches text regex =
 
 
 -- TOOD dry
+cleanString = String.replace " " "␣"
 updateExpression node expression = { node | expression = expression }
 updateSuccessor node successor = { node | successor = successor }
 updateStart node start = { node | start = start }

@@ -134,7 +134,7 @@ prototypes =
   , symbolProto .digit (SymbolNode DigitChar)
   , symbolProto .nonDigit (SymbolNode NonDigitChar)
   
-  , typeProto .charset (CharSetNode ",.?!:")
+  , typeProto .charset (CharSetNode "AEIOU")
   , typeProto .set (SetNode (Array.fromList []))
 
   , typeProto .literal (LiteralNode "the")
@@ -142,7 +142,7 @@ prototypes =
 
   , typeProto .charRange (CharRangeNode 'A' 'Z')
   , typeProto .notInCharRange (NotInCharRangeNode 'A' 'Z')
-  , typeProto .notInCharset (NotInCharSetNode ",.?!:")
+  , typeProto .notInCharset (NotInCharSetNode ";:!?")
 
   , typeProto .optional (OptionalNode { expression = Nothing, minimal = False })
   , typeProto .atLeastOne (AtLeastOneNode { expression = Nothing, minimal = False })
