@@ -294,7 +294,203 @@ symbolProperty properties symbol = case symbol of
   Always -> properties.any
 
 
+-- TODO DRY, like:    getProperties: Node -> List Property,
+-- type alias Property = { inputs, name, description, has Output, updateValue ... }
 
+
+
+type alias Property =
+  { name : String
+  , description: String
+  , contents : PropertyValue
+  , connectOutput : Bool
+  }
+
+-- if a property must be updated, return the whole new node
+type alias OnChange a = a -> Node
+
+type PropertyValue
+  = BoolProperty Bool (OnChange Bool)
+  | CharsProperty String (OnChange String)
+  | CharProperty Char (OnChange Char)
+  | IntProperty Int (OnChange Int)
+  | ConnectingProperty (Maybe NodeId) (OnChange (Maybe NodeId))
+  | ConnectingProperties Bool (Array NodeId) (OnChange (Array NodeId))
+  | TitleProperty
+
+
+nodeProperties : Node -> List Property
+nodeProperties node =
+  case node of
+    SymbolNode symbol -> [ Property (symbolName symbol) (symbolDescription symbol) TitleProperty True ]
+
+    CharSetNode chars ->
+      [ Property typeNames.charset
+          ("Matches " ++ String.join ", " (String.toList chars |> List.map String.fromChar))
+          (CharsProperty chars CharSetNode) True
+      ]
+
+    NotInCharSetNode chars -> [ Property typeNames.notInCharset
+          ("Matches any char but " ++ String.join ", " (String.toList chars |> List.map String.fromChar))
+          (CharsProperty chars NotInCharSetNode) True ]
+
+    LiteralNode literal ->
+      [ Property typeNames.literal ("Matches exactly `" ++ literal ++ "` and nothing else")
+          (CharsProperty literal LiteralNode) True
+      ]
+
+    CaptureNode captured ->
+      [ Property typeNames.capture typeDescriptions.capture
+          (ConnectingProperty captured CaptureNode) True
+      ]
+
+    CharRangeNode start end ->
+      [ Property typeNames.charRange
+          ("Match any char whose integer value is equal to or between " ++ String.fromChar start ++ " and " ++ String.fromChar end)
+          TitleProperty True
+
+      , Property "First Char" "The lower range bound char, will match itself" (CharProperty start (updateCharRangeFirst end)) False
+      , Property "Last Char" "The upper range bound char, will match itself" (CharProperty end (updateCharRangeLast start)) False
+      ]
+
+    NotInCharRangeNode start end ->
+      [ Property typeNames.notInCharRange
+          ("Match any char whose integer value is neither equal to nor between " ++ String.fromChar start ++ " and " ++ String.fromChar end)
+          TitleProperty True
+
+      , Property "First Char" "The lower range bound char, will not match itself" (CharProperty start (updateNotInCharRangeFirst end)) False
+      , Property "Last Char""The upper range bound char, will not match itself " (CharProperty end (updateNotInCharRangeLast start)) False
+      ]
+
+    SetNode options ->
+      [ Property typeNames.set typeDescriptions.set TitleProperty True
+      , Property "Option" "Match if this or any other option is matched" (ConnectingProperties False options SetNode) False
+      ]
+
+    SequenceNode members ->
+      [ Property typeNames.sequence typeDescriptions.sequence TitleProperty True
+      , Property "Member" "A member of the sequence" (ConnectingProperties True members SequenceNode) False
+      ]
+
+    FlagsNode flagsNode ->
+      [ Property typeNames.flags typeDescriptions.flags
+          (ConnectingProperty flagsNode.expression (updateFlagsExpression flagsNode)) False
+
+      , Property "Multiple Matches" "Do not stop after the first match"
+          (BoolProperty flagsNode.flags.multiple (updateFlagsMultiple flagsNode)) False
+
+      , Property "Case Insensitive" "Match as if everything had the same case"
+          (BoolProperty flagsNode.flags.caseSensitive (updateFlagsInsensitivity flagsNode)) False
+
+      , Property "Multiline Matches" "Allow every matches to be found across multiple lines"
+          (BoolProperty flagsNode.flags.multiline (updateFlagsMultiline flagsNode)) False
+      ]
+
+    IfFollowedByNode followed ->
+      [ Property typeNames.ifFollowedBy typeDescriptions.ifFollowedBy
+          (ConnectingProperty followed.expression (IfFollowedByNode << updateExpression followed)) True
+
+      , Property "Successor" "What needs to follow the expression"
+          (ConnectingProperty followed.successor (IfFollowedByNode << updateSuccessor followed)) False
+      ]
+
+    IfNotFollowedByNode followed ->
+      [ Property typeNames.ifNotFollowedBy typeDescriptions.ifNotFollowedBy
+          (ConnectingProperty followed.expression (IfNotFollowedByNode << updateExpression followed)) True
+
+      , Property "Successor" "What must not follow the expression"
+          (ConnectingProperty followed.successor (IfNotFollowedByNode << updateSuccessor followed)) False
+      ]
+
+    IfAtEndNode atEnd ->
+      [ Property typeNames.ifAtEnd typeDescriptions.ifAtEnd
+        (ConnectingProperty atEnd IfAtEndNode) True
+      ]
+
+    IfAtStartNode atStart ->
+      [ Property typeNames.ifAtStart typeDescriptions.ifAtStart
+        (ConnectingProperty atStart IfAtStartNode) True
+      ]
+
+    OptionalNode option ->
+      [ Property typeNames.optional typeDescriptions.optional
+        (ConnectingProperty option.expression (OptionalNode << updateExpression option)) True
+
+      , Property "Prefer None" "Prefer not to match"
+          (BoolProperty option.minimal (OptionalNode << updateMinimal option)) False
+      ]
+
+    AtLeastOneNode counted ->
+      [ Property typeNames.atLeastOne typeDescriptions.atLeastOne
+          (ConnectingProperty counted.expression (AtLeastOneNode << updateExpression counted)) True
+
+      , Property "Minimize Count" "Match as few occurences as possible"
+          (BoolProperty counted.minimal (AtLeastOneNode << updateMinimal counted)) False
+      ]
+
+    AnyRepetitionNode counted ->
+      [ Property typeNames.anyRepetition typeDescriptions.anyRepetition
+        (ConnectingProperty counted.expression (AnyRepetitionNode << updateExpression counted)) True
+
+      , Property "Minimize Count" "Match as few occurences as possible"
+          (BoolProperty counted.minimal (AnyRepetitionNode << updateMinimal counted)) False
+      ]
+
+    ExactRepetitionNode repetition ->
+      [ Property typeNames.exactRepetition
+          ("Match only if this expression is repeated exactly " ++ String.fromInt repetition.count ++ " times")
+          (ConnectingProperty repetition.expression (ExactRepetitionNode << updateExpression repetition)) True
+
+      , Property "Count" "How often the expression is required"
+          (IntProperty repetition.count (ExactRepetitionNode << updatePositiveCount repetition)) False
+      ]
+
+    RangedRepetitionNode counted ->
+      [ Property typeNames.rangedRepetition
+          ("Match only if the expression is repeated no less than " ++ String.fromInt counted.minimum
+            ++ " and no more than " ++ String.fromInt counted.maximum ++ " times"
+          )
+          (ConnectingProperty counted.expression (RangedRepetitionNode << updateExpression counted)) True
+
+      , Property "Minimum"
+          ("Match only if the expression is repeated no less than " ++ String.fromInt counted.minimum ++ " times")
+          (IntProperty counted.minimum (updateRangedRepetitionMinimum counted)) False
+
+      , Property "Maximum"
+          ("Match only if the expression is repeated no more than " ++ String.fromInt counted.maximum ++ " times")
+          (IntProperty counted.maximum (updateRangedRepetitionMaximum counted)) False
+
+      , Property "Minimize Count" "Match as few occurences as possible"
+          (BoolProperty counted.minimal (RangedRepetitionNode << updateMinimal counted)) False
+      ]
+
+    MinimumRepetitionNode counted ->
+      [ Property typeNames.minimumRepetition
+          ("Match only if the expression is repeated no less than " ++ String.fromInt counted.count ++ " times")
+          (ConnectingProperty counted.expression (MinimumRepetitionNode << updateExpression counted)) True
+
+      , Property "Count" "Minimum number of repetitions"
+          (IntProperty counted.count (MinimumRepetitionNode << updatePositiveCount counted)) False
+
+      , Property "Minimize Count" "Match as few occurences as possible"
+          (BoolProperty counted.minimal (MinimumRepetitionNode << updateMinimal counted)) False
+      ]
+
+    MaximumRepetitionNode counted ->
+      [ Property typeNames.maximumRepetition
+          ("Match only if the expression is repeated no more than " ++ String.fromInt counted.count ++ " times")
+          (ConnectingProperty counted.expression (MaximumRepetitionNode << updateExpression counted)) True
+
+      , Property "Count" "Maximum number of repetitions"
+          (IntProperty counted.count (MaximumRepetitionNode << updatePositiveCount counted)) False
+
+      , Property "Minimize Count" "Match as few occurences as possible"
+          (BoolProperty counted.minimal (MaximumRepetitionNode << updateMinimal counted)) False
+      ]
+
+
+
+-- TODO implement generically using (nodeProperties node)
 onNodeDeleted : NodeId -> Node -> Node
 onNodeDeleted deleted node =
   case node of
@@ -323,10 +519,91 @@ onNodeDeleted deleted node =
     ExactRepetitionNode value -> ExactRepetitionNode <| ifExpressionNotDeleted deleted value
 
 
+-- TODO implement generically using (nodeProperties node)
+inputList : Node -> List NodeId
+inputList node =
+  case node of
+    SymbolNode _ -> []
+    CharSetNode _ -> []
+    NotInCharSetNode _ -> []
+    LiteralNode _ -> []
+    CharRangeNode _ _ -> []
+    NotInCharRangeNode _ _ -> []
+
+    SetNode members -> Array.toList members
+    SequenceNode members -> Array.toList members
+    CaptureNode child -> singletonOrEmpty child
+    IfAtEndNode child -> singletonOrEmpty child
+    IfAtStartNode child -> singletonOrEmpty child
+
+    OptionalNode value -> singletonOrEmpty value.expression
+    AtLeastOneNode value -> singletonOrEmpty value.expression
+    AnyRepetitionNode value -> singletonOrEmpty value.expression
+    IfFollowedByNode value -> singletonOrEmpty value.expression
+    IfNotFollowedByNode value -> singletonOrEmpty value.expression
+    RangedRepetitionNode value -> singletonOrEmpty value.expression
+    MinimumRepetitionNode value -> singletonOrEmpty value.expression
+    MaximumRepetitionNode value -> singletonOrEmpty value.expression
+    ExactRepetitionNode value -> singletonOrEmpty value.expression
+    FlagsNode value -> singletonOrEmpty value.expression
+
+
 ifNotDeleted deleted node =
   if node == Just deleted
     then Nothing else node
 
 ifExpressionNotDeleted deleted values =
   { values | expression = ifNotDeleted deleted values.expression }
+
+singletonOrEmpty =
+  Maybe.map List.singleton >> Maybe.withDefault []
+
+
+-- FIXME does not belong here
+cycles = "Nodes have cycles"
+
+
+
+-- TOOD dry
+cleanString = String.replace " " "␣"
+updateExpression node expression = { node | expression = expression }
+updateSuccessor node successor = { node | successor = successor }
+updateStart node start = { node | start = start }
+updateEnd node end = { node | end = end }
+updateMinimal node minimal = { node | minimal = minimal }
+
+updatePositiveCount node count = { node | count = positive count }
+
+updateCharRangeFirst end start = CharRangeNode (minChar start end) (maxChar start end) -- swaps chars if necessary
+updateCharRangeLast start end = CharRangeNode (minChar end start) (maxChar start end) -- swaps chars if necessary
+
+updateNotInCharRangeFirst end start = CharRangeNode (minChar start end) (maxChar start end) -- swaps chars if necessary
+updateNotInCharRangeLast start end = CharRangeNode (minChar end start) (maxChar start end) -- swaps chars if necessary
+
+updateRangedRepetitionMinimum repetition count = RangedRepetitionNode
+  { repetition | minimum = positive count, maximum = max (positive count) repetition.maximum }
+
+updateRangedRepetitionMaximum repetition count = RangedRepetitionNode
+  { repetition | maximum = positive count, minimum = min (positive count) repetition.minimum }
+
+updateFlagsExpression flags newInput = FlagsNode { flags | expression = newInput }
+updateFlags expression newFlags = FlagsNode { expression = expression, flags = newFlags }
+updateFlagsMultiple { expression, flags } multiple = updateFlags expression { flags | multiple = multiple }
+updateFlagsInsensitivity { expression, flags } caseSensitive = updateFlags expression { flags | caseSensitive = caseSensitive }
+updateFlagsMultiline { expression, flags } multiline = updateFlags expression { flags | multiline = multiline }
+
+positive = Basics.max 0
+minChar a b = if a < b then a else b
+maxChar a b = if a > b then a else b
+
+
+
+
+
+
+
+
+
+
+
 

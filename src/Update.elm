@@ -59,13 +59,13 @@ update message model =
     DoNothing -> model
     Deselect -> if model.outputNode.locked
       then { model | selectedNode = Nothing }
-      else updateCache { model | selectedNode = Nothing, outputNode = { locked = False, id = Nothing } }
+      else updateCache { model | selectedNode = Nothing, outputNode = { locked = False, id = Nothing } } model
 
     UpdateExampleText textMessage -> case textMessage of
 
       SetEditing enabled -> if not enabled
         -- update cache because text contents or match limit could have been changed
-        then updateCache (enableEditingExampleText model enabled)
+        then updateCache (enableEditingExampleText model enabled) model
         else enableEditingExampleText model enabled
 
       UpdateContents text -> let old = model.exampleText in
@@ -88,7 +88,7 @@ update message model =
       { model | outputNode = { id = model.outputNode.id, locked = locked } }
 
     UpdateNodeMessage id value ->
-      updateCache { model | nodes = updateNode model.nodes id value }
+      updateCache { model | nodes = updateNode model.nodes id value } model
 
     DuplicateNode id -> duplicateNode model id
 
@@ -113,7 +113,7 @@ update message model =
           startNodeMove mouse node model
 
         StartViewMove drag ->
-          { model | dragMode = Just <| MoveViewDrag drag }
+          { model | dragMode = (Just <| MoveViewDrag drag) }
 
         -- update the subject node (disconnecting the input)
         -- and then start editing the connection of the old supplier
@@ -121,9 +121,11 @@ update message model =
         StartEditingConnection { nodeId, node, supplier, mouse } ->
           Maybe.withDefault model <| Maybe.map
             (\oldSupplier ->
-              updateCache { model | nodes = updateNode model.nodes nodeId node
-              , dragMode = Just (CreateConnection { supplier = oldSupplier, openEnd = mouse })
-              }
+              updateCache
+                { model | nodes = updateNode model.nodes nodeId node
+                , dragMode = Just (CreateConnection { supplier = oldSupplier, openEnd = mouse })
+                }
+                model
             )
             supplier
 
@@ -150,16 +152,24 @@ update message model =
         -- when a connection is established, update the drag mode of the model,
         -- but also already make the connection real
         RealizeConnection { nodeId, newNode, mouse } ->
-          updateCache { model | nodes = updateNode model.nodes nodeId newNode
-          , dragMode = Just (RetainPrototypedConnection
-              { mouse = mouse, node = nodeId, previousNodeValue = IdMap.get nodeId model.nodes |> Maybe.map .node })
-          }
+          realizeConnection model nodeId newNode mouse
 
         FinishDrag ->
           { model | dragMode = Nothing }
 
 
-deleteNode: Model -> Model
+
+-- FIXME should not connect at all
+realizeConnection model nodeId newNode mouse =
+  updateCache
+    { model | nodes = updateNode model.nodes nodeId newNode
+    , dragMode = Just <|
+        RetainPrototypedConnection
+          { mouse = mouse, node = nodeId
+          , previousNodeValue = IdMap.get nodeId model.nodes |> Maybe.map .node
+          }
+    } model
+
 deleteNode model =
   let
     nodeId = model.confirmDeletion |> Maybe.withDefault -1
@@ -174,7 +184,7 @@ deleteNode model =
     , outputNode = { id = output, locked = model.outputNode.locked }
     , confirmDeletion = Nothing
     , dragMode = Nothing
-    }
+    } model
 
 
 duplicateNode: Model -> NodeId -> Model
@@ -212,7 +222,7 @@ startNodeMove mouse node model =
 
   in if model.outputNode.id /= newModel.outputNode.id
     -- only update cache if node really changed
-  then updateCache newModel else newModel
+  then updateCache newModel model else newModel
 
 stopEditingExampleText model =
   enableEditingExampleText model False
@@ -271,20 +281,23 @@ updateView amount focus oldView =
 
 
 
-updateCache : Model -> Model
-updateCache model =
+updateCache : Model -> Model -> Model
+updateCache model fallback =
   let
     example = model.exampleText
-    regex = model.outputNode.id |> Maybe.map (buildRegex model.nodes)
+    regex = model.outputNode.id |> Maybe.map (buildRegex 0 model.nodes)
 
-    multiple = regex |> Maybe.map
-      (Result.map (.flags >> .multiple) >> Result.withDefault False)
-      |> Maybe.withDefault False
+  in if regex == Just (Err cycles)
+    then fallback else
+    let
+      multiple = regex |> Maybe.map
+        (Result.map (.flags >> .multiple) >> Result.withDefault False)
+        |> Maybe.withDefault False
 
-    compiled = regex |> Maybe.andThen (Result.map compileRegex >> Result.map Just >> Result.withDefault Nothing)
-    newExample = { example | cachedMatches = Maybe.map (extractMatches multiple example.maxMatches example.contents) compiled }
+      compiled = regex |> Maybe.andThen (Result.map compileRegex >> Result.map Just >> Result.withDefault Nothing)
+      newExample = { example | cachedMatches = Maybe.map (extractMatches multiple example.maxMatches example.contents) compiled }
 
-  in { model | exampleText = newExample }
+    in { model | exampleText = newExample }
 
 
 extractMatches : Bool -> Int -> String -> Regex.Regex -> List (String, String)
@@ -328,36 +341,3 @@ extractMatches multiple maxMatches text regex =
 
   in matches |> extract |> simplify |> visualize
 
-
-
--- TOOD dry
-cleanString = String.replace " " "␣"
-updateExpression node expression = { node | expression = expression }
-updateSuccessor node successor = { node | successor = successor }
-updateStart node start = { node | start = start }
-updateEnd node end = { node | end = end }
-updateMinimal node minimal = { node | minimal = minimal }
-
-updatePositiveCount node count = { node | count = positive count }
-
-updateCharRangeFirst end start = CharRangeNode (minChar start end) (maxChar start end) -- swaps chars if necessary
-updateCharRangeLast start end = CharRangeNode (minChar end start) (maxChar start end) -- swaps chars if necessary
-
-updateNotInCharRangeFirst end start = CharRangeNode (minChar start end) (maxChar start end) -- swaps chars if necessary
-updateNotInCharRangeLast start end = CharRangeNode (minChar end start) (maxChar start end) -- swaps chars if necessary
-
-updateRangedRepetitionMinimum repetition count = RangedRepetitionNode
-  { repetition | minimum = positive count, maximum = max (positive count) repetition.maximum }
-
-updateRangedRepetitionMaximum repetition count = RangedRepetitionNode
-  { repetition | maximum = positive count, minimum = min (positive count) repetition.minimum }
-
-updateFlagsExpression flags newInput = FlagsNode { flags | expression = newInput }
-updateFlags expression newFlags = FlagsNode { expression = expression, flags = newFlags }
-updateFlagsMultiple { expression, flags } multiple = updateFlags expression { flags | multiple = multiple }
-updateFlagsInsensitivity { expression, flags } caseSensitive = updateFlags expression { flags | caseSensitive = caseSensitive }
-updateFlagsMultiline { expression, flags } multiline = updateFlags expression { flags | multiline = multiline }
-
-positive = Basics.max 0
-minChar a b = if a < b then a else b
-maxChar a b = if a > b then a else b

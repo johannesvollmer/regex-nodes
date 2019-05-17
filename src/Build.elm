@@ -10,10 +10,11 @@ import Model exposing (..)
 -- TODO detect cycles??
 
 type alias BuildResult a = Result String a
+maxStackDepth = 1000
 
 
-buildNodeExpression : Nodes -> Node -> BuildResult String
-buildNodeExpression nodes node =
+buildNodeExpression : Int -> Nodes -> Node -> BuildResult String
+buildNodeExpression stack nodes node =
   let
     escapeCharset = escapeChars "[^-.\\]"
     escapeLiteral = escapeChars "[]{}()|^.-+*?!$/\\"
@@ -58,13 +59,13 @@ buildNodeExpression nodes node =
 
     ownPrecedence = precedence node
 
-    build child = buildExpression nodes ownPrecedence child
+    build child = buildExpression stack nodes ownPrecedence child
 
     buildSingleChild map child = build child |> Result.map map
 
     buildMembers join members = members |> Array.toList
      |> List.map (Just >> build) |> collapseResults
-     |> Result.map join |> Result.mapError (String.join ", ")
+     |> Result.map join |> Result.mapError (List.head >> Maybe.withDefault "")
 
 
     string = case node of
@@ -98,16 +99,18 @@ buildNodeExpression nodes node =
   in string
 
 {-| Dereferences a node and returns `buildExpression` of it, handling corner cases -}
-buildExpression : Nodes -> Int -> Maybe NodeId -> BuildResult String
-buildExpression nodes ownPrecedence nodeId = case nodeId of
-  Nothing -> Ok "(nothing)"
-  Just id -> IdMap.get id nodes
-    |> okOrErr "Internal Error: Invalid Node Id"
-    |> Result.andThen
-      (\nodeView -> nodeView.node
-        |> buildNodeExpression nodes
-        |> Result.map (parenthesesForPrecedence ownPrecedence (precedence nodeView.node))
-      )
+buildExpression : Int -> Nodes -> Int -> Maybe NodeId -> BuildResult String
+buildExpression stack nodes ownPrecedence nodeId =
+  if stack > maxStackDepth then Err cycles
+  else case nodeId of
+    Nothing -> Ok "(nothing)"
+    Just id -> IdMap.get id nodes
+      |> okOrErr "Internal Error: Invalid Node Id"
+      |> Result.andThen
+        (\nodeView -> nodeView.node
+          |> buildNodeExpression (stack + 1) nodes
+          |> Result.map (parenthesesForPrecedence ownPrecedence (precedence nodeView.node))
+        )
 
 
 
@@ -117,10 +120,10 @@ type alias RegexBuild =
   }
 
 
-buildRegex : Nodes -> NodeId -> BuildResult RegexBuild
-buildRegex nodes id =
+buildRegex : Int -> Nodes -> NodeId -> BuildResult RegexBuild
+buildRegex stack nodes id =
   let
-    expression = buildExpression nodes 0 (Just id)
+    expression = buildExpression stack nodes 0 (Just id)
     nodeView = IdMap.get id nodes
     options = case nodeView |> Maybe.map .node of
       Just (FlagsNode { flags }) -> flags

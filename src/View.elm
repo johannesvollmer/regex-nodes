@@ -21,198 +21,10 @@ import Update exposing (..)
 
 
 
-type alias PropertyView =
-  { name : String
-  , description: String
-  , contents : PropertyViewContents
-  , connectOutput : Bool
-  }
-
--- if a property must be updated, return the whole new node
-type alias OnChange a = a -> Node
-
-type PropertyViewContents
-  = BoolProperty Bool (OnChange Bool)
-  | CharsProperty String (OnChange String)
-  | CharProperty Char (OnChange Char)
-  | IntProperty Int (OnChange Int)
-  | ConnectingProperty (Maybe NodeId) (OnChange (Maybe NodeId))
-  | ConnectingProperties Bool (Array NodeId) (OnChange (Array NodeId))
-  | TitleProperty
-
 type alias NodeView =
   { node: Html Message
   , connections: List (Svg Message)
   }
-
-properties : Node -> List PropertyView
-properties node =
-  case node of
-    SymbolNode symbol -> [ PropertyView (symbolName symbol) (symbolDescription symbol) TitleProperty True ]
-
-    CharSetNode chars ->
-      [ PropertyView typeNames.charset
-          ("Matches " ++ String.join ", " (String.toList chars |> List.map String.fromChar))
-          (CharsProperty chars CharSetNode) True
-      ]
-
-    NotInCharSetNode chars -> [ PropertyView typeNames.notInCharset
-          ("Matches any char but " ++ String.join ", " (String.toList chars |> List.map String.fromChar))
-          (CharsProperty chars NotInCharSetNode) True ]
-
-    LiteralNode literal ->
-      [ PropertyView typeNames.literal ("Matches exactly `" ++ literal ++ "` and nothing else")
-          (CharsProperty literal LiteralNode) True
-      ]
-
-    CaptureNode captured ->
-      [ PropertyView typeNames.capture typeDescriptions.capture
-          (ConnectingProperty captured CaptureNode) True
-      ]
-
-    CharRangeNode start end ->
-      [ PropertyView typeNames.charRange
-          ("Match any char whose integer value is equal to or between " ++ String.fromChar start ++ " and " ++ String.fromChar end)
-          TitleProperty True
-
-      , PropertyView "First Char" "The lower range bound char, will match itself" (CharProperty start (updateCharRangeFirst end)) False
-      , PropertyView "Last Char" "The upper range bound char, will match itself" (CharProperty end (updateCharRangeLast start)) False
-      ]
-
-    NotInCharRangeNode start end ->
-      [ PropertyView typeNames.notInCharRange
-          ("Match any char whose integer value is neither equal to nor between " ++ String.fromChar start ++ " and " ++ String.fromChar end)
-          TitleProperty True
-
-      , PropertyView "First Char" "The lower range bound char, will not match itself" (CharProperty start (updateNotInCharRangeFirst end)) False
-      , PropertyView "Last Char""The upper range bound char, will not match itself " (CharProperty end (updateNotInCharRangeLast start)) False
-      ]
-
-    SetNode options ->
-      [ PropertyView typeNames.set typeDescriptions.set TitleProperty True
-      , PropertyView "Option" "Match if this or any other option is matched" (ConnectingProperties False options SetNode) False
-      ]
-
-    SequenceNode members ->
-      [ PropertyView typeNames.sequence typeDescriptions.sequence TitleProperty True
-      , PropertyView "Member" "A member of the sequence" (ConnectingProperties True members SequenceNode) False
-      ]
-
-    FlagsNode flagsNode ->
-      [ PropertyView typeNames.flags typeDescriptions.flags
-          (ConnectingProperty flagsNode.expression (updateFlagsExpression flagsNode)) False
-
-      , PropertyView "Multiple Matches" "Do not stop after the first match"
-          (BoolProperty flagsNode.flags.multiple (updateFlagsMultiple flagsNode)) False
-
-      , PropertyView "Case Insensitive" "Match as if everything had the same case"
-          (BoolProperty flagsNode.flags.caseSensitive (updateFlagsInsensitivity flagsNode)) False
-
-      , PropertyView "Multiline Matches" "Allow every matches to be found across multiple lines"
-          (BoolProperty flagsNode.flags.multiline (updateFlagsMultiline flagsNode)) False
-      ]
-
-    IfFollowedByNode followed ->
-      [ PropertyView typeNames.ifFollowedBy typeDescriptions.ifFollowedBy
-          (ConnectingProperty followed.expression (IfFollowedByNode << updateExpression followed)) True
-
-      , PropertyView "Successor" "What needs to follow the expression"
-          (ConnectingProperty followed.successor (IfFollowedByNode << updateSuccessor followed)) False
-      ]
-
-    IfNotFollowedByNode followed ->
-      [ PropertyView typeNames.ifNotFollowedBy typeDescriptions.ifNotFollowedBy
-          (ConnectingProperty followed.expression (IfNotFollowedByNode << updateExpression followed)) True
-
-      , PropertyView "Successor" "What must not follow the expression"
-          (ConnectingProperty followed.successor (IfNotFollowedByNode << updateSuccessor followed)) False
-      ]
-
-    IfAtEndNode atEnd ->
-      [ PropertyView typeNames.ifAtEnd typeDescriptions.ifAtEnd
-        (ConnectingProperty atEnd IfAtEndNode) True
-      ]
-
-    IfAtStartNode atStart ->
-      [ PropertyView typeNames.ifAtStart typeDescriptions.ifAtStart
-        (ConnectingProperty atStart IfAtStartNode) True
-      ]
-
-    OptionalNode option ->
-      [ PropertyView typeNames.optional typeDescriptions.optional
-        (ConnectingProperty option.expression (OptionalNode << updateExpression option)) True
-
-      , PropertyView "Prefer None" "Prefer not to match"
-          (BoolProperty option.minimal (OptionalNode << updateMinimal option)) False
-      ]
-
-    AtLeastOneNode counted ->
-      [ PropertyView typeNames.atLeastOne typeDescriptions.atLeastOne
-          (ConnectingProperty counted.expression (AtLeastOneNode << updateExpression counted)) True
-
-      , PropertyView "Minimize Count" "Match as few occurences as possible"
-          (BoolProperty counted.minimal (AtLeastOneNode << updateMinimal counted)) False
-      ]
-
-    AnyRepetitionNode counted ->
-      [ PropertyView typeNames.anyRepetition typeDescriptions.anyRepetition
-        (ConnectingProperty counted.expression (AnyRepetitionNode << updateExpression counted)) True
-
-      , PropertyView "Minimize Count" "Match as few occurences as possible"
-          (BoolProperty counted.minimal (AnyRepetitionNode << updateMinimal counted)) False
-      ]
-
-    ExactRepetitionNode repetition ->
-      [ PropertyView typeNames.exactRepetition
-          ("Match only if this expression is repeated exactly " ++ String.fromInt repetition.count ++ " times")
-          (ConnectingProperty repetition.expression (ExactRepetitionNode << updateExpression repetition)) True
-
-      , PropertyView "Count" "How often the expression is required"
-          (IntProperty repetition.count (ExactRepetitionNode << updatePositiveCount repetition)) False
-      ]
-
-    RangedRepetitionNode counted ->
-      [ PropertyView typeNames.rangedRepetition
-          ("Match only if the expression is repeated no less than " ++ String.fromInt counted.minimum
-            ++ " and no more than " ++ String.fromInt counted.maximum ++ " times"
-          )
-          (ConnectingProperty counted.expression (RangedRepetitionNode << updateExpression counted)) True
-
-      , PropertyView "Minimum"
-          ("Match only if the expression is repeated no less than " ++ String.fromInt counted.minimum ++ " times")
-          (IntProperty counted.minimum (updateRangedRepetitionMinimum counted)) False
-
-      , PropertyView "Maximum"
-          ("Match only if the expression is repeated no more than " ++ String.fromInt counted.maximum ++ " times")
-          (IntProperty counted.maximum (updateRangedRepetitionMaximum counted)) False
-
-      , PropertyView "Minimize Count" "Match as few occurences as possible"
-          (BoolProperty counted.minimal (RangedRepetitionNode << updateMinimal counted)) False
-      ]
-
-    MinimumRepetitionNode counted ->
-      [ PropertyView typeNames.minimumRepetition
-          ("Match only if the expression is repeated no less than " ++ String.fromInt counted.count ++ " times")
-          (ConnectingProperty counted.expression (MinimumRepetitionNode << updateExpression counted)) True
-
-      , PropertyView "Count" "Minimum number of repetitions"
-          (IntProperty counted.count (MinimumRepetitionNode << updatePositiveCount counted)) False
-
-      , PropertyView "Minimize Count" "Match as few occurences as possible"
-          (BoolProperty counted.minimal (MinimumRepetitionNode << updateMinimal counted)) False
-      ]
-
-    MaximumRepetitionNode counted ->
-      [ PropertyView typeNames.maximumRepetition
-          ("Match only if the expression is repeated no more than " ++ String.fromInt counted.count ++ " times")
-          (ConnectingProperty counted.expression (MaximumRepetitionNode << updateExpression counted)) True
-
-      , PropertyView "Count" "Maximum number of repetitions"
-          (IntProperty counted.count (MaximumRepetitionNode << updatePositiveCount counted)) False
-
-      , PropertyView "Minimize Count" "Match as few occurences as possible"
-          (BoolProperty counted.minimal (MaximumRepetitionNode << updateMinimal counted)) False
-      ]
 
 
 
@@ -254,7 +66,7 @@ stringWidth length =  length * if length < 14 then 12 else 9
 view : Model -> Html Message
 view model =
   let
-    regex = model.outputNode.id |> Maybe.map (buildRegex model.nodes)
+    regex = model.outputNode.id |> Maybe.map (buildRegex 0 model.nodes)
 
     expressionResult = regex |> Maybe.map (Result.map constructRegexLiteral)
 
@@ -353,7 +165,7 @@ view model =
       , div [ id "expression-result", classes "" [(expressionResult == Nothing, "no")] ]
         [ code []
           [ span [ id "declaration" ] [ text "const regex = " ]
-          , text (expressionResult |> Maybe.withDefault (Ok "/(nothing)/") |> Result.withDefault "Error")
+          , text (expressionResult |> Maybe.withDefault (Ok "/(nothing)/") |> unwrapResult)
           ]
 
         , div
@@ -388,6 +200,10 @@ view model =
       ]
     ]
 
+
+unwrapResult result = case result of
+  Ok a -> a
+  Err a -> a
 
 lockSvg =
   Svg.svg
@@ -492,11 +308,11 @@ viewExampleTexts matches =
 
 viewNode : Maybe DragMode -> Maybe NodeId -> Maybe NodeId -> Nodes -> (NodeId, Model.NodeView) -> NodeView
 viewNode dragMode selectedNode outputNode nodes (nodeId, nodeView) =
-  let props = properties nodeView.node in
+  let props = nodeProperties nodeView.node in
   NodeView (viewNodeContent dragMode selectedNode outputNode nodeId props nodeView) (viewNodeConnections nodes props nodeView)
 
 
-viewNodeConnections : Nodes -> List PropertyView -> Model.NodeView -> List (Svg Message)
+viewNodeConnections : Nodes -> List Property -> Model.NodeView -> List (Svg Message)
 viewNodeConnections nodes props nodeView =
   let
     connectionLine from width to index = Svg.path
@@ -516,7 +332,7 @@ viewNodeConnections nodes props nodeView =
 
       in Maybe.map viewSupplier supplier
 
-    viewInputConnection : PropertyView -> List (Int -> Maybe (Svg Message))
+    viewInputConnection : Property -> List (Int -> Maybe (Svg Message))
     viewInputConnection property = case property.contents of
         ConnectingProperty (Just supplier) _ ->
           [ connect supplier nodeView ]
@@ -575,7 +391,7 @@ hasDragConnectionPrototype dragMode nodeId = case dragMode of
     _ -> False
 
 -- TODO use lazy html!
-viewNodeContent : Maybe DragMode -> Maybe NodeId -> Maybe NodeId -> NodeId -> List PropertyView -> Model.NodeView -> Html Message
+viewNodeContent : Maybe DragMode -> Maybe NodeId -> Maybe NodeId -> NodeId -> List Property -> Model.NodeView -> Html Message
 viewNodeContent dragMode selectedNode outputNode nodeId props nodeView =
   let
     contentWidth = (nodeWidth nodeView.node |> String.fromFloat) ++ "px"
@@ -671,7 +487,7 @@ viewNodeContent dragMode selectedNode outputNode nodeId props nodeView =
     ]
 
 
-viewProperties : NodeId -> Maybe DragMode -> List PropertyView -> List (Html Message)
+viewProperties : NodeId -> Maybe DragMode -> List Property -> List (Html Message)
 viewProperties nodeId dragMode props =
   let
 

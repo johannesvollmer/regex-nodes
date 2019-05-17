@@ -85,7 +85,7 @@ insert position element nodes = case element of
   CompiledIfFollowedBy { expression, successor } ->
     let
       (expressionId, nodesWithExpression) = insert (Vec2 -200 0 |> Vec2.add position) expression nodes
-      (successorId, nodesWithChildren) = insert (Vec2 -200 -100 |> Vec2.add position) successor nodesWithExpression
+      (successorId, nodesWithChildren) = insert (Vec2 -200 -75 |> Vec2.add position) successor nodesWithExpression
     in IdMap.insert
       (NodeView position (IfFollowedByNode { expression = Just expressionId, successor = Just successorId }))
       nodesWithChildren
