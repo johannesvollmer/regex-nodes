@@ -16,111 +16,245 @@ type ParseError
 
 -- TODO not all-or-nothing, but try the best guess at invalid input!
 
-
+-- closer to the textual JS regex than to the node graph
 type ParsedElement
-  = Sequence (List ParsedElement)
-  | SingleCharOrSymbol CharOrSymbol
-  | CharSequece String
-  | Charset { inverted: Bool, contents: List CharOrSymbol }
-  | ParsedSymbol Symbol
-  | Set (List ParsedElement)
-  | Capture ParsedElement
-  | IfFollowedBy { expression: ParsedElement, successor: ParsedElement }
-  | RangedRepetition { expression : ParsedElement, minimum: Int, maximum: Int, minimal: Bool }
-  | Optional { expression: ParsedElement, minimal: Bool }
-  | Flags { expression : ParsedElement, flags : RegexFlags }
+  = ParsedSequence (List ParsedElement)
+  | ParsedCharOrSymbol CharOrSymbol
+  | ParsedCharset { inverted: Bool, contents: List CharOrSymbol }
+  | ParsedSet (List ParsedElement)
+  | ParsedCapture ParsedElement
+  | ParsedIfFollowedBy { expression: ParsedElement, successor: ParsedElement }
+  | ParsedRangedRepetition { expression : ParsedElement, minimum: Int, maximum: Int, minimal: Bool }
+  | ParsedOptional { expression: ParsedElement, minimal: Bool }
+  | ParsedFlags { expression : ParsedElement, flags : RegexFlags }
 
 
+-- closer to the node graph than to the JS regex
+type CompiledElement
+  = CompiledSequence (List CompiledElement)
+  | CompiledSymbol Symbol
+  | CompiledCharSequence String
+  | CompiledCharset { inverted: Bool, contents: String }
+  | CompiledSet (List CompiledElement)
+  | CompiledCapture CompiledElement
+  | CompiledIfFollowedBy { expression: CompiledElement, successor: CompiledElement }
+  | CompiledRangedRepetition { expression : CompiledElement, minimum: Int, maximum: Int, minimal: Bool }
+  | CompiledOptional { expression: CompiledElement, minimal: Bool }
+  | CompiledFlags { expression : CompiledElement, flags : RegexFlags }
 
 
 
 addParsedRegexNodeOrNothing : Vec2 -> Nodes -> String -> Nodes
-addParsedRegexNodeOrNothing position nodes regex =
-  parse regex |> Result.map (addParsedElement position nodes) |> Result.withDefault nodes
+addParsedRegexNodeOrNothing position nodes regex = parse regex
+  |> Result.map (compile >> addCompiledElement position nodes)
+  |> Result.withDefault nodes
 
 
-addParsedElement : Vec2 -> Nodes -> ParsedElement -> Nodes
-addParsedElement position nodes parsed = insert position parsed nodes |> Tuple.second
+addCompiledElement : Vec2 -> Nodes -> CompiledElement -> Nodes
+addCompiledElement position nodes parsed = insert position parsed nodes |> Tuple.second
 
-insert : Vec2 -> ParsedElement -> Nodes -> (NodeId, Nodes)
+insert : Vec2 -> CompiledElement -> Nodes -> (NodeId, Nodes)
 insert position element nodes = case element of
-  Sequence elements ->
+  CompiledSequence elements ->
     let
       insertChild index child = insert (Vec2 -200 (75 * toFloat index) |> Vec2.add position) child
       (children, newNodes) = IdMap.insertListWith (List.indexedMap insertChild elements) nodes
       node = children |> Array.fromList |> SequenceNode |> NodeView position
-    in IdMap.insertValue node newNodes
+    in IdMap.insert node newNodes
 
-  SingleCharOrSymbol charOrSymbol -> case charOrSymbol of
-    Plain char -> IdMap.insertValue (NodeView position (LiteralNode (String.fromChar char))) nodes -- TODO collapse consecutive literals
-    Escaped symbol -> IdMap.insertValue (NodeView position (SymbolNode symbol)) nodes
+  CompiledCharSequence sequence -> IdMap.insert
+    (NodeView position (LiteralNode sequence)) nodes
 
-  todo -> (-1, nodes) -- TODO
+  CompiledSymbol symbol -> IdMap.insert
+    (NodeView position (SymbolNode symbol)) nodes
+
+  CompiledCapture child ->
+    let (childId, nodesWithChild) = insert (Vec2 -200 0 |> Vec2.add position) child nodes
+    in IdMap.insert (NodeView position (CaptureNode <| Just childId)) nodesWithChild
+
+  CompiledCharset { inverted, contents } -> IdMap.insert
+    (NodeView position (if inverted then NotInCharSetNode contents else CharSetNode contents)) nodes
+
+  CompiledSet options ->
+    let
+      insertChild index child = insert (Vec2 -200 (75 * toFloat index) |> Vec2.add position) child
+      (children, newNodes) = IdMap.insertListWith (List.indexedMap insertChild options) nodes
+      node = children |> Array.fromList |> SetNode |> NodeView position
+    in IdMap.insert node newNodes
+
+  CompiledIfFollowedBy { expression, successor } ->
+    let
+      (expressionId, nodesWithExpression) = insert (Vec2 -200 0 |> Vec2.add position) expression nodes
+      (successorId, nodesWithChildren) = insert (Vec2 -200 -100 |> Vec2.add position) successor nodesWithExpression
+    in IdMap.insert
+      (NodeView position (IfFollowedByNode { expression = Just expressionId, successor = Just successorId }))
+      nodesWithChildren
+
+  CompiledRangedRepetition { expression, minimum, maximum, minimal } ->
+    let (expressionId, nodesWithChild) = insert (Vec2 -200 0 |> Vec2.add position) expression nodes
+    in IdMap.insert (NodeView position (RangedRepetitionNode { expression = Just expressionId, minimum = minimum, maximum = maximum, minimal = minimal })) nodesWithChild
+
+  CompiledOptional { expression, minimal } ->
+    let (expressionId, nodesWithChild) = insert (Vec2 -200 0 |> Vec2.add position) expression nodes
+    in IdMap.insert (NodeView position (OptionalNode { expression = Just expressionId, minimal = minimal })) nodesWithChild
+
+  CompiledFlags { expression, flags } ->
+    let (expressionId, nodesWithChild) = insert (Vec2 -200 0 |> Vec2.add position) expression nodes
+    in IdMap.insert (NodeView position (FlagsNode { expression = Just expressionId, flags = flags })) nodesWithChild
+
+
+            
+
+  
+
+
+
+
+
+compile : ParsedElement -> CompiledElement
+compile element = case element of
+  ParsedSet [ onlyOneOption ] -> compile onlyOneOption
+  ParsedSet options -> CompiledSet <| List.map compile options
+  ParsedSequence manyMembers -> compileSequence manyMembers
+  ParsedCapture child -> CompiledCapture <| compile child
+  ParsedCharOrSymbol charOrSymbol -> compileCharOrSymbol charOrSymbol
+  ParsedCharset set -> compileCharset set
+
+  ParsedIfFollowedBy { expression, successor } -> CompiledIfFollowedBy
+    { expression = compile expression, successor = compile successor }
+
+  ParsedRangedRepetition { expression, minimum, maximum, minimal } -> CompiledRangedRepetition
+    { expression = compile expression, minimum = minimum, maximum = maximum, minimal = minimal }
+
+  ParsedOptional { expression, minimal } -> CompiledOptional
+    { expression = compile expression, minimal = minimal }
+
+  ParsedFlags { expression, flags } -> CompiledFlags
+    { expression = compile expression, flags = flags }
+
+
+compileCharOrSymbol charOrSymbol = case charOrSymbol of
+  Plain char -> CompiledCharSequence <| String.fromChar char
+  Escaped symbol -> CompiledSymbol symbol
+
+-- collapse all subsequent chars into a literal
+compileSequence members = case List.foldr compileSequenceMember [] members of
+  [ onlyOneMember ] -> onlyOneMember -- must be checked AFTER collapsing members
+  moreMembers -> CompiledSequence moreMembers
+
+compileSequenceMember member compiled = case member of
+  ParsedCharOrSymbol (Plain character) -> case compiled of
+     CompiledCharSequence collapsed :: alreadyCompiled ->
+         (CompiledCharSequence (String.fromChar character ++ collapsed)) :: alreadyCompiled
+
+     -- cannot simplify chars if followed by something exotic
+     nonCharsequenceCompiled ->
+      CompiledCharSequence (String.fromChar character) :: nonCharsequenceCompiled -- ignore anything else
+
+  symbol -> compile symbol :: compiled
+
+
+
+compileCharset { inverted, contents } =
+  case List.foldr compileCharsetOption ("", []) contents of
+      ("", [symbol]) -> CompiledSymbol symbol -- FIXME will ignore `inverted`
+      ("", symbols) -> CompiledSet (List.map CompiledSymbol symbols)  -- FIXME will ignore `inverted`
+      (chars, []) -> CompiledCharset { inverted = inverted, contents = chars }
+      (chars, symbols) -> CompiledSet <|
+        CompiledCharset { inverted = inverted, contents = chars }
+          :: (List.map CompiledSymbol symbols) -- TODO dry -- FIXME will ignore `inverted` in symbols
+
+-- TODO filter duplicate options
+compileCharsetOption member (chars, options) = case member of
+  Plain char -> (String.fromChar char ++ chars, options)
+  Escaped symbol -> (chars, symbol :: options)
+
+
+
 
 
 
 parse : String -> ParseResult ParsedElement
-parse regex = set regex |> Result.map Tuple.first
+parse regex = parseSet regex |> Result.map Tuple.first
 
 
-set : String -> ParseSubResult ParsedElement
-set text = sequence (String.startsWith "|") text  -- TODO
+parseSet : String -> ParseSubResult ParsedElement
+parseSet text =
+  let firstOption = parseSequence text |> Result.map (Tuple.mapFirst List.singleton)
+  in extendSet firstOption |> Result.map (Tuple.mapFirst ParsedSet)
+
+extendSet : ParseSubResult (List ParsedElement) -> ParseSubResult (List ParsedElement)
+extendSet current = case current of
+  Err error -> Err error
+  Ok (options, text) ->
+    case skipIfNext "|" text of
+      (True, rest) -> parseSequence rest
+        |> Result.map (Tuple.mapFirst (appendTo options))
+        |> extendSet
+
+      (False, rest) ->
+        Ok (options, rest)
 
 
-sequence: (String -> Bool) -> String -> ParseSubResult ParsedElement
-sequence stop text = extendSequence stop (Ok ([], text))
-  |> Result.map (Tuple.mapFirst Sequence)
+parseSequence: String -> ParseSubResult ParsedElement
+parseSequence text = extendSequence (Ok ([], text))
+  |> Result.map (Tuple.mapFirst ParsedSequence)
 
-extendSequence : (String -> Bool) -> ParseSubResult (List ParsedElement) -> ParseSubResult (List ParsedElement)
-extendSequence stop current = case current of
+extendSequence : ParseSubResult (List ParsedElement) -> ParseSubResult (List ParsedElement)
+extendSequence current = case current of
   Err error -> Err error
   Ok (members, text) ->
-    if String.isEmpty text || stop text
+    if String.isEmpty text || String.startsWith ")" text || String.startsWith "|" text
       then Ok (members, text)
-      else positioned text
+      else parsePositioned text
         |> Result.map (Tuple.mapFirst (appendTo members))
-        |> extendSequence stop
+        |> extendSequence
 
 
 
-positioned : String -> ParseSubResult ParsedElement
-positioned text = lookAhead text -- TODO
+parsePositioned : String -> ParseSubResult ParsedElement
+parsePositioned text = parseLookAhead text -- TODO
 
-lookAhead : String -> ParseSubResult ParsedElement
-lookAhead text = quantified text -- TODO
+parseLookAhead : String -> ParseSubResult ParsedElement
+parseLookAhead text = parseQuantified text -- TODO
 
-quantified : String -> ParseSubResult ParsedElement
-quantified text = atom text -- TODO
+parseQuantified : String -> ParseSubResult ParsedElement
+parseQuantified text = parseAtom text -- TODO
 
-atom : String -> ParseSubResult ParsedElement
-atom text =
+-- an atom is any thing which has the highest precedence possible, especially brackets and characters
+parseAtom : String -> ParseSubResult ParsedElement
+parseAtom text =
   let
     isNext character = String.startsWith character text
 
   in
-    if isNext "[" then charset text
-    -- else if isNext "\\" then escapedAtom tokens
-    -- else if isNext "(?:" then group text
-    -- else if isNext "(" then capturingGroup
-    else genericAtomicChar text
+    if isNext "[" then parseCharset text
+    else if isNext "(?:" then parseGroup text
+    else if isNext "(" then parseCapturingGroup text
+    else parseGenericAtomicChar text
 
 
-{-group : String -> ParseSubResult ParsedElement
-group text =
+parseGroup : String -> ParseSubResult ParsedElement
+parseGroup text =
   let
     contents = skipOrErr "(?:" text
-    contents =
-  in
--}
+    result = contents |> Result.andThen parseSet
+  in result |> Result.map (Tuple.mapSecond (String.dropLeft 1)) -- drop the closing parentheses
 
-genericAtomicChar : String -> ParseSubResult ParsedElement
-genericAtomicChar text = case text |> skipIfNext "." of
+parseCapturingGroup : String -> ParseSubResult ParsedElement
+parseCapturingGroup text =
+  let
+    contents = skipOrErr "(" text
+    result = contents |> Result.andThen parseSet
+  in result |> Result.map (Tuple.mapSecond (String.dropLeft 1)) -- drop the closing parentheses
+    |> Result.map (Tuple.mapFirst ParsedCapture)
 
-  (True, rest) -> Ok (SingleCharOrSymbol <| Escaped NonLinebreakChar, rest)
-
+parseGenericAtomicChar : String -> ParseSubResult ParsedElement
+parseGenericAtomicChar text = case text |> skipIfNext "." of
+  (True, rest) -> Ok (ParsedCharOrSymbol <| Escaped NonLinebreakChar, rest)
   (False, rest) -> rest
-      |> atomicChar (maybeOptions symbolizeLetterbased symbolizeTabLinebreak)
-      |> Result.map (Tuple.mapFirst SingleCharOrSymbol)
+      |> parseAtomicChar (maybeOptions symbolizeLetterbased symbolizeTabLinebreak)
+      |> Result.map (Tuple.mapFirst ParsedCharOrSymbol)
 
 
 symbolizeTabLinebreak : Char -> Maybe Symbol
@@ -131,15 +265,15 @@ symbolizeTabLinebreak token = case token of
 
 
 
-charset : String -> ParseSubResult ParsedElement
-charset text =
+parseCharset : String -> ParseSubResult ParsedElement
+parseCharset text =
     let
         withoutBracket = skipOrErr "[" text
         inversion = withoutBracket |> Result.map (skipIfNext "^")
         contents = extendCharset (inversion |> Result.map (Tuple.mapFirst <| always []))
 
         charsetFromResults (inverted, _) (options, remaining) =
-          (Charset { inverted = inverted, contents = options }, remaining)
+          (ParsedCharset { inverted = inverted, contents = options }, remaining)
 
     in Result.map2 charsetFromResults inversion contents
 
@@ -154,14 +288,14 @@ extendCharset current = case current of
 
     else case skipIfNext "]" remaining of
       (True, rest) -> Ok (options, rest)
-      (False, rest) -> charsetAtom rest
+      (False, rest) -> parseCharsetAtom rest
         |> Result.map (Tuple.mapFirst (appendTo options))
         |> extendCharset
 
 
 
-charsetAtom : String -> ParseSubResult CharOrSymbol
-charsetAtom = atomicChar (maybeOptions symbolizeLetterbased symbolizeTabLinebreakDot)
+parseCharsetAtom : String -> ParseSubResult CharOrSymbol
+parseCharsetAtom = parseAtomicChar (maybeOptions symbolizeLetterbased symbolizeTabLinebreakDot)
 
 -- in a charset, the dot char must be escaped, because a plain dot is just a dot and not anything but linebreak
 symbolizeTabLinebreakDot : Char -> Maybe Symbol
@@ -188,10 +322,10 @@ symbolizeLetterbased token = case token of
 type CharOrSymbol = Plain Char | Escaped Symbol
 
 
-atomicChar : (Char -> Maybe Symbol) -> String -> ParseSubResult (CharOrSymbol)
-atomicChar escape text =
+parseAtomicChar : (Char -> Maybe Symbol) -> String -> ParseSubResult (CharOrSymbol)
+parseAtomicChar escape text =
   let
-    (isEscaped, charSubResult) = skipIfNext "\\" text |> Tuple.mapSecond singleChar
+    (isEscaped, charSubResult) = skipIfNext "\\" text |> Tuple.mapSecond parseSingleChar
 
     symbolOrElsePlainChar character = character |> escape
       |> Maybe.map Escaped |> Maybe.withDefault (Plain character)
@@ -201,8 +335,8 @@ atomicChar escape text =
     else charSubResult |> Result.map (Tuple.mapFirst Plain)
 
 
-singleChar : String -> ParseSubResult Char
-singleChar string = String.uncons string |> okOrErr ExpectedMoreChars
+parseSingleChar : String -> ParseSubResult Char
+parseSingleChar string = String.uncons string |> okOrErr ExpectedMoreChars
 
 
 skipOrErr : String -> String -> ParseResult String
@@ -225,3 +359,8 @@ maybeOptions : (a -> Maybe b) -> (a -> Maybe b) -> a -> Maybe b
 maybeOptions first second value = case first value of
   Just result -> Just result
   Nothing -> second value
+
+
+
+
+oneOf a b v = a v || b v

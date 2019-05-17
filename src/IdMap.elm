@@ -14,16 +14,16 @@ empty = IdMap Dict.empty 0
 isEmpty : IdMap v -> Bool
 isEmpty idMap = idMap.dict |> Dict.isEmpty
 
-insert : v -> IdMap v -> IdMap v
-insert value idMap =
+insertAnonymous : v -> IdMap v -> IdMap v
+insertAnonymous value idMap =
   { dict = idMap.dict |> Dict.insert idMap.nextId value
   , nextId = idMap.nextId + 1
   }
 
-insertValue : v -> IdMap v -> (Id, IdMap v)
-insertValue value idMap =
+insert : v -> IdMap v -> (Id, IdMap v)
+insert value idMap =
   ( idMap.nextId
-  , insert value idMap
+  , insertAnonymous value idMap
   )
 
 remove : Id -> IdMap v -> IdMap v

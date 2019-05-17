@@ -190,11 +190,11 @@ duplicateNode model nodeId =
           position = Vec2.add original.position (Vec2 0 -28)
           clone = { original | position = position }
 
-        in { model | nodes = IdMap.insert clone nodes }
+        in { model | nodes = IdMap.insertAnonymous clone nodes }
 
 insertNode node model =
     let position = Vec2.inverseTransform (Vec2 800 400) (viewTransform model.view)
-    in { model | nodes = IdMap.insert (NodeView position node) model.nodes, search = Nothing }
+    in { model | nodes = IdMap.insertAnonymous (NodeView position node) model.nodes, search = Nothing }
 
 parseRegexNodes view nodes regex =
     let position = Vec2.inverseTransform (Vec2 1000 400) (viewTransform view)
@@ -323,7 +323,7 @@ extractMatches multiple maxMatches text regex =
 
     -- replace spaces by (hair-space ++ dot ++ hair-space) to visualize whitespace
     -- (separate function to avoid recursion stack overflow)
-    visualizeMatch match = String.replace " " "\u{200A}·\u{200A}" match
+    visualizeMatch match = String.replace " " "\u{200B}␣\u{200B}" match -- " " "\u{200A}·\u{200A}" match
     visualize matchList = List.map (Tuple.mapSecond visualizeMatch) matchList
 
   in matches |> extract |> simplify |> visualize

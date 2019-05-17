@@ -37,7 +37,7 @@ type PropertyViewContents
   | CharProperty Char (OnChange Char)
   | IntProperty Int (OnChange Int)
   | ConnectingProperty (Maybe NodeId) (OnChange (Maybe NodeId))
-  | ConnectingProperties (Array NodeId) (OnChange (Array NodeId))
+  | ConnectingProperties Bool (Array NodeId) (OnChange (Array NodeId))
   | TitleProperty
 
 type alias NodeView =
@@ -90,12 +90,12 @@ properties node =
 
     SetNode options ->
       [ PropertyView typeNames.set typeDescriptions.set TitleProperty True
-      , PropertyView "Option" "Match if this or any other option is matched" (ConnectingProperties options SetNode) False
+      , PropertyView "Option" "Match if this or any other option is matched" (ConnectingProperties False options SetNode) False
       ]
 
     SequenceNode members ->
       [ PropertyView typeNames.sequence typeDescriptions.sequence TitleProperty True
-      , PropertyView "And Then" "A member of the sequence" (ConnectingProperties members SequenceNode) False
+      , PropertyView "Member" "A member of the sequence" (ConnectingProperties True members SequenceNode) False
       ]
 
     FlagsNode flagsNode ->
@@ -420,7 +420,7 @@ viewSearchBar search = input
   , type_ "text"
   , value (Maybe.withDefault "" search)
   , onFocus (SearchMessage (UpdateSearch ""))
-  , onInput (\text -> SearchMessage (UpdateSearch text))
+  , onInput (\text -> SearchMessage (UpdateSearch text)) -- TODO if enter, submit first
   , onBlur (SearchMessage (FinishSearch NoResult))
   ] []
 
@@ -455,9 +455,10 @@ viewSearch query =
         { stopPropagation = False, preventDefault = False } -- do not prevent blurring the textbox on selecting a result
         (\_ -> SearchMessage (FinishSearch (ParseRegex query)))
       ]
-      [ text ("Add regular expression ")
+      [ text "Insert "
       , span [ id "parse-regex" ] [ text query ]
-      , text (" as Nodes")
+      , text " as Nodes"
+      , p [ class "description" ] [ text "Add the regular expression by converting it to a network of Nodes" ]
       ]
 
     results = (prototypes |> List.filter matches |> List.map render)
@@ -520,7 +521,7 @@ viewNodeConnections nodes props nodeView =
         ConnectingProperty (Just supplier) _ ->
           [ connect supplier nodeView ]
 
-        ConnectingProperties suppliers _ ->
+        ConnectingProperties _ suppliers _ ->
           suppliers |> Array.toList |> List.map (\supplier -> connect supplier nodeView)
 
         _ ->  [ always Nothing ]
@@ -754,8 +755,12 @@ viewProperties nodeId dragMode props =
       IntProperty number onChange -> [ simpleInputProperty property (viewPositiveIntInput number (onChange >> updateNode)) ]
       ConnectingProperty currentSupplier onChange -> [ connectInputProperty property currentSupplier onChange ]
 
-      ConnectingProperties connectedProps onChange ->
+      ConnectingProperties countThem connectedProps onChange ->
         let
+          count index prop = if countThem
+            then { prop | name = prop.name ++ " " ++ String.fromInt (index + 1) }
+            else prop
+
           onChangePropertyAtIndex index newInput = case newInput of
              Just newInputId -> onChange (Array.set index newInputId connectedProps)
              Nothing -> onChange (removeFromArray index connectedProps)
@@ -765,10 +770,11 @@ viewProperties nodeId dragMode props =
             Nothing -> onChange (removeFromArray ((Array.length connectedProps) - 1) connectedProps)
 
           realProperties = Array.toList <| Array.indexedMap
-            (\index currentSupplier -> connectInputProperty property (Just currentSupplier) (onChangePropertyAtIndex index))
+            (\index currentSupplier -> connectInputProperty (count index property) (Just currentSupplier) (onChangePropertyAtIndex index))
             connectedProps
 
-          stubProperty = connectInputProperty property Nothing onChangeStubProperty
+          propCount = Array.length connectedProps
+          stubProperty = connectInputProperty (count propCount property) Nothing onChangeStubProperty
         in realProperties ++ [ stubProperty ]
 
 
