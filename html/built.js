@@ -11157,7 +11157,7 @@ var author$project$View$view = function (model) {
 						_List_Nil,
 						_List_fromArray(
 							[
-								elm$html$Html$text('Make sure there are no cyclic connections. Click to dismiss.')
+								elm$html$Html$text('Make sure there are no cyclic connections and then try again. Click to dismiss.')
 							]))
 					]))
 			]));

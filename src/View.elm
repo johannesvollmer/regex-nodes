@@ -206,7 +206,7 @@ view model =
       ]
 
       [ text ("This action cannot be performed due to cycles in the node graph.")
-      , div [] [ text ("Make sure there are no cyclic connections. Click to dismiss.") ]
+      , div [] [ text ("Make sure there are no cyclic connections and then try again. Click to dismiss.") ]
       ]
     ]
 
