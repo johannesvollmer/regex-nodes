@@ -24,7 +24,7 @@ BrowserStack loves Open Source, and Open Source loves BrowserStack.
 - [x] Implement all node types
 - [x] Automatic node width calculation
 - [x] Initial node setup for an easy start
-    - [ ] After improving parsing, add a more interesting start setup
+    - [x] After improving parsing, add a more interesting start setup
 - [x] Build Scripts + Build to Github Pages
     - [x] Use optimized builds instead of debug builds for github pages
 - [ ] Parse regex code in "Add Nodes"
@@ -35,6 +35,7 @@ BrowserStack loves Open Source, and Open Source loves BrowserStack.
 - [x] Middle mouse button view movement
     - [x] Blur text input on non-middle-mouse-clicking anywhere
 - [ ] Simplify UX of changing order in "Set Node"s
+- [x] Prevent cyclic connections
 - [x] Tooltips
     - [ ] Custom, styled tooltips?
 - [ ] Live Explanations!!
