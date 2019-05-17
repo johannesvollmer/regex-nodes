@@ -1,15 +1,9 @@
 # Regex Nodes
 
-Node based regular expression editor! 
-It helps you understand and construct regular expressions for use in Javascript.
-If your regular expressions are complex enough to give this editor relevance, you probably shouldn't use regular expressions.
+[This node-based regular expression editor](https://johannesvollmer.github.io/regex-nodes/) helps you understanding and editing regular expressions for use in Javascript.
+If your regular expressions are complex enough to give this editor relevance, you probably shouldn't use regular expressions, haha.
 
-# Check it out
-
-[This website is hosted on github pages](https://johannesvollmer.github.io/regex-nodes/).
-
-
-# Build
+# Build 
 
 With elm installed on your system, run `elm make src/Main.elm --output=html/built.js`.
 Also, see [compiling elm with optimization enabled](https://elm-lang.org/0.19.0/optimize).
@@ -38,7 +32,7 @@ BrowserStack loves Open Source, and Open Source loves BrowserStack.
           (If the deleted node is a single property node, connect the otherwise now opened connections)
 - [x] Do not adjust example for every node move
 - [x] Middle mouse button view movement
-    - [ ] Blur text input on non-middle-mouse-clicking anywhere
+    - [x] Blur text input on non-middle-mouse-clicking anywhere
 - [ ] Simplify UX of changing order in "Set Node"s
 - [x] Tooltips
     - [ ] Custom, styled tooltips?
