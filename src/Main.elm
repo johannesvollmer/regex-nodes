@@ -6,7 +6,9 @@ import Update
 import View
 
 main = Browser.sandbox
-  { init = Model.init
+  { init = Model.initialValue |> Update.update -- cannot be done in Model due to circular imports
+      (Update.SearchMessage <| Update.FinishSearch <| Update.ParseRegex "e.")
+
   , update = Update.update
   , view = View.view
   }

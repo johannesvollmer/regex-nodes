@@ -197,7 +197,7 @@ insertNode node model =
     in { model | nodes = IdMap.insert (NodeView position node) model.nodes, search = Nothing }
 
 parseRegexNodes view nodes regex =
-    let position = Vec2.inverseTransform (Vec2 800 400) (viewTransform view)
+    let position = Vec2.inverseTransform (Vec2 1000 400) (viewTransform view)
     in addParsedRegexNodeOrNothing position nodes regex
 
 startNodeMove mouse node model =

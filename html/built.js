@@ -4566,7 +4566,7 @@ var elm$core$String$repeat = F2(
 	function (n, chunk) {
 		return A3(elm$core$String$repeatHelp, n, chunk, '');
 	});
-var author$project$Model$init = {
+var author$project$Model$initialValue = {
 	b3: elm$core$Maybe$Nothing,
 	b8: elm$core$Maybe$Nothing,
 	cb: {
@@ -4583,6 +4583,15 @@ var author$project$Model$init = {
 		author$project$Model$View,
 		0,
 		A2(author$project$Vec2$Vec2, 0, 0))
+};
+var author$project$Update$FinishSearch = function (a) {
+	return {$: 1, a: a};
+};
+var author$project$Update$ParseRegex = function (a) {
+	return {$: 1, a: a};
+};
+var author$project$Update$SearchMessage = function (a) {
+	return {$: 0, a: a};
 };
 var elm$core$Basics$apR = F2(
 	function (x, f) {
@@ -6944,7 +6953,7 @@ var author$project$Update$parseRegexNodes = F3(
 	function (view, nodes, regex) {
 		var position = A2(
 			author$project$Vec2$inverseTransform,
-			A2(author$project$Vec2$Vec2, 800, 400),
+			A2(author$project$Vec2$Vec2, 1000, 400),
 			author$project$Model$viewTransform(view));
 		return A3(author$project$Parse$addParsedRegexNodeOrNothing, position, nodes, regex);
 	});
@@ -9761,13 +9770,7 @@ var author$project$View$viewNode = F5(
 			A6(author$project$View$viewNodeContent, dragMode, selectedNode, outputNode, nodeId, props, nodeView),
 			A3(author$project$View$viewNodeConnections, nodes, props, nodeView));
 	});
-var author$project$Update$FinishSearch = function (a) {
-	return {$: 1, a: a};
-};
 var author$project$Update$NoResult = {$: 2};
-var author$project$Update$SearchMessage = function (a) {
-	return {$: 0, a: a};
-};
 var author$project$Update$UpdateSearch = function (a) {
 	return {$: 0, a: a};
 };
@@ -10058,9 +10061,6 @@ var author$project$Model$prototypes = _List_fromArray(
 	]);
 var author$project$Update$InsertPrototype = function (a) {
 	return {$: 0, a: a};
-};
-var author$project$Update$ParseRegex = function (a) {
-	return {$: 1, a: a};
 };
 var author$project$View$prependListIf = F3(
 	function (condition, element, list) {
@@ -10867,6 +10867,15 @@ var elm$browser$Browser$sandbox = function (impl) {
 		});
 };
 var author$project$Main$main = elm$browser$Browser$sandbox(
-	{dn: author$project$Model$init, d$: author$project$Update$update, d2: author$project$View$view});
+	{
+		dn: A2(
+			author$project$Update$update,
+			author$project$Update$SearchMessage(
+				author$project$Update$FinishSearch(
+					author$project$Update$ParseRegex('e.'))),
+			author$project$Model$initialValue),
+		d$: author$project$Update$update,
+		d2: author$project$View$view
+	});
 _Platform_export({'Main':{'init':author$project$Main$main(
 	elm$json$Json$Decode$succeed(0))(0)}});}(this));

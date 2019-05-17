@@ -21,8 +21,8 @@ type alias Model =
   , view: View
   }
 
-init : Model
-init =
+initialValue : Model
+initialValue =
   { nodes = IdMap.empty
   , outputNode = { id = Nothing, locked = False }
   , dragMode = Nothing

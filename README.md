@@ -23,7 +23,8 @@ BrowserStack loves Open Source, and Open Source loves BrowserStack.
 - [x] Example text for instant feedback
 - [x] Implement all node types
 - [x] Automatic node width calculation
-- [ ] Initial node setup for an easy start
+- [x] Initial node setup for an easy start
+    - [ ] After improving parsing, add a more interesting start setup
 - [x] Build Scripts + Build to Github Pages
     - [x] Use optimized builds instead of debug builds for github pages
 - [ ] Parse regex code in "Add Nodes"
