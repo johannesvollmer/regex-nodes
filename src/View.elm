@@ -593,13 +593,19 @@ viewNodeContent dragMode selectedNode outputNode nodeId props nodeView =
 
     onMouseDownAndStopPropagation event =
       if event.button == Mouse.SecondButton then
-        (DragModeMessage (StartPrepareEditingConnection { node = nodeId, mouse = Vec2.fromTuple event.clientPos }), True)
+        { message = DragModeMessage (StartPrepareEditingConnection { node = nodeId, mouse = Vec2.fromTuple event.clientPos })
+        , stopPropagation = True
+        , preventDefault = True
+        }
 
       else if event.button == Mouse.MainButton then
-        (DragModeMessage (StartNodeMove { node = nodeId, mouse = Vec2.fromTuple event.clientPos }), True)
+        { message = DragModeMessage (StartNodeMove { node = nodeId, mouse = Vec2.fromTuple event.clientPos })
+        , stopPropagation = True
+        , preventDefault = True
+        }
 
       -- do not stop event propagation on middle mouse down
-      else (DoNothing, False)
+      else { message = DoNothing, stopPropagation = False, preventDefault = False }
 
     -- TODO dry
 
@@ -614,9 +620,16 @@ viewNodeContent dragMode selectedNode outputNode nodeId props nodeView =
       else (DoNothing, False) -- do not stop event propagation on non-primary mouse down
 
     mayStopPropagation : String -> (Mouse.Event -> (Message, Bool)) -> Attribute Message
-    mayStopPropagation tag handler = Html.Events.stopPropagationOn tag
-      (Mouse.eventDecoder |> Json.Decode.map handler)
+    mayStopPropagation tag handler = Html.Events.stopPropagationOn
+      tag (Mouse.eventDecoder |> Json.Decode.map handler)
 
+
+    prevendDefaultAndMayStopPropagation : String ->
+      (Mouse.Event -> { message: Message, preventDefault: Bool, stopPropagation: Bool })
+        -> Attribute Message
+
+    prevendDefaultAndMayStopPropagation tag handler = Html.Events.custom
+      tag (Mouse.eventDecoder |> Json.Decode.map handler)
 
   in div
     [ style "width" contentWidth
@@ -631,7 +644,7 @@ viewNodeContent dragMode selectedNode outputNode nodeId props nodeView =
 
     [ div
       [ class "properties"
-      , mayStopPropagation "mousedown" onMouseDownAndStopPropagation
+      , prevendDefaultAndMayStopPropagation "mousedown" onMouseDownAndStopPropagation -- TODO always prevent default (to prevent native drag)?
       , preventContextMenu onContextMenu
       ]
       (viewProperties nodeId dragMode props)

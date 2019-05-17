@@ -102,9 +102,10 @@ update message model =
       case searchMessage of
         UpdateSearch query -> { model | search = Just query }
         FinishSearch result -> case result of
-          InsertPrototype prototype -> stopEditingExampleText (insertNode prototype model)
-          ParseRegex regex -> stopEditingExampleText { model | search = Nothing, nodes = addParsedRegexNode model.nodes regex }
           NoResult -> { model | search = Nothing }
+          InsertPrototype prototype -> stopEditingExampleText (insertNode prototype model)
+          ParseRegex regex -> stopEditingExampleText
+            { model | search = Nothing, nodes = addParsedRegexNodeOrNothing model.nodes regex }
 
     DragModeMessage modeMessage ->
       case modeMessage of
@@ -150,7 +151,8 @@ update message model =
         -- but also already make the connection real
         RealizeConnection { nodeId, newNode, mouse } ->
           updateCache { model | nodes = updateNode model.nodes nodeId newNode
-          , dragMode = Just (RetainPrototypedConnection { mouse = mouse, node = nodeId, previousNodeValue = IdMap.get nodeId model.nodes |> Maybe.map .node })
+          , dragMode = Just (RetainPrototypedConnection
+              { mouse = mouse, node = nodeId, previousNodeValue = IdMap.get nodeId model.nodes |> Maybe.map .node })
           }
 
         FinishDrag ->
@@ -294,7 +296,8 @@ extractMatches multiple maxMatches text regex =
       in (indexAfterMatch, extractedMatches ++ [(textBeforeMatch, match.match)])
 
     extract rawMatches =
-      let (indexAfterLastMatch, extractedMatches) = List.foldl extractMatch (0, []) rawMatches -- use foldr in order to utilize various optimizations
+       -- use foldr in order to utilize various optimizations
+      let (indexAfterLastMatch, extractedMatches) = List.foldl extractMatch (0, []) rawMatches
 
       in if List.length matches == maxMatches
         -- do not append unprocessed text
@@ -339,8 +342,11 @@ updateCharRangeLast start end = CharRangeNode (minChar end start) (maxChar start
 updateNotInCharRangeFirst end start = CharRangeNode (minChar start end) (maxChar start end) -- swaps chars if necessary
 updateNotInCharRangeLast start end = CharRangeNode (minChar end start) (maxChar start end) -- swaps chars if necessary
 
-updateRangedRepetitionMinimum repetition count = RangedRepetitionNode { repetition | minimum = positive count, maximum = max (positive count) repetition.maximum }
-updateRangedRepetitionMaximum repetition count = RangedRepetitionNode { repetition | maximum = positive count, minimum = min (positive count) repetition.minimum }
+updateRangedRepetitionMinimum repetition count = RangedRepetitionNode
+  { repetition | minimum = positive count, maximum = max (positive count) repetition.maximum }
+
+updateRangedRepetitionMaximum repetition count = RangedRepetitionNode
+  { repetition | maximum = positive count, minimum = min (positive count) repetition.minimum }
 
 updateFlagsExpression flags newInput = FlagsNode { flags | expression = newInput }
 updateFlags expression newFlags = FlagsNode { expression = expression, flags = newFlags }

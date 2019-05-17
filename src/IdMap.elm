@@ -41,5 +41,45 @@ update id mapper idMap =
   in { idMap | dict = idMap.dict |> Dict.update id updateDictValue  }
 
 
+type alias Insert v = IdMap v -> (Id, IdMap v)
+insertListWith : List (Insert v) -> IdMap v -> (List Id, IdMap v)
+insertListWith values idMap =
+  let insertWithInserter inserter (ids, result) = inserter result |> Tuple.mapFirst (\id -> id :: ids)
+  in List.foldr insertWithInserter ([], idMap) values
+
+
 toList : IdMap v -> List (Id, v)
 toList idMap = idMap.dict |> Dict.toList
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

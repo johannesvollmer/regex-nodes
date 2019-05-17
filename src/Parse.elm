@@ -1,68 +1,225 @@
 module Parse exposing (..)
 
+import Array
+import IdMap
 import Model exposing (..)
+import Result
+import Vec2 exposing (Vec2)
 
-addParsedRegexNode : Nodes -> String -> Nodes
-addParsedRegexNode nodes regex =
+type alias ParseResult a = Result ParseError a
+type alias ParseSubResult a = ParseResult (a, String)
 
-  nodes -- TODO
-
-
-
-
-
-
-
-{-parseExpression expression =
-  let
-    (left, spaceOperatorAndRest) = parseExpression expression
-    operatorAndRest = skipWhite spaceOperatorAndRest
-
-  in case startsWith "|" operatorAndRest of
-    Just rightSide
-
-  if String.startsWith "|" operatorAndRest
-    then Either left (parseExpression operatorAndRest)
--}
+type ParseError
+  = ExpectedMoreChars
+  | Expected String
 
 
-    {-
+-- TODO not all-or-nothing, but try the best guess at invalid input!
+
+
+type ParsedElement
+  = Sequence (List ParsedElement)
+  | SingleCharOrSymbol CharOrSymbol
+  | CharSequece String
+  | Charset { inverted: Bool, contents: List CharOrSymbol }
+  | ParsedSymbol Symbol
+  | Set (List ParsedElement)
+  | Capture ParsedElement
+  | IfFollowedBy { expression: ParsedElement, successor: ParsedElement }
+  | RangedRepetition { expression : ParsedElement, minimum: Int, maximum: Int, minimal: Bool }
+  | Optional { expression: ParsedElement, minimal: Bool }
+  | Flags { expression : ParsedElement, flags : RegexFlags }
+
+
+
+
+
+addParsedRegexNodeOrNothing : Nodes -> String -> Nodes
+addParsedRegexNodeOrNothing nodes regex =
+  parse regex |> Result.map (addParsedElement nodes) |> Result.withDefault nodes
+
+
+addParsedElement : Nodes -> ParsedElement -> Nodes
+addParsedElement nodes parsed = insert parsed nodes |> Tuple.second
+
+insert : ParsedElement -> Nodes -> (NodeId, Nodes)
+insert element nodes = case element of
+  Sequence elements ->
+    let
+
+      (children, newNodes) = IdMap.insertListWith (List.map insert elements) nodes
+      node = children |> Array.fromList |> SequenceNode |> NodeView (Vec2 0 0)
+
+    in IdMap.insertValue node newNodes
+
+  SingleCharOrSymbol charOrSymbol -> case charOrSymbol of
+    Plain char -> IdMap.insertValue (NodeView (Vec2 0 0) (LiteralNode (String.fromChar char))) nodes
+    Escaped symbol -> IdMap.insertValue (NodeView (Vec2 0 0) (SymbolNode symbol)) nodes
+
+  todo -> (-1, nodes) -- TODO
+
+
+
+parse : String -> ParseResult ParsedElement
+parse regex = set regex |> Result.map Tuple.first
+
+
+set : String -> ParseSubResult ParsedElement
+set text = sequence (String.startsWith "|") text  -- TODO
+
+
+sequence: (String -> Bool) -> String -> ParseSubResult ParsedElement
+sequence stop text = extendSequence (Ok ([], text)) stop
+  |> Result.map (Tuple.mapFirst Sequence)
+
+extendSequence : ParseSubResult (List ParsedElement) -> (String -> Bool) -> ParseSubResult (List ParsedElement)
+extendSequence current stop = case current of
+  Err error -> Err error
+  Ok (members, text) ->
+    if stop text then Ok (members, text) else
+      positioned text |> Result.map (Tuple.mapFirst (appendTo members))
+
+
+
+positioned : String -> ParseSubResult ParsedElement
+positioned text = lookAhead text -- TODO
+
+lookAhead : String -> ParseSubResult ParsedElement
+lookAhead text = quantified text -- TODO
+
+quantified : String -> ParseSubResult ParsedElement
+quantified text = atom text -- TODO
+
+atom : String -> ParseSubResult ParsedElement
 atom text =
-  case text |> String.toList of
-    '[' :: rest -> parseCharset rest
-    '\\' :: rest -> parseEscapedAtom rest
-    '?' :: (':' :: rest) -> parseGroup rest
-    '(' :: rest -> parseCapturingGroup rest
---    [] -> Err
-    rest -> parseCharAtom rest
+  let
+    isNext character = String.startsWith character text
+
+  in
+    if isNext "[" then charset text
+    -- else if isNext "\\" then escapedAtom tokens
+    -- else if isNext "(?:" then group text
+    -- else if isNext "(" then capturingGroup
+    else genericAtomicChar text
+
+
+{-group : String -> ParseSubResult ParsedElement
+group text =
+  let
+    contents = skipOrErr "(?:" text
+    contents =
+  in
 -}
-    {-
-    if (string.startsWith("["))
-    		return parseCharset(string)
 
-    	else if (string.startsWith("\\"))
-    		return parseEscapedAtom(string, {
-    			...escape.digit, ...escape.word, ...escape.white,
-    			...escape.tab, ...escape.linebreak,
-    			...escape.boundary
-    		})
+genericAtomicChar : String -> ParseSubResult ParsedElement
+genericAtomicChar text = case text |> skipIfNext "." of
 
-    	else if (string.startsWith("(?:"))
-    		return parseGroup(string)
+  (True, rest) -> Ok (SingleCharOrSymbol <| Escaped LinebreakChar, rest)
 
-    	else if (string.startsWith("("))
-    		return parseCapturingGroup(string)
+  (False, rest) -> rest
+      |> atomicChar (maybeOptions symbolizeLetterbased symbolizeTabLinebreak)
+      |> Result.map (Tuple.mapFirst SingleCharOrSymbol)
 
-    else return parseCharAtom(string)
-    -}
+
+symbolizeTabLinebreak : Char -> Maybe Symbol
+symbolizeTabLinebreak token = case token of
+  't' -> Just TabChar
+  'n' -> Just LinebreakChar
+  _ -> Nothing
 
 
 
+charset : String -> ParseSubResult ParsedElement
+charset text =
+    let
+        withoutBracket = skipOrErr "[" text
+        inversion = withoutBracket |> Result.map (skipIfNext "^")
+        contents = extendCharset (inversion |> Result.map (Tuple.mapFirst <| always []))
 
-startsWith needle haystack =
-  let withoutWhite = skipWhite haystack
-  in if String.startsWith needle withoutWhite
-    then Just withoutWhite
-    else Nothing
+        charsetFromResults (inverted, _) (options, remaining) =
+          (Charset { inverted = inverted, contents = options }, remaining)
 
-skipWhite = String.trimLeft
+    in Result.map2 charsetFromResults inversion contents
+
+
+-- TODO use foldr or similar?
+extendCharset : ParseSubResult (List CharOrSymbol) -> ParseSubResult (List CharOrSymbol)
+extendCharset current = case current of
+  Err error -> Err error
+  Ok (options, remaining) ->
+    if String.isEmpty remaining
+      then Err (Expected "]")
+
+    else case skipIfNext "]" remaining of
+      (True, rest) -> Ok (options, rest)
+      (False, rest) -> charsetAtom rest
+        |> Result.map (Tuple.mapFirst (appendTo options))
+        |> extendCharset
+
+
+
+charsetAtom : String -> ParseSubResult CharOrSymbol
+charsetAtom = atomicChar (maybeOptions symbolizeLetterbased symbolizeTabLinebreakDot)
+
+-- in a charset, the dot char must be escaped, because a plain dot is just a dot and not anything but linebreak
+symbolizeTabLinebreakDot : Char -> Maybe Symbol
+symbolizeTabLinebreakDot token = case token of
+  't' -> Just TabChar
+  'n' -> Just LinebreakChar
+  '.' -> Just NonLinebreakChar
+  _ -> Nothing
+
+-- does not escape any brackets
+symbolizeLetterbased : Char -> Maybe Symbol
+symbolizeLetterbased token = case token of
+  'd' -> Just DigitChar
+  'D' -> Just NonDigitChar
+  's' -> Just WhitespaceChar
+  'S' -> Just NonWhitespaceChar
+  'w' -> Just WordChar
+  'W' -> Just NonWordChar
+  'b' -> Just WordBoundary
+  'B' -> Just NonWordBoundary
+  _ -> Nothing
+
+
+type CharOrSymbol = Plain Char | Escaped Symbol
+
+
+atomicChar : (Char -> Maybe Symbol) -> String -> ParseSubResult (CharOrSymbol)
+atomicChar escape text =
+  let
+    (isEscaped, charSubResult) = skipIfNext "\\" text |> Tuple.mapSecond singleChar
+
+    symbolOrElsePlainChar character = character |> escape
+      |> Maybe.map Escaped |> Maybe.withDefault (Plain character)
+
+  in if isEscaped
+    then charSubResult |> Result.map (Tuple.mapFirst symbolOrElsePlainChar)
+    else charSubResult |> Result.map (Tuple.mapFirst Plain)
+
+
+singleChar : String -> ParseSubResult Char
+singleChar string = String.uncons string |> okOrErr ExpectedMoreChars
+
+
+skipOrErr : String -> String -> ParseResult String
+skipOrErr symbol text = if String.startsWith symbol text
+  then text |> String.dropLeft (String.length symbol) |> Ok
+  else Err (Expected symbol)
+
+skipIfNext : String -> String -> (Bool, String)
+skipIfNext symbol text = if String.startsWith symbol text
+  then (True, text |> String.dropLeft (String.length symbol))
+  else (False, text)
+
+okOrErr : ParseError -> Maybe v -> ParseResult v
+okOrErr error = Maybe.map Ok >> Maybe.withDefault (Err error)
+
+appendTo : List a -> a -> List a
+appendTo list element = list ++ [element]
+
+maybeOptions : (a -> Maybe b) -> (a -> Maybe b) -> a -> Maybe b
+maybeOptions first second value = case first value of
+  Just result -> Just result
+  Nothing -> second value
