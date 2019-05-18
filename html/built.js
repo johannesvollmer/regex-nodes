@@ -9472,6 +9472,8 @@ var author$project$View$viewBoolInput = F2(
 				]),
 			_List_Nil);
 	});
+var author$project$Model$insertWhitePlaceholder = A2(elm$core$String$replace, ' ', '␣');
+var author$project$Model$removeWhitePlaceholder = A2(elm$core$String$replace, '␣', ' ');
 var elm$core$String$right = F2(
 	function (n, string) {
 		return (n < 1) ? '' : A3(
@@ -9502,12 +9504,16 @@ var author$project$View$viewCharInput = F2(
 					elm$html$Html$Attributes$type_('text'),
 					elm$html$Html$Attributes$placeholder('a'),
 					elm$html$Html$Attributes$value(
-					elm$core$String$fromChar(_char)),
+					author$project$Model$insertWhitePlaceholder(
+						elm$core$String$fromChar(_char))),
 					elm$html$Html$Events$onInput(
 					A2(
 						elm$core$Basics$composeL,
-						onChange,
-						author$project$View$stringToChar(_char))),
+						A2(
+							elm$core$Basics$composeL,
+							onChange,
+							author$project$View$stringToChar(_char)),
+						author$project$Model$removeWhitePlaceholder)),
 					elm$html$Html$Attributes$class('char input'),
 					author$project$View$stopMousePropagation('mousedown'),
 					author$project$View$stopMousePropagation('mouseup')
@@ -9522,8 +9528,10 @@ var author$project$View$viewCharsInput = F2(
 				[
 					elm$html$Html$Attributes$type_('text'),
 					elm$html$Html$Attributes$placeholder('AEIOU'),
-					elm$html$Html$Attributes$value(chars),
-					elm$html$Html$Events$onInput(onChange),
+					elm$html$Html$Attributes$value(
+					author$project$Model$insertWhitePlaceholder(chars)),
+					elm$html$Html$Events$onInput(
+					A2(elm$core$Basics$composeR, author$project$Model$removeWhitePlaceholder, onChange)),
 					elm$html$Html$Attributes$class('chars input'),
 					author$project$View$stopMousePropagation('mousedown'),
 					author$project$View$stopMousePropagation('mouseup')

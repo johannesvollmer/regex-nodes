@@ -638,8 +638,8 @@ viewCharsInput : String -> (String -> Message) -> Html Message
 viewCharsInput chars onChange = input
   [ type_ "text"
   , placeholder "AEIOU"
-  , value chars -- TODO  |> cleanString
-  , onInput onChange
+  , value (insertWhitePlaceholder chars)
+  , onInput (removeWhitePlaceholder >> onChange)
   , class "chars input"
   , stopMousePropagation "mousedown"
   , stopMousePropagation "mouseup"
@@ -650,10 +650,10 @@ viewCharInput : Char -> (Char -> Message) -> Html Message
 viewCharInput char onChange = input
   [ type_ "text"
   , placeholder "a"
-  , value (String.fromChar char) -- TODO  |> cleanString
+  , value (String.fromChar char |> insertWhitePlaceholder) -- TODO  |> cleanString
 
   -- Take the last char of the string
-  , onInput (onChange << stringToChar char)
+  , onInput (onChange << stringToChar char << removeWhitePlaceholder)
 
   , class "char input"
   , stopMousePropagation "mousedown"
@@ -681,7 +681,6 @@ stringToInt fallback string = string
 stringToChar fallback string = string
   |> String.right 1 |> String.uncons
   |> Maybe.map Tuple.first |> Maybe.withDefault fallback
-
 
 
 flattenList list = List.foldr (++) [] list

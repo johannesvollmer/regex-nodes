@@ -566,8 +566,10 @@ cycles = "Nodes have cycles"
 
 
 
--- TOOD dry
-cleanString = String.replace " " "␣"
+insertWhitePlaceholder = String.replace " " "␣"
+removeWhitePlaceholder = String.replace "␣" " "
+
+
 updateExpression node expression = { node | expression = expression }
 updateSuccessor node successor = { node | successor = successor }
 updateStart node start = { node | start = start }
