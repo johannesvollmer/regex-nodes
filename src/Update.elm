@@ -36,6 +36,7 @@ type SearchMessage
 type SearchResult
   = InsertPrototype Node
   | ParseRegex String
+  | InsertLiteral String
   | NoResult
 
 type ViewMessage
@@ -107,9 +108,10 @@ update message model =
         UpdateSearch query -> { model | search = Just query }
         FinishSearch result -> case result of
           NoResult -> { model | search = Nothing }
+          InsertLiteral text -> insertNode (LiteralNode text) model
           InsertPrototype prototype -> stopEditingExampleText (insertNode prototype model)
           ParseRegex regex -> stopEditingExampleText
-            { model | search = Nothing, nodes = parseRegexNodes model.view model.nodes regex } -- TODO automatically set result as output
+            (parseRegexNodes model regex)
 
     DragModeMessage modeMessage ->
       case modeMessage of
@@ -210,16 +212,22 @@ insertNode node model =
     let position = Vec2.inverseTransform (Vec2 800 400) (viewTransform model.view)
     in { model | nodes = IdMap.insertAnonymous (NodeView position node) model.nodes, search = Nothing }
 
-parseRegexNodes view nodes regex =
-    let position = Vec2.inverseTransform (Vec2 1000 400) (viewTransform view)
-    in addParsedRegexNodeOrNothing position nodes regex
+parseRegexNodes model regex =
+    let
+      position = Vec2.inverseTransform (Vec2 1000 400) (viewTransform model.view)
+      resultNodes = addParsedRegexNode position model.nodes regex
+
+      -- select the generated result
+      resultModel (resultNodeId, nodes) = selectNode resultNodeId { model | nodes = nodes, search = Nothing }
+    in resultNodes |> Result.map resultModel |> Result.withDefault model
 
 startNodeMove mouse node model =
+  selectNode node { model | dragMode = Just (MoveNodeDrag { node = node, mouse = mouse }) }
+
+
+selectNode node model =
   let
-    safeModel = { model
-      | selectedNode = Just node
-      , dragMode = Just (MoveNodeDrag { node = node, mouse = mouse })
-      }
+    safeModel = { model | selectedNode = Just node }
 
     possiblyInvalidModel = { safeModel
       | outputNode = if not model.outputNode.locked || model.outputNode.id == Nothing
@@ -230,6 +238,8 @@ startNodeMove mouse node model =
   in if model.outputNode.id /= possiblyInvalidModel.outputNode.id
     -- only update cache if node really changed
     then updateCache possiblyInvalidModel safeModel else possiblyInvalidModel
+
+
 
 stopEditingExampleText model =
   enableEditingExampleText model False

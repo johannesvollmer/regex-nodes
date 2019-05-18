@@ -165,8 +165,6 @@ prototypes =
 
   , symbolProto .end End
   , symbolProto .start Start
-  , typeProto .ifFollowedBy (IfFollowedByNode { expression = Nothing, successor = Nothing })
-  , typeProto .ifNotFollowedBy (IfNotFollowedByNode { expression = Nothing, successor = Nothing })
 
   , symbolProto .wordBoundary WordBoundary
   , symbolProto .nonWordBoundary NonWordBoundary
@@ -187,6 +185,10 @@ prototypes =
 
   , symbolProto .none Never
   , symbolProto .any Always
+
+
+  , typeProto .ifFollowedBy (IfFollowedByNode { expression = Nothing, successor = Nothing })
+  , typeProto .ifNotFollowedBy (IfNotFollowedByNode { expression = Nothing, successor = Nothing })
   ]
 
 
@@ -254,14 +256,14 @@ symbolDescriptions =
 
 typeDescriptions =
   { charset = "Matches, where any char of the set is matched"
-  , notInCharset = "Matches anywhere, where no char of the set is matched"
-  , literal = "Matches where the exact sequence of chars are found"
+  , notInCharset = "Matches where not a single char of the set is matched"
+  , literal = "Matches where that exact sequence of chars is found"
   , charRange = "Matches any char between the lower and upper range bound"
   , notInCharRange = "Matches any char outside of the range"
   , optional = "Allow omitting this expression and match anyways"
   , set = "Matches, where at least one of the options matches"
-  , capture = "Capture this expression for later use"
-  , ifNotFollowedBy = "Match this expression only if the successor is not matched"
+  , capture = "Capture this expression for later use, like replacing"
+  , ifNotFollowedBy = "Match this expression only if the successor is not matched, without matching the successor itself"
   , sequence = "Matches, where all members in the exact order are matched one after another"
   , flags = "Configure how the whole regex operates"
   , exactRepetition = "Match where an expression is repeated exactly n times"
@@ -270,7 +272,7 @@ typeDescriptions =
   , minimumRepetition = "Match where an expression is repeated at least n times"
   , maximumRepetition = "Match where an expression is repeated no more than n times"
   , rangedRepetition = "Only match if the expression is repeated in range"
-  , ifFollowedBy = "Match this expression only if the successor is also matched"
+  , ifFollowedBy = "Match this expression only if the successor is also matched, without matching the successor itself"
   }
 
 

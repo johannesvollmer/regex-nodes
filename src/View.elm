@@ -278,15 +278,29 @@ viewSearch query =
         { stopPropagation = False, preventDefault = False } -- do not prevent blurring the textbox on selecting a result
         (\_ -> SearchMessage (FinishSearch (ParseRegex query)))
       ]
-      [ text "Insert "
-      , span [ id "parse-regex" ] [ text (insertWhitePlaceholder query) ]
-      , text " as Nodes"
-      , p [ class "description" ] [ text "Add the regular expression by converting it to a network of Nodes" ]
+      [ text "Insert regular expression `"
+      , code [ ] [ text (insertWhitePlaceholder query) ]
+      , text "` as Nodes"
+      , p [ class "description" ] [ text "Add that regular expression by converting it to a network of Nodes" ]
+      ]
+
+    asLiteral = div
+      [ class "button"
+      , Mouse.onWithOptions
+        "mousedown"
+        { stopPropagation = False, preventDefault = False } -- do not prevent blurring the textbox on selecting a result
+        (\_ -> SearchMessage (FinishSearch (InsertLiteral query)))
+      ]
+      [ text "Insert literal `"
+       , code [][ text(insertWhitePlaceholder query) ]
+       , text "` as Node "
+      , p [ class "description" ] [ text ("Add a Node which matches exactly `" ++ query ++ "` and nothing else") ]
       ]
 
     results = (prototypes |> List.filter matches |> List.map render)
 
-  in prependListIf (not isEmpty) asRegex results
+  in if isEmpty then results
+    else asRegex :: (asLiteral :: results)
 
 
 viewExampleText example =

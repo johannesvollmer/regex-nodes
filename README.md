@@ -80,4 +80,5 @@ BrowserStack loves Open Source, and Open Source loves BrowserStack.
 - [x] Instantiate Nodes centered to the screen
     - [ ] Using the real window size
 - [ ] Consider rewriting Css to Sass
+- [ ] On input focus select container node
 - [ ] Node Groups!

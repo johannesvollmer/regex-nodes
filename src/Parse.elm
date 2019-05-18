@@ -50,24 +50,23 @@ type CompiledElement
 
 
 
-addParsedRegexNodeOrNothing : Vec2 -> Nodes -> String -> Nodes
-addParsedRegexNodeOrNothing position nodes regex = parse regex
+addParsedRegexNode : Vec2 -> Nodes -> String -> ParseResult (NodeId, Nodes)
+addParsedRegexNode position nodes regex = parse regex
   |> Result.map (compile >> addCompiledElement position nodes)
-  |> Result.withDefault nodes
 
 
-addCompiledElement : Vec2 -> Nodes -> CompiledElement -> Nodes
-addCompiledElement position nodes parsed = insert position parsed nodes |> Tuple.second
+addCompiledElement : Vec2 -> Nodes -> CompiledElement -> (NodeId, Nodes)
+addCompiledElement position nodes parsed = insert position parsed nodes
 
 
 -- TODO reuse existing intermediate result nodes
 
 insert : Vec2 -> CompiledElement -> Nodes -> (NodeId, Nodes)
 insert position element nodes = case element of
-  CompiledSequence elements ->
+  CompiledSequence members ->
     let
-      insertChild index child = insert (Vec2 -200 (75 * toFloat index) |> Vec2.add position) child
-      (children, newNodes) = IdMap.insertListWith (List.indexedMap insertChild elements) nodes
+      insertChild index child = insert (Vec2 -200 (75 * toFloat (index - List.length members // 2)) |> Vec2.add position) child
+      (children, newNodes) = IdMap.insertListWith (List.indexedMap insertChild members) nodes
       node = children |> Array.fromList |> SequenceNode |> NodeView position
     in IdMap.insert node newNodes
 
@@ -86,7 +85,7 @@ insert position element nodes = case element of
 
   CompiledSet options ->
     let
-      insertChild index child = insert (Vec2 -200 (75 * toFloat index) |> Vec2.add position) child
+      insertChild index child = insert (Vec2 -200 (75 * (toFloat (index - List.length options // 2))) |> Vec2.add position) child
       (children, newNodes) = IdMap.insertListWith (List.indexedMap insertChild options) nodes
       node = children |> Array.fromList |> SetNode |> NodeView position
     in IdMap.insert node newNodes

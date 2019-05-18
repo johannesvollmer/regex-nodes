@@ -38,7 +38,7 @@
 
 
 
-code, #search #results #parse-regex {
+code, #search #results code {
   font-family: 'Ubuntu Mono', source-code-pro, Consolas, monospace;
 }
 
@@ -93,7 +93,7 @@ nav {
   background: transparent;
   border: 2px solid #444;
 }
-#search #results #parse-regex {
+#search #results code {
   color: #0bb;
 }
 #search #results .description {
