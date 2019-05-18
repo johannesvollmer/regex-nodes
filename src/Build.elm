@@ -13,6 +13,15 @@ import Model exposing (..)
 maxBuildCost = 100
 cycles = "Nodes have cycles" -- TODO use enum
 
+{-
+The "cycle detection" works by having a cost attached to each node
+while generating the regular expression, and cycles being infinite
+will always exceed the maximum cost.
+
+This means that overly complex (non-cyclic) nodes also will be rejected,
+and the message text currently incorrectly says it's because of cycles in the node graph.
+This will be improved later but it has a low priority.
+-}
 
 
 
@@ -63,25 +72,25 @@ buildNodeExpression : Int -> Nodes -> Node -> BuildResult (Int, String)
 buildNodeExpression cost nodes node =
   let
     ownPrecedence = precedence node
-    build depth child = buildExpression depth nodes ownPrecedence child
+    build childParens depth child = buildExpression childParens depth nodes ownPrecedence child
 
-    buildSingleChild map child = build cost child |> Result.map (Tuple.mapSecond map)
-    buildTwoChildren map child1 child2 =
+    buildSingleChild childParens map child = build childParens cost child |> Result.map (Tuple.mapSecond map)
+    buildTwoChildren map childParens1 child1 childParens2 child2 =
       let
-          first = build cost child1
-          buildSecond (firstCost, _) = build firstCost child2
+          first = build childParens1 cost child1
+          buildSecond (firstCost, _) = build childParens2 firstCost child2
           merge (_, firstChild) (totalCost, secondChild) = (totalCost, map firstChild secondChild)
 
       in Result.map2 merge first (Result.andThen buildSecond first)
 
-    buildMember : NodeId -> Result String (Int, List String) -> Result String (Int, List String)
-    buildMember element lastResult =
+    buildMember : Bool -> NodeId -> Result String (Int, List String) -> Result String (Int, List String)
+    buildMember childParens element lastResult =
       lastResult |> Result.andThen (\(currentCost, builtMembers) ->
-        (build currentCost (Just element)) |> Result.map (Tuple.mapSecond (\e -> e :: builtMembers))
+        (build childParens currentCost (Just element)) |> Result.map (Tuple.mapSecond (\e -> e :: builtMembers))
       )
 
-    buildMembers join members = members |> Array.toList
-      |> List.foldr buildMember (Ok (cost, []))
+    buildMembers childParens join members = members |> Array.toList
+      |> List.foldr (buildMember childParens) (Ok (cost, []))
       |> Result.map (Tuple.mapSecond join)
 
     string = case node of
@@ -92,31 +101,30 @@ buildNodeExpression cost nodes node =
       NotInCharRangeNode start end -> Ok (cost, notInCharRange start end)
       LiteralNode chars -> Ok (cost, literal chars)
 
-      SequenceNode members -> buildMembers sequence members
-      SetNode options -> buildMembers set options
-      CaptureNode child -> buildSingleChild capture child
+      SequenceNode members -> buildMembers True sequence members
+      SetNode options -> buildMembers True set options
+      CaptureNode child -> buildSingleChild False capture child
 
-      FlagsNode { expression } -> build cost expression -- we use flags directly at topmost level
+      FlagsNode { expression } -> build False cost expression -- we use flags directly at topmost level
 
-      IfAtEndNode child -> buildSingleChild ifAtEnd child
-      IfAtStartNode child -> buildSingleChild ifAtStart child
-      IfNotFollowedByNode { expression, successor } -> buildTwoChildren ifNotFollowedBy successor expression
-      IfFollowedByNode { expression, successor } -> buildTwoChildren ifFollowedBy successor expression
+      IfAtEndNode child -> buildSingleChild True ifAtEnd child
+      IfAtStartNode child -> buildSingleChild True ifAtStart child
+      IfNotFollowedByNode { expression, successor } -> buildTwoChildren ifNotFollowedBy False successor True expression
+      IfFollowedByNode { expression, successor } -> buildTwoChildren ifFollowedBy False successor True expression
 
-      OptionalNode { expression, minimal } -> buildSingleChild (optional minimal) expression
-      AtLeastOneNode { expression, minimal } -> buildSingleChild (atLeastOne minimal) expression
-      AnyRepetitionNode { expression, minimal } -> buildSingleChild (anyRepetition minimal) expression
-      ExactRepetitionNode { expression, count } -> buildSingleChild (exactRepetition count) expression
-      RangedRepetitionNode { expression, minimum, maximum, minimal } -> buildSingleChild (rangedRepetition minimal minimum maximum) expression
-      MinimumRepetitionNode { expression, count, minimal } -> buildSingleChild (minimumRepetition minimal count) expression
-      MaximumRepetitionNode { expression, count, minimal } -> buildSingleChild (maximumRepetition minimal count) expression
-
+      OptionalNode { expression, minimal } -> buildSingleChild True (optional minimal) expression
+      AtLeastOneNode { expression, minimal } -> buildSingleChild True (atLeastOne minimal) expression
+      AnyRepetitionNode { expression, minimal } -> buildSingleChild True (anyRepetition minimal) expression
+      ExactRepetitionNode { expression, count } -> buildSingleChild True (exactRepetition count) expression
+      RangedRepetitionNode { expression, minimum, maximum, minimal } -> buildSingleChild True (rangedRepetition minimal minimum maximum) expression
+      MinimumRepetitionNode { expression, count, minimal } -> buildSingleChild True (minimumRepetition minimal count) expression
+      MaximumRepetitionNode { expression, count, minimal } -> buildSingleChild True (maximumRepetition minimal count) expression
 
   in string
 
 {-| Dereferences a node and returns `buildExpression` of it, handling corner cases -}
-buildExpression : Int -> Nodes -> Int -> Maybe NodeId -> BuildResult (Int, String)
-buildExpression cost nodes ownPrecedence nodeId =
+buildExpression : Bool -> Int -> Nodes -> Int -> Maybe NodeId -> BuildResult (Int, String)
+buildExpression childMayNeedParens cost nodes ownPrecedence nodeId =
   if cost > maxBuildCost then Err cycles
   else case nodeId of
     Nothing -> Ok (cost, "(nothing)")
@@ -126,7 +134,9 @@ buildExpression cost nodes ownPrecedence nodeId =
         nodeResult = IdMap.get id nodes
           |> okOrErr "Internal Error: Invalid Node Id"
 
-        parens node = parenthesesForPrecedence ownPrecedence (precedence node)
+        parens node = if childMayNeedParens
+          then parenthesesForPrecedence ownPrecedence (precedence node)
+          else identity
 
         build: Node -> BuildResult (Int, String)
         build node = buildNodeExpression (cost + 1) nodes node |> Result.map (Tuple.mapSecond (parens node))
@@ -136,10 +146,10 @@ buildExpression cost nodes ownPrecedence nodeId =
 
 
 
-buildRegex : Int -> Nodes -> NodeId -> BuildResult (RegexBuild)
-buildRegex stack nodes id =
+buildRegex :Nodes -> NodeId -> BuildResult (RegexBuild)
+buildRegex nodes id =
   let
-    expression = buildExpression stack nodes 0 (Just id)
+    expression = buildExpression False 0 nodes 0 (Just id)
     nodeView = IdMap.get id nodes
     options = case nodeView |> Maybe.map .node of
       Just (FlagsNode { flags }) -> flags
@@ -177,7 +187,7 @@ precedence node = case node of
         then 5
         else 2
 
-    SequenceNode _ -> 2 -- TODO 5 if only one member
+    SequenceNode _ -> 2 -- TODO collapse if only one member
 
     IfAtEndNode _ -> 3
     IfAtStartNode _ -> 3
@@ -196,7 +206,7 @@ precedence node = case node of
     NotInCharSetNode _ -> 5
     CharRangeNode _ _ -> 5
     NotInCharRangeNode _ _ -> 5
-    CaptureNode _ -> 5
+    CaptureNode _ -> 5 -- TODO will produce unnecessary parens if
     SymbolNode _ -> 5
 
 

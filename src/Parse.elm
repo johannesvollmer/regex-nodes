@@ -23,8 +23,13 @@ type ParsedElement
   | ParsedCharset { inverted: Bool, contents: List CharOrSymbol }
   | ParsedSet (List ParsedElement)
   | ParsedCapture ParsedElement
+  | ParsedIfAtStart ParsedElement
+  | ParsedIfAtEnd ParsedElement
   | ParsedIfFollowedBy { expression: ParsedElement, successor: ParsedElement }
+  | ParsedIfNotFollowedBy { expression: ParsedElement, successor: ParsedElement }
   | ParsedRangedRepetition { expression : ParsedElement, minimum: Int, maximum: Int, minimal: Bool }
+  | ParsedAnyRepetition { expression : ParsedElement, minimal: Bool }
+  | ParsedAtLeastOne { expression : ParsedElement, minimal: Bool }
   | ParsedOptional { expression: ParsedElement, minimal: Bool }
   | ParsedFlags { expression : ParsedElement, flags : RegexFlags }
 
@@ -37,9 +42,14 @@ type CompiledElement
   | CompiledCharset { inverted: Bool, contents: String }
   | CompiledSet (List CompiledElement)
   | CompiledCapture CompiledElement
+  | CompiledIfAtEnd CompiledElement
+  | CompiledIfAtStart CompiledElement
   | CompiledIfFollowedBy { expression: CompiledElement, successor: CompiledElement }
+  | CompiledIfNotFollowedBy { expression: CompiledElement, successor: CompiledElement }
   | CompiledRangedRepetition { expression : CompiledElement, minimum: Int, maximum: Int, minimal: Bool }
   | CompiledOptional { expression: CompiledElement, minimal: Bool }
+  | CompiledAtLeastOne { expression: CompiledElement, minimal: Bool }
+  | CompiledAnyRepetition { expression: CompiledElement, minimal: Bool }
   | CompiledFlags { expression : CompiledElement, flags : RegexFlags }
 
 
@@ -85,9 +95,17 @@ insert position element nodes = case element of
   CompiledIfFollowedBy { expression, successor } ->
     let
       (expressionId, nodesWithExpression) = insert (Vec2 -200 0 |> Vec2.add position) expression nodes
-      (successorId, nodesWithChildren) = insert (Vec2 -200 -75 |> Vec2.add position) successor nodesWithExpression
+      (successorId, nodesWithChildren) = insert (Vec2 -200 75 |> Vec2.add position) successor nodesWithExpression
     in IdMap.insert
       (NodeView position (IfFollowedByNode { expression = Just expressionId, successor = Just successorId }))
+      nodesWithChildren
+
+  CompiledIfNotFollowedBy { expression, successor } ->
+    let
+      (expressionId, nodesWithExpression) = insert (Vec2 -200 0 |> Vec2.add position) expression nodes
+      (successorId, nodesWithChildren) = insert (Vec2 -200 75 |> Vec2.add position) successor nodesWithExpression
+    in IdMap.insert
+      (NodeView position (IfNotFollowedByNode { expression = Just expressionId, successor = Just successorId }))
       nodesWithChildren
 
   CompiledRangedRepetition { expression, minimum, maximum, minimal } ->
@@ -98,9 +116,27 @@ insert position element nodes = case element of
     let (expressionId, nodesWithChild) = insert (Vec2 -200 0 |> Vec2.add position) expression nodes
     in IdMap.insert (NodeView position (OptionalNode { expression = Just expressionId, minimal = minimal })) nodesWithChild
 
+  CompiledAtLeastOne { expression, minimal } ->
+    let (expressionId, nodesWithChild) = insert (Vec2 -200 0 |> Vec2.add position) expression nodes
+    in IdMap.insert (NodeView position (AtLeastOneNode { expression = Just expressionId, minimal = minimal })) nodesWithChild
+
+  CompiledAnyRepetition { expression, minimal } ->
+    let (expressionId, nodesWithChild) = insert (Vec2 -200 0 |> Vec2.add position) expression nodes
+    in IdMap.insert (NodeView position (AnyRepetitionNode { expression = Just expressionId, minimal = minimal })) nodesWithChild
+
+    -- TODO DRY
   CompiledFlags { expression, flags } ->
     let (expressionId, nodesWithChild) = insert (Vec2 -200 0 |> Vec2.add position) expression nodes
     in IdMap.insert (NodeView position (FlagsNode { expression = Just expressionId, flags = flags })) nodesWithChild
+
+  CompiledIfAtEnd expression ->
+    let (expressionId, nodesWithChild) = insert (Vec2 -200 0 |> Vec2.add position) expression nodes
+    in IdMap.insert (NodeView position (IfAtEndNode <| Just expressionId)) nodesWithChild
+
+  CompiledIfAtStart expression ->
+    let (expressionId, nodesWithChild) = insert (Vec2 -200 0 |> Vec2.add position) expression nodes
+    in IdMap.insert (NodeView position (IfAtStartNode <| Just expressionId)) nodesWithChild
+
 
 
             
@@ -110,7 +146,7 @@ insert position element nodes = case element of
 
 
 
-
+-- TODO DRY
 compile : ParsedElement -> CompiledElement
 compile element = case element of
   ParsedSet [ onlyOneOption ] -> compile onlyOneOption
@@ -120,7 +156,13 @@ compile element = case element of
   ParsedCharOrSymbol charOrSymbol -> compileCharOrSymbol charOrSymbol
   ParsedCharset set -> compileCharset set
 
+  ParsedIfAtStart expression -> CompiledIfAtStart <| compile expression
+  ParsedIfAtEnd expression -> CompiledIfAtEnd <| compile expression
+
   ParsedIfFollowedBy { expression, successor } -> CompiledIfFollowedBy
+    { expression = compile expression, successor = compile successor }
+
+  ParsedIfNotFollowedBy { expression, successor } -> CompiledIfNotFollowedBy
     { expression = compile expression, successor = compile successor }
 
   ParsedRangedRepetition { expression, minimum, maximum, minimal } -> CompiledRangedRepetition
@@ -129,8 +171,16 @@ compile element = case element of
   ParsedOptional { expression, minimal } -> CompiledOptional
     { expression = compile expression, minimal = minimal }
 
+  ParsedAnyRepetition { expression, minimal } -> CompiledAnyRepetition
+    { expression = compile expression, minimal = minimal }
+
+  ParsedAtLeastOne { expression, minimal } -> CompiledAtLeastOne
+    { expression = compile expression, minimal = minimal }
+
   ParsedFlags { expression, flags } -> CompiledFlags
     { expression = compile expression, flags = flags }
+
+
 
 
 compileCharOrSymbol charOrSymbol = case charOrSymbol of
@@ -174,9 +224,12 @@ compileCharsetOption member (chars, options) = case member of
 
 
 
-parse : String -> ParseResult ParsedElement
-parse regex = parseSet regex |> Result.map Tuple.first
 
+parse : String -> ParseResult ParsedElement
+parse regex = parseFlags regex |> Result.map Tuple.first
+
+parseFlags : String -> ParseSubResult ParsedElement
+parseFlags text = parseSet text -- TODO
 
 parseSet : String -> ParseSubResult ParsedElement
 parseSet text =
@@ -211,15 +264,107 @@ extendSequence current = case current of
         |> extendSequence
 
 
-
 parsePositioned : String -> ParseSubResult ParsedElement
-parsePositioned text = parseLookAhead text -- TODO
+parsePositioned text = parseMustBeAtLineEnd text
+
+parseMustBeAtLineEnd : String -> ParseSubResult ParsedElement
+parseMustBeAtLineEnd text =
+  let
+    extract (content, rest) = (content, skipIfNext "$" rest)
+    toParsedNode (content, (mustBeAtEnd, rest)) =
+      if mustBeAtEnd then (ParsedIfAtEnd content, rest)
+      else (content, rest)
+
+  in parseMustBeAtLineStart text
+    |> Result.map extract |> Result.map toParsedNode
+
+parseMustBeAtLineStart : String -> ParseSubResult ParsedElement
+parseMustBeAtLineStart text =
+  let
+    (mustBeAtLineStart, rest) =  skipIfNext "^" text
+    contentResult = parseLookAhead rest
+
+  in if mustBeAtLineStart
+    then contentResult |> Result.map (Tuple.mapFirst ParsedIfAtStart)
+    else contentResult
 
 parseLookAhead : String -> ParseSubResult ParsedElement
-parseLookAhead text = parseQuantified text -- TODO
+parseLookAhead text =
+  let
+    expressionResult = parseQuantified text
+    extract (content, rest) =
+      if String.startsWith "(?=" rest
+        then parseParentheses (\s -> ParsedIfFollowedBy { expression = content, successor = s }) "(?=" rest
+
+      else if String.startsWith "(?!" rest
+        then parseParentheses (\s -> ParsedIfNotFollowedBy { expression = content, successor = s }) "(?!" rest
+
+      else Ok(content, rest)
+
+  in expressionResult |> Result.andThen extract
+
+
 
 parseQuantified : String -> ParseSubResult ParsedElement
-parseQuantified text = parseAtom text -- TODO
+parseQuantified text = parseOptional text
+
+
+parseOptional : String -> ParseSubResult ParsedElement
+parseOptional text =
+  let
+    expressionResult = parseAtLeastOne text
+    parseIt (expression, rest) =
+      let
+        (optional, rest1) = skipIfNext "?" rest
+        (isLazy, rest2) = if optional
+          then skipIfNext "?" rest1
+          else (False, rest1)
+
+      in if optional
+        then (ParsedOptional { expression = expression, minimal = isLazy }, rest2)
+        else (expression, rest2)
+
+  in expressionResult |> Result.map parseIt
+
+-- TODO DRY
+parseAtLeastOne : String -> ParseSubResult ParsedElement
+parseAtLeastOne text =
+  let
+    expressionResult = parseAnyRepetition text
+    parseIt (expression, rest) =
+      let
+        (optional, rest1) = skipIfNext "+" rest
+        (isLazy, rest2) = if optional
+          then skipIfNext "?" rest1
+          else (False, rest1)
+
+      in if optional
+        then (ParsedAtLeastOne { expression = expression, minimal = isLazy }, rest2)
+        else (expression, rest2)
+
+  in expressionResult |> Result.map parseIt
+
+
+parseAnyRepetition : String -> ParseSubResult ParsedElement
+parseAnyRepetition text =
+  let
+    expressionResult = parseRangedRepetition text
+    parseIt (expression, rest) =
+      let
+        (optional, rest1) = skipIfNext "*" rest
+        (isLazy, rest2) = if optional
+          then skipIfNext "?" rest1
+          else (False, rest1)
+
+      in if optional
+        then (ParsedAnyRepetition { expression = expression, minimal = isLazy }, rest2)
+        else (expression, rest2)
+
+  in expressionResult |> Result.map parseIt
+
+
+parseRangedRepetition : String -> ParseSubResult ParsedElement
+parseRangedRepetition text = parseAtom text -- TODO, also ExactRepetition!
 
 -- an atom is any thing which has the highest precedence possible, especially brackets and characters
 parseAtom : String -> ParseSubResult ParsedElement
@@ -234,20 +379,16 @@ parseAtom text =
     else parseGenericAtomicChar text
 
 
-parseGroup : String -> ParseSubResult ParsedElement
-parseGroup text =
-  let
-    contents = skipOrErr "(?:" text
-    result = contents |> Result.andThen parseSet
-  in result |> Result.map (Tuple.mapSecond (String.dropLeft 1)) -- drop the closing parentheses
+parseGroup = parseParentheses identity "(?:"
+parseCapturingGroup = parseParentheses ParsedCapture "("
 
-parseCapturingGroup : String -> ParseSubResult ParsedElement
-parseCapturingGroup text =
+parseParentheses : (ParsedElement -> ParsedElement) -> String -> String -> ParseSubResult ParsedElement
+parseParentheses map openParens text =
   let
-    contents = skipOrErr "(" text
+    contents = skipOrErr openParens text
     result = contents |> Result.andThen parseSet
   in result |> Result.map (Tuple.mapSecond (String.dropLeft 1)) -- drop the closing parentheses
-    |> Result.map (Tuple.mapFirst ParsedCapture)
+    |> Result.map (Tuple.mapFirst map)
 
 parseGenericAtomicChar : String -> ParseSubResult ParsedElement
 parseGenericAtomicChar text = case text |> skipIfNext "." of

@@ -109,7 +109,7 @@ update message model =
           NoResult -> { model | search = Nothing }
           InsertPrototype prototype -> stopEditingExampleText (insertNode prototype model)
           ParseRegex regex -> stopEditingExampleText
-            { model | search = Nothing, nodes = parseRegexNodes model.view model.nodes regex }
+            { model | search = Nothing, nodes = parseRegexNodes model.view model.nodes regex } -- TODO automatically set result as output
 
     DragModeMessage modeMessage ->
       case modeMessage of
@@ -292,7 +292,7 @@ updateCache : Model -> Model -> Model
 updateCache model fallback =
   let
     example = model.exampleText
-    regex = model.outputNode.id |> Maybe.map (buildRegex 0 model.nodes)
+    regex = model.outputNode.id |> Maybe.map (buildRegex model.nodes)
 
   in if regex == Just (Err cycles)
     then { fallback | cyclesError = True } else

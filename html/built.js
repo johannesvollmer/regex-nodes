@@ -5782,6 +5782,9 @@ var elm$core$Basics$composeR = F3(
 		return g(
 			f(x));
 	});
+var elm$core$Basics$identity = function (x) {
+	return x;
+};
 var elm$core$Result$andThen = F2(
 	function (callback, result) {
 		if (!result.$) {
@@ -5828,8 +5831,8 @@ var elm$core$Tuple$mapSecond = F2(
 			x,
 			func(y));
 	});
-var author$project$Build$buildExpression = F4(
-	function (cost, nodes, ownPrecedence, nodeId) {
+var author$project$Build$buildExpression = F5(
+	function (childMayNeedParens, cost, nodes, ownPrecedence, nodeId) {
 		if (_Utils_cmp(cost, author$project$Build$maxBuildCost) > 0) {
 			return elm$core$Result$Err(author$project$Build$cycles);
 		} else {
@@ -5839,10 +5842,10 @@ var author$project$Build$buildExpression = F4(
 			} else {
 				var id = nodeId.a;
 				var parens = function (node) {
-					return A2(
+					return childMayNeedParens ? A2(
 						author$project$Build$parenthesesForPrecedence,
 						ownPrecedence,
-						author$project$Build$precedence(node));
+						author$project$Build$precedence(node)) : elm$core$Basics$identity;
 				};
 				var nodeResult = A2(
 					author$project$Build$okOrErr,
@@ -5871,12 +5874,12 @@ var author$project$Build$buildExpression = F4(
 var author$project$Build$buildNodeExpression = F3(
 	function (cost, nodes, node) {
 		var ownPrecedence = author$project$Build$precedence(node);
-		var build = F2(
-			function (depth, child) {
-				return A4(author$project$Build$buildExpression, depth, nodes, ownPrecedence, child);
+		var build = F3(
+			function (childParens, depth, child) {
+				return A5(author$project$Build$buildExpression, childParens, depth, nodes, ownPrecedence, child);
 			});
-		var buildMember = F2(
-			function (element, lastResult) {
+		var buildMember = F3(
+			function (childParens, element, lastResult) {
 				return A2(
 					elm$core$Result$andThen,
 					function (_n4) {
@@ -5888,34 +5891,35 @@ var author$project$Build$buildNodeExpression = F3(
 								function (e) {
 									return A2(elm$core$List$cons, e, builtMembers);
 								}),
-							A2(
+							A3(
 								build,
+								childParens,
 								currentCost,
 								elm$core$Maybe$Just(element)));
 					},
 					lastResult);
 			});
-		var buildMembers = F2(
-			function (join, members) {
+		var buildMembers = F3(
+			function (childParens, join, members) {
 				return A2(
 					elm$core$Result$map,
 					elm$core$Tuple$mapSecond(join),
 					A3(
 						elm$core$List$foldr,
-						buildMember,
+						buildMember(childParens),
 						elm$core$Result$Ok(
 							_Utils_Tuple2(cost, _List_Nil)),
 						elm$core$Array$toList(members)));
 			});
-		var buildSingleChild = F2(
-			function (map, child) {
+		var buildSingleChild = F3(
+			function (childParens, map, child) {
 				return A2(
 					elm$core$Result$map,
 					elm$core$Tuple$mapSecond(map),
-					A2(build, cost, child));
+					A3(build, childParens, cost, child));
 			});
-		var buildTwoChildren = F3(
-			function (map, child1, child2) {
+		var buildTwoChildren = F5(
+			function (map, childParens1, child1, childParens2, child2) {
 				var merge = F2(
 					function (_n2, _n3) {
 						var firstChild = _n2.b;
@@ -5925,10 +5929,10 @@ var author$project$Build$buildNodeExpression = F3(
 							totalCost,
 							A2(map, firstChild, secondChild));
 					});
-				var first = A2(build, cost, child1);
+				var first = A3(build, childParens1, cost, child1);
 				var buildSecond = function (_n1) {
 					var firstCost = _n1.a;
-					return A2(build, firstCost, child2);
+					return A3(build, childParens2, firstCost, child2);
 				};
 				return A3(
 					elm$core$Result$map2,
@@ -5978,56 +5982,60 @@ var author$project$Build$buildNodeExpression = F3(
 							author$project$Build$literal(chars)));
 				case 7:
 					var members = node.a;
-					return A2(buildMembers, author$project$Build$sequence, members);
+					return A3(buildMembers, true, author$project$Build$sequence, members);
 				case 6:
 					var options = node.a;
-					return A2(buildMembers, author$project$Build$set, options);
+					return A3(buildMembers, true, author$project$Build$set, options);
 				case 8:
 					var child = node.a;
-					return A2(buildSingleChild, author$project$Build$capture, child);
+					return A3(buildSingleChild, false, author$project$Build$capture, child);
 				case 20:
 					var expression = node.a.q;
-					return A2(build, cost, expression);
+					return A3(build, false, cost, expression);
 				case 9:
 					var child = node.a;
-					return A2(buildSingleChild, author$project$Build$ifAtEnd, child);
+					return A3(buildSingleChild, true, author$project$Build$ifAtEnd, child);
 				case 10:
 					var child = node.a;
-					return A2(buildSingleChild, author$project$Build$ifAtStart, child);
+					return A3(buildSingleChild, true, author$project$Build$ifAtStart, child);
 				case 12:
 					var expression = node.a.q;
 					var successor = node.a.cY;
-					return A3(buildTwoChildren, author$project$Build$ifNotFollowedBy, successor, expression);
+					return A5(buildTwoChildren, author$project$Build$ifNotFollowedBy, false, successor, true, expression);
 				case 11:
 					var expression = node.a.q;
 					var successor = node.a.cY;
-					return A3(buildTwoChildren, author$project$Build$ifFollowedBy, successor, expression);
+					return A5(buildTwoChildren, author$project$Build$ifFollowedBy, false, successor, true, expression);
 				case 13:
 					var expression = node.a.q;
 					var minimal = node.a.aj;
-					return A2(
+					return A3(
 						buildSingleChild,
+						true,
 						author$project$Build$optional(minimal),
 						expression);
 				case 14:
 					var expression = node.a.q;
 					var minimal = node.a.aj;
-					return A2(
+					return A3(
 						buildSingleChild,
+						true,
 						author$project$Build$atLeastOne(minimal),
 						expression);
 				case 15:
 					var expression = node.a.q;
 					var minimal = node.a.aj;
-					return A2(
+					return A3(
 						buildSingleChild,
+						true,
 						author$project$Build$anyRepetition(minimal),
 						expression);
 				case 19:
 					var expression = node.a.q;
 					var count = node.a.bG;
-					return A2(
+					return A3(
 						buildSingleChild,
+						true,
 						author$project$Build$exactRepetition(count),
 						expression);
 				case 16:
@@ -6035,24 +6043,27 @@ var author$project$Build$buildNodeExpression = F3(
 					var minimum = node.a.dy;
 					var maximum = node.a.dw;
 					var minimal = node.a.aj;
-					return A2(
+					return A3(
 						buildSingleChild,
+						true,
 						A3(author$project$Build$rangedRepetition, minimal, minimum, maximum),
 						expression);
 				case 17:
 					var expression = node.a.q;
 					var count = node.a.bG;
 					var minimal = node.a.aj;
-					return A2(
+					return A3(
 						buildSingleChild,
+						true,
 						A2(author$project$Build$minimumRepetition, minimal, count),
 						expression);
 				default:
 					var expression = node.a.q;
 					var count = node.a.bG;
 					var minimal = node.a.aj;
-					return A2(
+					return A3(
 						buildSingleChild,
+						true,
 						A2(author$project$Build$maximumRepetition, minimal, count),
 						expression);
 			}
@@ -6078,8 +6089,8 @@ var elm$core$Maybe$map = F2(
 			return elm$core$Maybe$Nothing;
 		}
 	});
-var author$project$Build$buildRegex = F3(
-	function (stack, nodes, id) {
+var author$project$Build$buildRegex = F2(
+	function (nodes, id) {
 		var nodeView = A2(author$project$IdMap$get, id, nodes);
 		var options = function () {
 			var _n1 = A2(
@@ -6095,9 +6106,10 @@ var author$project$Build$buildRegex = F3(
 				return author$project$Model$defaultFlags;
 			}
 		}();
-		var expression = A4(
+		var expression = A5(
 			author$project$Build$buildExpression,
-			stack,
+			false,
+			0,
 			nodes,
 			0,
 			elm$core$Maybe$Just(id));
@@ -6258,7 +6270,7 @@ var author$project$Update$updateCache = F2(
 	function (model, fallback) {
 		var regex = A2(
 			elm$core$Maybe$map,
-			A2(author$project$Build$buildRegex, 0, model.cC),
+			author$project$Build$buildRegex(model.cC),
 			model.cI.cj);
 		var example = model.cf;
 		if (_Utils_eq(
@@ -6718,7 +6730,7 @@ var author$project$Parse$insert = F3(
 					author$project$Model$SetNode(
 						elm$core$Array$fromList(children)));
 				return A2(author$project$IdMap$insert, node, newNodes);
-			case 6:
+			case 8:
 				var expression = element.a.q;
 				var successor = element.a.cY;
 				var _n4 = A3(
@@ -6736,7 +6748,7 @@ var author$project$Parse$insert = F3(
 					A2(
 						author$project$Vec2$add,
 						position,
-						A2(author$project$Vec2$Vec2, -200, -75)),
+						A2(author$project$Vec2$Vec2, -200, 75)),
 					successor,
 					nodesWithExpression);
 				var successorId = _n5.a;
@@ -6752,11 +6764,9 @@ var author$project$Parse$insert = F3(
 								cY: elm$core$Maybe$Just(successorId)
 							})),
 					nodesWithChildren);
-			case 7:
+			case 9:
 				var expression = element.a.q;
-				var minimum = element.a.dy;
-				var maximum = element.a.dw;
-				var minimal = element.a.aj;
+				var successor = element.a.cY;
 				var _n6 = A3(
 					author$project$Parse$insert,
 					A2(
@@ -6766,47 +6776,33 @@ var author$project$Parse$insert = F3(
 					expression,
 					nodes);
 				var expressionId = _n6.a;
-				var nodesWithChild = _n6.b;
-				return A2(
-					author$project$IdMap$insert,
-					A2(
-						author$project$Model$NodeView,
-						position,
-						author$project$Model$RangedRepetitionNode(
-							{
-								q: elm$core$Maybe$Just(expressionId),
-								dw: maximum,
-								aj: minimal,
-								dy: minimum
-							})),
-					nodesWithChild);
-			case 8:
-				var expression = element.a.q;
-				var minimal = element.a.aj;
+				var nodesWithExpression = _n6.b;
 				var _n7 = A3(
 					author$project$Parse$insert,
 					A2(
 						author$project$Vec2$add,
 						position,
-						A2(author$project$Vec2$Vec2, -200, 0)),
-					expression,
-					nodes);
-				var expressionId = _n7.a;
-				var nodesWithChild = _n7.b;
+						A2(author$project$Vec2$Vec2, -200, 75)),
+					successor,
+					nodesWithExpression);
+				var successorId = _n7.a;
+				var nodesWithChildren = _n7.b;
 				return A2(
 					author$project$IdMap$insert,
 					A2(
 						author$project$Model$NodeView,
 						position,
-						author$project$Model$OptionalNode(
+						author$project$Model$IfNotFollowedByNode(
 							{
 								q: elm$core$Maybe$Just(expressionId),
-								aj: minimal
+								cY: elm$core$Maybe$Just(successorId)
 							})),
-					nodesWithChild);
-			default:
+					nodesWithChildren);
+			case 10:
 				var expression = element.a.q;
-				var flags = element.a.aa;
+				var minimum = element.a.dy;
+				var maximum = element.a.dw;
+				var minimal = element.a.aj;
 				var _n8 = A3(
 					author$project$Parse$insert,
 					A2(
@@ -6822,11 +6818,149 @@ var author$project$Parse$insert = F3(
 					A2(
 						author$project$Model$NodeView,
 						position,
+						author$project$Model$RangedRepetitionNode(
+							{
+								q: elm$core$Maybe$Just(expressionId),
+								dw: maximum,
+								aj: minimal,
+								dy: minimum
+							})),
+					nodesWithChild);
+			case 11:
+				var expression = element.a.q;
+				var minimal = element.a.aj;
+				var _n9 = A3(
+					author$project$Parse$insert,
+					A2(
+						author$project$Vec2$add,
+						position,
+						A2(author$project$Vec2$Vec2, -200, 0)),
+					expression,
+					nodes);
+				var expressionId = _n9.a;
+				var nodesWithChild = _n9.b;
+				return A2(
+					author$project$IdMap$insert,
+					A2(
+						author$project$Model$NodeView,
+						position,
+						author$project$Model$OptionalNode(
+							{
+								q: elm$core$Maybe$Just(expressionId),
+								aj: minimal
+							})),
+					nodesWithChild);
+			case 12:
+				var expression = element.a.q;
+				var minimal = element.a.aj;
+				var _n10 = A3(
+					author$project$Parse$insert,
+					A2(
+						author$project$Vec2$add,
+						position,
+						A2(author$project$Vec2$Vec2, -200, 0)),
+					expression,
+					nodes);
+				var expressionId = _n10.a;
+				var nodesWithChild = _n10.b;
+				return A2(
+					author$project$IdMap$insert,
+					A2(
+						author$project$Model$NodeView,
+						position,
+						author$project$Model$AtLeastOneNode(
+							{
+								q: elm$core$Maybe$Just(expressionId),
+								aj: minimal
+							})),
+					nodesWithChild);
+			case 13:
+				var expression = element.a.q;
+				var minimal = element.a.aj;
+				var _n11 = A3(
+					author$project$Parse$insert,
+					A2(
+						author$project$Vec2$add,
+						position,
+						A2(author$project$Vec2$Vec2, -200, 0)),
+					expression,
+					nodes);
+				var expressionId = _n11.a;
+				var nodesWithChild = _n11.b;
+				return A2(
+					author$project$IdMap$insert,
+					A2(
+						author$project$Model$NodeView,
+						position,
+						author$project$Model$AnyRepetitionNode(
+							{
+								q: elm$core$Maybe$Just(expressionId),
+								aj: minimal
+							})),
+					nodesWithChild);
+			case 14:
+				var expression = element.a.q;
+				var flags = element.a.aa;
+				var _n12 = A3(
+					author$project$Parse$insert,
+					A2(
+						author$project$Vec2$add,
+						position,
+						A2(author$project$Vec2$Vec2, -200, 0)),
+					expression,
+					nodes);
+				var expressionId = _n12.a;
+				var nodesWithChild = _n12.b;
+				return A2(
+					author$project$IdMap$insert,
+					A2(
+						author$project$Model$NodeView,
+						position,
 						author$project$Model$FlagsNode(
 							{
 								q: elm$core$Maybe$Just(expressionId),
 								aa: flags
 							})),
+					nodesWithChild);
+			case 6:
+				var expression = element.a;
+				var _n13 = A3(
+					author$project$Parse$insert,
+					A2(
+						author$project$Vec2$add,
+						position,
+						A2(author$project$Vec2$Vec2, -200, 0)),
+					expression,
+					nodes);
+				var expressionId = _n13.a;
+				var nodesWithChild = _n13.b;
+				return A2(
+					author$project$IdMap$insert,
+					A2(
+						author$project$Model$NodeView,
+						position,
+						author$project$Model$IfAtEndNode(
+							elm$core$Maybe$Just(expressionId))),
+					nodesWithChild);
+			default:
+				var expression = element.a;
+				var _n14 = A3(
+					author$project$Parse$insert,
+					A2(
+						author$project$Vec2$add,
+						position,
+						A2(author$project$Vec2$Vec2, -200, 0)),
+					expression,
+					nodes);
+				var expressionId = _n14.a;
+				var nodesWithChild = _n14.b;
+				return A2(
+					author$project$IdMap$insert,
+					A2(
+						author$project$Model$NodeView,
+						position,
+						author$project$Model$IfAtStartNode(
+							elm$core$Maybe$Just(expressionId))),
 					nodesWithChild);
 		}
 	});
@@ -6838,6 +6972,12 @@ var author$project$Parse$addCompiledElement = F3(
 	function (position, nodes, parsed) {
 		return A3(author$project$Parse$insert, position, parsed, nodes).b;
 	});
+var author$project$Parse$CompiledAnyRepetition = function (a) {
+	return {$: 13, a: a};
+};
+var author$project$Parse$CompiledAtLeastOne = function (a) {
+	return {$: 12, a: a};
+};
 var author$project$Parse$CompiledCapture = function (a) {
 	return {$: 5, a: a};
 };
@@ -6845,16 +6985,25 @@ var author$project$Parse$CompiledCharSequence = function (a) {
 	return {$: 2, a: a};
 };
 var author$project$Parse$CompiledFlags = function (a) {
-	return {$: 9, a: a};
+	return {$: 14, a: a};
 };
-var author$project$Parse$CompiledIfFollowedBy = function (a) {
+var author$project$Parse$CompiledIfAtEnd = function (a) {
 	return {$: 6, a: a};
 };
-var author$project$Parse$CompiledOptional = function (a) {
+var author$project$Parse$CompiledIfAtStart = function (a) {
+	return {$: 7, a: a};
+};
+var author$project$Parse$CompiledIfFollowedBy = function (a) {
 	return {$: 8, a: a};
 };
+var author$project$Parse$CompiledIfNotFollowedBy = function (a) {
+	return {$: 9, a: a};
+};
+var author$project$Parse$CompiledOptional = function (a) {
+	return {$: 11, a: a};
+};
 var author$project$Parse$CompiledRangedRepetition = function (a) {
-	return {$: 7, a: a};
+	return {$: 10, a: a};
 };
 var author$project$Parse$CompiledSequence = function (a) {
 	return {$: 0, a: a};
@@ -6961,6 +7110,14 @@ var author$project$Parse$compile = function (element) {
 				var set = element.a;
 				return author$project$Parse$compileCharset(set);
 			case 5:
+				var expression = element.a;
+				return author$project$Parse$CompiledIfAtStart(
+					author$project$Parse$compile(expression));
+			case 6:
+				var expression = element.a;
+				return author$project$Parse$CompiledIfAtEnd(
+					author$project$Parse$compile(expression));
+			case 7:
 				var expression = element.a.q;
 				var successor = element.a.cY;
 				return author$project$Parse$CompiledIfFollowedBy(
@@ -6968,7 +7125,15 @@ var author$project$Parse$compile = function (element) {
 						q: author$project$Parse$compile(expression),
 						cY: author$project$Parse$compile(successor)
 					});
-			case 6:
+			case 8:
+				var expression = element.a.q;
+				var successor = element.a.cY;
+				return author$project$Parse$CompiledIfNotFollowedBy(
+					{
+						q: author$project$Parse$compile(expression),
+						cY: author$project$Parse$compile(successor)
+					});
+			case 9:
 				var expression = element.a.q;
 				var minimum = element.a.dy;
 				var maximum = element.a.dw;
@@ -6980,10 +7145,26 @@ var author$project$Parse$compile = function (element) {
 						aj: minimal,
 						dy: minimum
 					});
-			case 7:
+			case 12:
 				var expression = element.a.q;
 				var minimal = element.a.aj;
 				return author$project$Parse$CompiledOptional(
+					{
+						q: author$project$Parse$compile(expression),
+						aj: minimal
+					});
+			case 10:
+				var expression = element.a.q;
+				var minimal = element.a.aj;
+				return author$project$Parse$CompiledAnyRepetition(
+					{
+						q: author$project$Parse$compile(expression),
+						aj: minimal
+					});
+			case 11:
+				var expression = element.a.q;
+				var minimal = element.a.aj;
+				return author$project$Parse$CompiledAtLeastOne(
 					{
 						q: author$project$Parse$compile(expression),
 						aj: minimal
@@ -7039,8 +7220,29 @@ var author$project$Parse$compileSequenceMember = F2(
 				compiled);
 		}
 	});
+var author$project$Parse$ParsedAnyRepetition = function (a) {
+	return {$: 10, a: a};
+};
+var author$project$Parse$ParsedAtLeastOne = function (a) {
+	return {$: 11, a: a};
+};
 var author$project$Parse$ParsedCapture = function (a) {
 	return {$: 4, a: a};
+};
+var author$project$Parse$ParsedIfAtEnd = function (a) {
+	return {$: 6, a: a};
+};
+var author$project$Parse$ParsedIfAtStart = function (a) {
+	return {$: 5, a: a};
+};
+var author$project$Parse$ParsedIfFollowedBy = function (a) {
+	return {$: 7, a: a};
+};
+var author$project$Parse$ParsedIfNotFollowedBy = function (a) {
+	return {$: 8, a: a};
+};
+var author$project$Parse$ParsedOptional = function (a) {
+	return {$: 12, a: a};
 };
 var author$project$Parse$ParsedSequence = function (a) {
 	return {$: 0, a: a};
@@ -7294,9 +7496,9 @@ var author$project$Parse$extendSequence = function (current) {
 		var error = current.a;
 		return elm$core$Result$Err(error);
 	} else {
-		var _n4 = current.a;
-		var members = _n4.a;
-		var text = _n4.b;
+		var _n18 = current.a;
+		var members = _n18.a;
+		var text = _n18.b;
 		return (elm$core$String$isEmpty(text) || (A2(elm$core$String$startsWith, ')', text) || A2(elm$core$String$startsWith, '|', text))) ? elm$core$Result$Ok(
 			_Utils_Tuple2(members, text)) : author$project$Parse$extendSequence(
 			A2(
@@ -7311,12 +7513,12 @@ var author$project$Parse$extendSet = function (current) {
 		var error = current.a;
 		return elm$core$Result$Err(error);
 	} else {
-		var _n1 = current.a;
-		var options = _n1.a;
-		var text = _n1.b;
-		var _n2 = A2(author$project$Parse$skipIfNext, '|', text);
-		if (_n2.a) {
-			var rest = _n2.b;
+		var _n15 = current.a;
+		var options = _n15.a;
+		var text = _n15.b;
+		var _n16 = A2(author$project$Parse$skipIfNext, '|', text);
+		if (_n16.a) {
+			var rest = _n16.b;
 			return author$project$Parse$extendSet(
 				A2(
 					elm$core$Result$map,
@@ -7324,46 +7526,151 @@ var author$project$Parse$extendSet = function (current) {
 						author$project$Parse$appendTo(options)),
 					author$project$Parse$parseSequence(rest)));
 		} else {
-			var rest = _n2.b;
+			var rest = _n16.b;
 			return elm$core$Result$Ok(
 				_Utils_Tuple2(options, rest));
 		}
 	}
 };
+var author$project$Parse$parseAnyRepetition = function (text) {
+	var parseIt = function (_n13) {
+		var expression = _n13.a;
+		var rest = _n13.b;
+		var _n11 = A2(author$project$Parse$skipIfNext, '*', rest);
+		var optional = _n11.a;
+		var rest1 = _n11.b;
+		var _n12 = optional ? A2(author$project$Parse$skipIfNext, '?', rest1) : _Utils_Tuple2(false, rest1);
+		var isLazy = _n12.a;
+		var rest2 = _n12.b;
+		return optional ? _Utils_Tuple2(
+			author$project$Parse$ParsedAnyRepetition(
+				{q: expression, aj: isLazy}),
+			rest2) : _Utils_Tuple2(expression, rest2);
+	};
+	var expressionResult = author$project$Parse$parseRangedRepetition(text);
+	return A2(elm$core$Result$map, parseIt, expressionResult);
+};
+var author$project$Parse$parseAtLeastOne = function (text) {
+	var parseIt = function (_n10) {
+		var expression = _n10.a;
+		var rest = _n10.b;
+		var _n8 = A2(author$project$Parse$skipIfNext, '+', rest);
+		var optional = _n8.a;
+		var rest1 = _n8.b;
+		var _n9 = optional ? A2(author$project$Parse$skipIfNext, '?', rest1) : _Utils_Tuple2(false, rest1);
+		var isLazy = _n9.a;
+		var rest2 = _n9.b;
+		return optional ? _Utils_Tuple2(
+			author$project$Parse$ParsedAtLeastOne(
+				{q: expression, aj: isLazy}),
+			rest2) : _Utils_Tuple2(expression, rest2);
+	};
+	var expressionResult = author$project$Parse$parseAnyRepetition(text);
+	return A2(elm$core$Result$map, parseIt, expressionResult);
+};
 var author$project$Parse$parseAtom = function (text) {
 	var isNext = function (character) {
 		return A2(elm$core$String$startsWith, character, text);
 	};
-	return isNext('[') ? author$project$Parse$parseCharset(text) : (isNext('(?:') ? author$project$Parse$parseGroup(text) : (isNext('(') ? author$project$Parse$parseCapturingGroup(text) : author$project$Parse$parseGenericAtomicChar(text)));
-};
-var author$project$Parse$parseCapturingGroup = function (text) {
-	var contents = A2(author$project$Parse$skipOrErr, '(', text);
-	var result = A2(elm$core$Result$andThen, author$project$Parse$parseSet, contents);
-	return A2(
-		elm$core$Result$map,
-		elm$core$Tuple$mapFirst(author$project$Parse$ParsedCapture),
-		A2(
-			elm$core$Result$map,
-			elm$core$Tuple$mapSecond(
-				elm$core$String$dropLeft(1)),
-			result));
-};
-var author$project$Parse$parseGroup = function (text) {
-	var contents = A2(author$project$Parse$skipOrErr, '(?:', text);
-	var result = A2(elm$core$Result$andThen, author$project$Parse$parseSet, contents);
-	return A2(
-		elm$core$Result$map,
-		elm$core$Tuple$mapSecond(
-			elm$core$String$dropLeft(1)),
-		result);
+	return isNext('[') ? author$project$Parse$parseCharset(text) : (isNext('(?:') ? author$project$Parse$cyclic$parseGroup()(text) : (isNext('(') ? author$project$Parse$cyclic$parseCapturingGroup()(text) : author$project$Parse$parseGenericAtomicChar(text)));
 };
 var author$project$Parse$parseLookAhead = function (text) {
-	return author$project$Parse$parseQuantified(text);
+	var extract = function (_n7) {
+		var content = _n7.a;
+		var rest = _n7.b;
+		return A2(elm$core$String$startsWith, '(?=', rest) ? A3(
+			author$project$Parse$parseParentheses,
+			function (s) {
+				return author$project$Parse$ParsedIfFollowedBy(
+					{q: content, cY: s});
+			},
+			'(?=',
+			rest) : (A2(elm$core$String$startsWith, '(?!', rest) ? A3(
+			author$project$Parse$parseParentheses,
+			function (s) {
+				return author$project$Parse$ParsedIfNotFollowedBy(
+					{q: content, cY: s});
+			},
+			'(?!',
+			rest) : elm$core$Result$Ok(
+			_Utils_Tuple2(content, rest)));
+	};
+	var expressionResult = author$project$Parse$parseQuantified(text);
+	return A2(elm$core$Result$andThen, extract, expressionResult);
 };
+var author$project$Parse$parseMustBeAtLineEnd = function (text) {
+	var toParsedNode = function (_n5) {
+		var content = _n5.a;
+		var _n6 = _n5.b;
+		var mustBeAtEnd = _n6.a;
+		var rest = _n6.b;
+		return mustBeAtEnd ? _Utils_Tuple2(
+			author$project$Parse$ParsedIfAtEnd(content),
+			rest) : _Utils_Tuple2(content, rest);
+	};
+	var extract = function (_n4) {
+		var content = _n4.a;
+		var rest = _n4.b;
+		return _Utils_Tuple2(
+			content,
+			A2(author$project$Parse$skipIfNext, '$', rest));
+	};
+	return A2(
+		elm$core$Result$map,
+		toParsedNode,
+		A2(
+			elm$core$Result$map,
+			extract,
+			author$project$Parse$parseMustBeAtLineStart(text)));
+};
+var author$project$Parse$parseMustBeAtLineStart = function (text) {
+	var _n3 = A2(author$project$Parse$skipIfNext, '^', text);
+	var mustBeAtLineStart = _n3.a;
+	var rest = _n3.b;
+	var contentResult = author$project$Parse$parseLookAhead(rest);
+	return mustBeAtLineStart ? A2(
+		elm$core$Result$map,
+		elm$core$Tuple$mapFirst(author$project$Parse$ParsedIfAtStart),
+		contentResult) : contentResult;
+};
+var author$project$Parse$parseOptional = function (text) {
+	var parseIt = function (_n2) {
+		var expression = _n2.a;
+		var rest = _n2.b;
+		var _n0 = A2(author$project$Parse$skipIfNext, '?', rest);
+		var optional = _n0.a;
+		var rest1 = _n0.b;
+		var _n1 = optional ? A2(author$project$Parse$skipIfNext, '?', rest1) : _Utils_Tuple2(false, rest1);
+		var isLazy = _n1.a;
+		var rest2 = _n1.b;
+		return optional ? _Utils_Tuple2(
+			author$project$Parse$ParsedOptional(
+				{q: expression, aj: isLazy}),
+			rest2) : _Utils_Tuple2(expression, rest2);
+	};
+	var expressionResult = author$project$Parse$parseAtLeastOne(text);
+	return A2(elm$core$Result$map, parseIt, expressionResult);
+};
+var author$project$Parse$parseParentheses = F3(
+	function (map, openParens, text) {
+		var contents = A2(author$project$Parse$skipOrErr, openParens, text);
+		var result = A2(elm$core$Result$andThen, author$project$Parse$parseSet, contents);
+		return A2(
+			elm$core$Result$map,
+			elm$core$Tuple$mapFirst(map),
+			A2(
+				elm$core$Result$map,
+				elm$core$Tuple$mapSecond(
+					elm$core$String$dropLeft(1)),
+				result));
+	});
 var author$project$Parse$parsePositioned = function (text) {
-	return author$project$Parse$parseLookAhead(text);
+	return author$project$Parse$parseMustBeAtLineEnd(text);
 };
 var author$project$Parse$parseQuantified = function (text) {
+	return author$project$Parse$parseOptional(text);
+};
+var author$project$Parse$parseRangedRepetition = function (text) {
 	return author$project$Parse$parseAtom(text);
 };
 var author$project$Parse$parseSequence = function (text) {
@@ -7384,11 +7691,28 @@ var author$project$Parse$parseSet = function (text) {
 		elm$core$Tuple$mapFirst(author$project$Parse$ParsedSet),
 		author$project$Parse$extendSet(firstOption));
 };
+function author$project$Parse$cyclic$parseCapturingGroup() {
+	return A2(author$project$Parse$parseParentheses, author$project$Parse$ParsedCapture, '(');
+}
+function author$project$Parse$cyclic$parseGroup() {
+	return A2(author$project$Parse$parseParentheses, elm$core$Basics$identity, '(?:');
+}
+var author$project$Parse$parseCapturingGroup = author$project$Parse$cyclic$parseCapturingGroup();
+author$project$Parse$cyclic$parseCapturingGroup = function () {
+	return author$project$Parse$parseCapturingGroup;
+};
+var author$project$Parse$parseGroup = author$project$Parse$cyclic$parseGroup();
+author$project$Parse$cyclic$parseGroup = function () {
+	return author$project$Parse$parseGroup;
+};
+var author$project$Parse$parseFlags = function (text) {
+	return author$project$Parse$parseSet(text);
+};
 var author$project$Parse$parse = function (regex) {
 	return A2(
 		elm$core$Result$map,
 		elm$core$Tuple$first,
-		author$project$Parse$parseSet(regex));
+		author$project$Parse$parseFlags(regex));
 };
 var author$project$Parse$addParsedRegexNodeOrNothing = F3(
 	function (position, nodes, regex) {
@@ -7967,9 +8291,6 @@ var elm$json$Json$Decode$errorToStringHelp = F2(
 		}
 	});
 var elm$json$Json$Encode$string = _Json_wrap;
-var elm$core$Basics$identity = function (x) {
-	return x;
-};
 var elm$json$Json$Decode$map = _Json_map1;
 var elm$json$Json$Decode$map2 = _Json_map2;
 var elm$json$Json$Decode$succeed = _Json_succeed;
@@ -8305,7 +8626,7 @@ var author$project$View$nodeWidth = function (node) {
 			var chars = node.a;
 			return (author$project$View$mainTextWidth(author$project$Model$typeNames.ba) + author$project$View$codeTextWidth(chars)) + 3;
 		case 13:
-			return author$project$View$mainTextWidth(author$project$Model$typeNames.aO);
+			return author$project$View$stringWidth(10);
 		case 6:
 			return author$project$View$mainTextWidth(author$project$Model$typeNames.aR);
 		case 20:
@@ -10675,7 +10996,8 @@ var author$project$View$viewSearch = function (query) {
 					]),
 				_List_fromArray(
 					[
-						elm$html$Html$text(query)
+						elm$html$Html$text(
+						author$project$Model$insertWhitePlaceholder(query))
 					])),
 				elm$html$Html$text(' as Nodes'),
 				A2(

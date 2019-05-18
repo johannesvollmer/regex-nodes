@@ -37,7 +37,7 @@ nodeWidth node = case node of
   CharRangeNode _ _ -> mainTextWidth typeNames.charRange
   NotInCharRangeNode _ _ -> mainTextWidth typeNames.notInCharRange
   LiteralNode chars -> mainTextWidth typeNames.literal + codeTextWidth chars + 3
-  OptionalNode _ -> mainTextWidth typeNames.optional
+  OptionalNode _ -> stringWidth 10
   SetNode _ -> mainTextWidth typeNames.set
   FlagsNode _ -> mainTextWidth typeNames.flags
   IfFollowedByNode _ -> mainTextWidth typeNames.ifFollowedBy
@@ -205,6 +205,7 @@ view model =
 
       [ text ("Some actions cannot be performed due to cycles in the node graph.")
       , div [] [ text ("Make sure there are no cyclic connections. Click to dismiss.") ]
+      -- TODO or maybe the graph is just too complex, enable increasing limit in ui
       ]
     ]
 
@@ -280,7 +281,7 @@ viewSearch query =
         (\_ -> SearchMessage (FinishSearch (ParseRegex query)))
       ]
       [ text "Insert "
-      , span [ id "parse-regex" ] [ text query ]
+      , span [ id "parse-regex" ] [ text (insertWhitePlaceholder query) ]
       , text " as Nodes"
       , p [ class "description" ] [ text "Add the regular expression by converting it to a network of Nodes" ]
       ]
