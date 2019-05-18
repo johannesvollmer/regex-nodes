@@ -208,8 +208,8 @@ symbolNames =
   , tab = "Tab Char"
   , none = "Nothing"
   , any = "Anything"
-  , end = "End"
-  , start = "Start"
+  , end = "End of Text"
+  , start = "Start of Text"
   }
 
 typeNames =
