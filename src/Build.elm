@@ -10,7 +10,7 @@ import Model exposing (..)
 -- TODO detect cycles??
 
 
-maxBuildCost = 200
+maxBuildCost = 100
 cycles = "Nodes have cycles" -- TODO use enum
 
 

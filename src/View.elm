@@ -37,7 +37,7 @@ nodeWidth node = case node of
   CharRangeNode _ _ -> mainTextWidth typeNames.charRange
   NotInCharRangeNode _ _ -> mainTextWidth typeNames.notInCharRange
   LiteralNode chars -> mainTextWidth typeNames.literal + codeTextWidth chars + 3
-  OptionalNode _ -> stringWidth 10
+  OptionalNode _ -> mainTextWidth typeNames.optional
   SetNode _ -> mainTextWidth typeNames.set
   FlagsNode _ -> mainTextWidth typeNames.flags
   IfFollowedByNode _ -> mainTextWidth typeNames.ifFollowedBy

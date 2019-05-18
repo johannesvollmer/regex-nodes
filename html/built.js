@@ -5614,7 +5614,7 @@ var author$project$Build$escapeLiteral = author$project$Build$escapeChars('[]{}(
 var author$project$Build$literal = function (chars) {
 	return author$project$Build$escapeLiteral(chars);
 };
-var author$project$Build$maxBuildCost = 200;
+var author$project$Build$maxBuildCost = 100;
 var author$project$Build$maximumRepetition = F3(
 	function (min, maximum, expression) {
 		return A2(
@@ -8305,7 +8305,7 @@ var author$project$View$nodeWidth = function (node) {
 			var chars = node.a;
 			return (author$project$View$mainTextWidth(author$project$Model$typeNames.ba) + author$project$View$codeTextWidth(chars)) + 3;
 		case 13:
-			return author$project$View$stringWidth(10);
+			return author$project$View$mainTextWidth(author$project$Model$typeNames.aO);
 		case 6:
 			return author$project$View$mainTextWidth(author$project$Model$typeNames.aR);
 		case 20:
