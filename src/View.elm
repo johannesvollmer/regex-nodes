@@ -66,9 +66,7 @@ stringWidth length =  length * if length < 14 then 12 else 9
 view : Model -> Html Message
 view model =
   let
-    regex = model.outputNode.id |> Maybe.map (buildRegex 0 model.nodes)
-
-    expressionResult = regex |> Maybe.map (Result.map constructRegexLiteral)
+    expressionResult = model.cachedRegex |> Maybe.map (Result.map constructRegexLiteral)
 
     (moveDragging, connectDragId, mousePosition) = case model.dragMode of
         Just (MoveNodeDrag { mouse }) -> (True, Nothing, mouse)
@@ -205,8 +203,8 @@ view model =
       , Mouse.onClick <| always <| DismissCyclesError
       ]
 
-      [ text ("This action cannot be performed due to cycles in the node graph.")
-      , div [] [ text ("Make sure there are no cyclic connections and then try again. Click to dismiss.") ]
+      [ text ("Some actions cannot be performed due to cycles in the node graph.")
+      , div [] [ text ("Make sure there are no cyclic connections. Click to dismiss.") ]
       ]
     ]
 
@@ -638,7 +636,7 @@ viewCharsInput : String -> (String -> Message) -> Html Message
 viewCharsInput chars onChange = input
   [ type_ "text"
   , placeholder "AEIOU"
-  , value (insertWhitePlaceholder chars)
+  , value (insertWhitePlaceholder chars)-- FIXME this will reset the cursor position
   , onInput (removeWhitePlaceholder >> onChange)
   , class "chars input"
   , stopMousePropagation "mousedown"
@@ -650,7 +648,7 @@ viewCharInput : Char -> (Char -> Message) -> Html Message
 viewCharInput char onChange = input
   [ type_ "text"
   , placeholder "a"
-  , value (String.fromChar char |> insertWhitePlaceholder) -- TODO  |> cleanString
+  , value (String.fromChar char |> insertWhitePlaceholder) -- FIXME this will reset the cursor position
 
   -- Take the last char of the string
   , onInput (onChange << stringToChar char << removeWhitePlaceholder)

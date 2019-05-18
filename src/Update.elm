@@ -1,7 +1,7 @@
 module Update exposing (..)
 
 import Model exposing (..)
-import Build exposing (buildRegex, compileRegex)
+import Build exposing (buildRegex, compileRegex, cycles)
 import Vec2 exposing (Vec2)
 import Parse exposing (..)
 import Regex
@@ -216,17 +216,20 @@ parseRegexNodes view nodes regex =
 
 startNodeMove mouse node model =
   let
-    newModel =  { model
+    safeModel = { model
       | selectedNode = Just node
       , dragMode = Just (MoveNodeDrag { node = node, mouse = mouse })
-      , outputNode = if not model.outputNode.locked || model.outputNode.id == Nothing
+      }
+
+    possiblyInvalidModel = { safeModel
+      | outputNode = if not model.outputNode.locked || model.outputNode.id == Nothing
           then { id = Just node, locked = model.outputNode.locked }
           else model.outputNode
       }
 
-  in if model.outputNode.id /= newModel.outputNode.id
+  in if model.outputNode.id /= possiblyInvalidModel.outputNode.id
     -- only update cache if node really changed
-  then updateCache newModel model else newModel
+    then updateCache possiblyInvalidModel safeModel else possiblyInvalidModel
 
 stopEditingExampleText model =
   enableEditingExampleText model False
@@ -301,7 +304,7 @@ updateCache model fallback =
       compiled = regex |> Maybe.andThen (Result.map compileRegex >> Result.map Just >> Result.withDefault Nothing)
       newExample = { example | cachedMatches = Maybe.map (extractMatches multiple example.maxMatches example.contents) compiled }
 
-    in { model | exampleText = newExample, cyclesError = False } -- hide error on success
+    in { model | exampleText = newExample, cyclesError = False, cachedRegex = regex } -- hide error on success
 
 
 extractMatches : Bool -> Int -> String -> Regex.Regex -> List (String, String)
