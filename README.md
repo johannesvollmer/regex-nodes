@@ -3,6 +3,21 @@
 [This node-based regular expression editor](https://johannesvollmer.github.io/regex-nodes/) helps you understanding and editing regular expressions for use in Javascript.
 If your regular expressions are complex enough to give this editor relevance, you probably shouldn't use regular expressions, haha.
 
+# Why Nodes?
+
+One of the problems with regular expressions is
+that they get quite messy very quickly. Operator 
+precedence is not always obvious and can be misleading.
+Nodes are a visual hierarchy in contrast to a line of text,
+which cannot simply be broken into several lines or indented, 
+because that would alter the meaning of the expression.
+Nodes can be rearranged however you like.
+
+Also, Nodes offer various other advantages, such as
+reusing, grouping and parameterizing expressions, 
+and automatic optimizations.
+
+
 # Build 
 
 With elm installed on your system, run `elm make src/Main.elm --output=html/built.js`.
