@@ -47,10 +47,13 @@ BrowserStack loves Open Source, and Open Source loves BrowserStack.
     - [x] After improving parsing, add a more interesting start setup
 - [x] Build Scripts + Build to Github Pages
     - [x] Use optimized builds instead of debug builds for github pages
+- [ ] Use node width and property count when layouting parsed nodes
 - [x] Parse regex code in "Add Nodes"
     - [x] Charset `[abc]`
+        - [ ] Char ranges `[a-bc-d][^a-b]`
     - [x] Alternation `(a|b)`
     - [x] Escaped Characters `\W`
+        - [ ] Unicode literals? `\x01`
     - [x] Sequences `the( |_)`
     - [x] Look Ahead `a(?!b)`
     - [x] Quantifiers `a?b{0,3}`
@@ -58,7 +61,8 @@ BrowserStack loves Open Source, and Open Source loves BrowserStack.
         - [ ]  `b{0,3}c{1,}d{5}`
     - [x] Positioning `(^, $)`
 - [x] How to delete nodes
-    - [ ] When deleting a node, try to retain connections 
+    - [ ] Option: Delete with children
+    - [ ] Option: When deleting a node, try to retain connections 
           (If the deleted node is a single property node, 
           connect the otherwise now opened connections)
 - [x] Do not adjust example for every node move
@@ -69,6 +73,8 @@ BrowserStack loves Open Source, and Open Source loves BrowserStack.
 - [x] Tooltips
     - [ ] Custom, styled tooltips?
 - [ ] Live Explanations!!
+- [ ] Move node including all input nodes?
+- [ ] Iterative Auto-layout using physics simulation?
 - [ ] Reconnect replaced connections 
       when reverting connection prototype
 - [x] Instantiate Nodes centered to the screen

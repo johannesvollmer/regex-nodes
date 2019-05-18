@@ -8461,7 +8461,7 @@ var author$project$View$bezierSvgConnectionpath = F2(
 			A2(author$project$Vec2$Vec2, tangentX2, to.bD),
 			to);
 	});
-var author$project$Model$symbolNames = {aY: 'Anything', a1: 'Digit Char', a3: 'End', a7: 'Linebreak Char', bc: 'Non Digit Char', bd: 'Non Linebreak Char', be: 'Non Whitespace Char', bf: 'Non Word Char', bg: 'Non Word Boundary', bh: 'Nothing', bv: 'Start', bw: 'Tab Char', bz: 'Whitespace Char', bA: 'Word Char', bB: 'Word Boundary'};
+var author$project$Model$symbolNames = {aY: 'Anything', a1: 'Digit Char', a3: 'End of Text', a7: 'Linebreak Char', bc: 'Non Digit Char', bd: 'Non Linebreak Char', be: 'Non Whitespace Char', bf: 'Non Word Char', bg: 'Non Word Boundary', bh: 'Nothing', bv: 'Start of Text', bw: 'Tab Char', bz: 'Whitespace Char', bA: 'Word Char', bB: 'Word Boundary'};
 var author$project$Model$symbolProperty = F2(
 	function (properties, symbol) {
 		switch (symbol) {

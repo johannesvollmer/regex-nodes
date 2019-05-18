@@ -59,6 +59,9 @@ addParsedRegexNodeOrNothing position nodes regex = parse regex
 addCompiledElement : Vec2 -> Nodes -> CompiledElement -> Nodes
 addCompiledElement position nodes parsed = insert position parsed nodes |> Tuple.second
 
+
+-- TODO reuse existing intermediate result nodes
+
 insert : Vec2 -> CompiledElement -> Nodes -> (NodeId, Nodes)
 insert position element nodes = case element of
   CompiledSequence elements ->
@@ -126,7 +129,7 @@ insert position element nodes = case element of
     in IdMap.insert (NodeView position (FlagsNode { expression = Just expressionId, flags = flags })) nodesWithChild
 
 
-  
+
 
 
 
