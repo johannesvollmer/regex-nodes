@@ -43,6 +43,13 @@ BrowserStack loves Open Source, and Open Source loves BrowserStack.
 - [x] Build Scripts + Build to Github Pages
     - [x] Use optimized builds instead of debug builds for github pages
 - [ ] Parse regex code in "Add Nodes"
+    - [x] Charset `[abc]`
+    - [x] Alternation `(a|b)`
+    - [x] Escaped Characters `\W`
+    - [x] Sequences `the( |_)`
+    - [ ] Look Ahead `a(?!b)`
+    - [ ] Quantifiers `a?b{0,3}`
+    - [ ] Positioning `(^, $)`
 - [x] How to delete nodes
     - [ ] When deleting a node, try to retain connections 
           (If the deleted node is a single property node, connect the otherwise now opened connections)
