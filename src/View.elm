@@ -44,8 +44,6 @@ nodeWidth node = case node of
   ExactRepetitionNode _ -> mainTextWidth typeNames.exactRepetition
   SequenceNode _ -> mainTextWidth typeNames.sequence
   CaptureNode _ -> mainTextWidth typeNames.capture
-  IfAtEndNode _ -> mainTextWidth typeNames.ifAtEnd
-  IfAtStartNode _ -> mainTextWidth typeNames.ifAtStart
   IfNotFollowedByNode _ -> mainTextWidth typeNames.ifNotFollowedBy
   AtLeastOneNode _ -> mainTextWidth typeNames.atLeastOne
   AnyRepetitionNode _ -> mainTextWidth typeNames.anyRepetition
@@ -58,7 +56,7 @@ nodeWidth node = case node of
 -- Thanks, Html, for letting us hardcode those values.
 codeTextWidth = String.length >> (*) 5 >> toFloat
 mainTextWidth text = text |> String.length |> toFloat |> stringWidth
-stringWidth length =  length * if length < 14 then 12 else 9
+stringWidth length =  (Basics.max 5 length) * (if length < 14 then 13 else 9)
 
 -- VIEW
 

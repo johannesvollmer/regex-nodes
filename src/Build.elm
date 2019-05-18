@@ -107,8 +107,6 @@ buildNodeExpression cost nodes node =
 
       FlagsNode { expression } -> build False cost expression -- we use flags directly at topmost level
 
-      IfAtEndNode child -> buildSingleChild True ifAtEnd child
-      IfAtStartNode child -> buildSingleChild True ifAtStart child
       IfNotFollowedByNode { expression, successor } -> buildTwoChildren ifNotFollowedBy False successor True expression
       IfFollowedByNode { expression, successor } -> buildTwoChildren ifFollowedBy False successor True expression
 
@@ -189,8 +187,8 @@ precedence node = case node of
 
     SequenceNode _ -> 2 -- TODO collapse if only one member
 
-    IfAtEndNode _ -> 3
-    IfAtStartNode _ -> 3
+--    IfAtEndNode _ -> 3
+--    IfAtStartNode _ -> 3 can if-at-start be a symbol?
     IfNotFollowedByNode _ -> 3
     IfFollowedByNode _ -> 3
 
@@ -210,7 +208,6 @@ precedence node = case node of
     SymbolNode _ -> 5
 
 
-
 buildSymbol symbol = case symbol of
   WhitespaceChar -> "\\s"
   NonWhitespaceChar -> "\\S"
@@ -225,25 +222,8 @@ buildSymbol symbol = case symbol of
   TabChar -> "\\t"
   Never -> "(?!)"
   Always -> "(.|\\n)"
-
-
--- if all elements ok, returns (Ok elementList), if any element is err, returns (Err errorList)
-collapseResults : List (Result e k) -> Result (List e) (List k)
-collapseResults list = List.foldr accumulateResult (Ok []) list
-
-
-accumulateResult : Result e k -> Result (List e) (List k) -> Result (List e) (List k)
-accumulateResult element collapsed =
-  case collapsed of
-    Ok okList ->
-      case element of
-        Ok okElement -> Ok (okElement :: okList)
-        Err errElement -> Err [ errElement ]
-
-    Err errorList ->
-      case element of
-        Ok _ -> Err errorList
-        Err errElement -> Err (errElement :: errorList)
+  Start -> "^"
+  End -> "$"
 
 
 escapeChars pattern chars = chars |> String.toList

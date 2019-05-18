@@ -101,8 +101,6 @@ type Node
 
   | CaptureNode (Maybe NodeId)
 
-  | IfAtEndNode (Maybe NodeId)
-  | IfAtStartNode (Maybe NodeId)
   | IfFollowedByNode { expression : Maybe NodeId, successor : Maybe NodeId }
   | IfNotFollowedByNode { expression : Maybe NodeId, successor : Maybe NodeId }
 
@@ -133,6 +131,8 @@ type Symbol
   | TabChar
   | Never
   | Always
+  | Start
+  | End
 
 type alias Prototype =
   { name : String
@@ -144,10 +144,10 @@ type alias Prototype =
 
 prototypes : List Prototype
 prototypes =
-  [ symbolProto .whitespace (SymbolNode WhitespaceChar)
-  , symbolProto .nonWhitespace (SymbolNode NonWhitespaceChar)
-  , symbolProto .digit (SymbolNode DigitChar)
-  , symbolProto .nonDigit (SymbolNode NonDigitChar)
+  [ symbolProto .whitespace WhitespaceChar
+  , symbolProto .nonWhitespace NonWhitespaceChar
+  , symbolProto .digit DigitChar
+  , symbolProto .nonDigit NonDigitChar
   
   , typeProto .charset (CharSetNode "AEIOU")
   , typeProto .set (SetNode (Array.fromList []))
@@ -163,35 +163,35 @@ prototypes =
   , typeProto .atLeastOne (AtLeastOneNode { expression = Nothing, minimal = False })
   , typeProto .anyRepetition (AnyRepetitionNode { expression = Nothing, minimal = False })
 
-  , typeProto .ifAtEnd (IfAtEndNode Nothing)
-  , typeProto .ifAtStart (IfAtStartNode Nothing)
+  , symbolProto .end End
+  , symbolProto .start Start
   , typeProto .ifFollowedBy (IfFollowedByNode { expression = Nothing, successor = Nothing })
   , typeProto .ifNotFollowedBy (IfNotFollowedByNode { expression = Nothing, successor = Nothing })
 
-  , symbolProto .wordBoundary (SymbolNode WordBoundary)
-  , symbolProto .nonWordBoundary (SymbolNode NonWordBoundary)
+  , symbolProto .wordBoundary WordBoundary
+  , symbolProto .nonWordBoundary NonWordBoundary
 
   , typeProto .rangedRepetition (RangedRepetitionNode { expression = Nothing, minimum = 2, maximum = 4, minimal = False })
   , typeProto .minimumRepetition (MinimumRepetitionNode { expression = Nothing, count = 2, minimal = False })
   , typeProto .maximumRepetition (MaximumRepetitionNode { expression = Nothing, count = 4, minimal = False })
   , typeProto .exactRepetition (ExactRepetitionNode { expression = Nothing, count = 3 })
 
-  , symbolProto .word (SymbolNode WordChar)
-  , symbolProto .nonWord (SymbolNode NonWordChar)
-  , symbolProto .lineBreak (SymbolNode LinebreakChar)
-  , symbolProto .nonLineBreak (SymbolNode NonLinebreakChar)
-  , symbolProto .tab (SymbolNode TabChar)
+  , symbolProto .word WordChar
+  , symbolProto .nonWord NonWordChar
+  , symbolProto .lineBreak LinebreakChar
+  , symbolProto .nonLineBreak NonLinebreakChar
+  , symbolProto .tab TabChar
 
   , typeProto .flags (FlagsNode { expression = Nothing, flags = defaultFlags })
   , typeProto .capture (CaptureNode Nothing)
 
-  , symbolProto .none (SymbolNode Never)
-  , symbolProto .any (SymbolNode Always)
+  , symbolProto .none Never
+  , symbolProto .any Always
   ]
 
 
 typeProto getter prototype = Prototype (getter typeNames) prototype (getter typeDescriptions)
-symbolProto getter prototype = Prototype (getter symbolNames) prototype (getter symbolDescriptions)
+symbolProto getter symbol = Prototype (getter symbolNames) (SymbolNode symbol) (getter symbolDescriptions)
 
 
 symbolNames =
@@ -208,6 +208,8 @@ symbolNames =
   , tab = "Tab Char"
   , none = "Nothing"
   , any = "Anything"
+  , end = "End"
+  , start = "Start"
   }
 
 typeNames =
@@ -219,8 +221,6 @@ typeNames =
   , optional = "Optional"
   , set = "Any Of"
   , capture = "Capture"
-  , ifAtEnd = "If At End Of Line"
-  , ifAtStart = "If At Start Of Line"
   , ifNotFollowedBy = "If Not Followed By"
   , sequence = "Sequence"
   , flags = "Configuration"
@@ -247,6 +247,8 @@ symbolDescriptions =
   , tab = "Matches the tab char `\\t`"
   , none = "Matches nothing ever, really"
   , any = "Matches any char, including linebreaks and whitespace"
+  , end = "The end of line if Multiline Matches are enabled, or the end of the text otherwise"
+  , start = "The start of line if Multiline Matches are enabled, or the start of the text otherwise"
   }
 
 
@@ -259,8 +261,6 @@ typeDescriptions =
   , optional = "Allow omitting this expression and match anyways"
   , set = "Matches, where at least one of the options matches"
   , capture = "Capture this expression for later use"
-  , ifAtEnd = "Match this expression only if a linebreak follows"
-  , ifAtStart = "Match this expression only if it follows a linebreak"
   , ifNotFollowedBy = "Match this expression only if the successor is not matched"
   , sequence = "Matches, where all members in the exact order are matched one after another"
   , flags = "Configure how the whole regex operates"
@@ -307,7 +307,8 @@ symbolProperty properties symbol = case symbol of
   TabChar -> properties.tab
   Never -> properties.none
   Always -> properties.any
-
+  Start -> properties.start
+  End -> properties.end
 
 -- TODO DRY, like:    getProperties: Node -> List Property,
 -- type alias Property = { inputs, name, description, has Output, updateValue ... }
@@ -417,16 +418,6 @@ nodeProperties node =
           (ConnectingProperty followed.successor (IfNotFollowedByNode << updateSuccessor followed)) False
       ]
 
-    IfAtEndNode atEnd ->
-      [ Property typeNames.ifAtEnd typeDescriptions.ifAtEnd
-        (ConnectingProperty atEnd IfAtEndNode) True
-      ]
-
-    IfAtStartNode atStart ->
-      [ Property typeNames.ifAtStart typeDescriptions.ifAtStart
-        (ConnectingProperty atStart IfAtStartNode) True
-      ]
-
     OptionalNode option ->
       [ Property typeNames.optional typeDescriptions.optional
         (ConnectingProperty option.expression (OptionalNode << updateExpression option)) True
@@ -519,8 +510,6 @@ onNodeDeleted deleted node =
     SetNode members -> SetNode <| Array.filter ((/=) deleted) members
     SequenceNode members -> SequenceNode <| Array.filter ((/=) deleted) members
     CaptureNode child -> CaptureNode <| ifNotDeleted deleted child
-    IfAtEndNode child -> IfAtEndNode <| ifNotDeleted deleted child
-    IfAtStartNode child -> IfAtStartNode <| ifNotDeleted deleted child
 
     OptionalNode child -> OptionalNode <| ifExpressionNotDeleted deleted child
     AtLeastOneNode child -> AtLeastOneNode <| ifExpressionNotDeleted deleted child

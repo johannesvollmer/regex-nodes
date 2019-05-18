@@ -23,8 +23,6 @@ type ParsedElement
   | ParsedCharset { inverted: Bool, contents: List CharOrSymbol }
   | ParsedSet (List ParsedElement)
   | ParsedCapture ParsedElement
-  | ParsedIfAtStart ParsedElement
-  | ParsedIfAtEnd ParsedElement
   | ParsedIfFollowedBy { expression: ParsedElement, successor: ParsedElement }
   | ParsedIfNotFollowedBy { expression: ParsedElement, successor: ParsedElement }
   | ParsedRangedRepetition { expression : ParsedElement, minimum: Int, maximum: Int, minimal: Bool }
@@ -42,8 +40,6 @@ type CompiledElement
   | CompiledCharset { inverted: Bool, contents: String }
   | CompiledSet (List CompiledElement)
   | CompiledCapture CompiledElement
-  | CompiledIfAtEnd CompiledElement
-  | CompiledIfAtStart CompiledElement
   | CompiledIfFollowedBy { expression: CompiledElement, successor: CompiledElement }
   | CompiledIfNotFollowedBy { expression: CompiledElement, successor: CompiledElement }
   | CompiledRangedRepetition { expression : CompiledElement, minimum: Int, maximum: Int, minimal: Bool }
@@ -129,17 +125,6 @@ insert position element nodes = case element of
     let (expressionId, nodesWithChild) = insert (Vec2 -200 0 |> Vec2.add position) expression nodes
     in IdMap.insert (NodeView position (FlagsNode { expression = Just expressionId, flags = flags })) nodesWithChild
 
-  CompiledIfAtEnd expression ->
-    let (expressionId, nodesWithChild) = insert (Vec2 -200 0 |> Vec2.add position) expression nodes
-    in IdMap.insert (NodeView position (IfAtEndNode <| Just expressionId)) nodesWithChild
-
-  CompiledIfAtStart expression ->
-    let (expressionId, nodesWithChild) = insert (Vec2 -200 0 |> Vec2.add position) expression nodes
-    in IdMap.insert (NodeView position (IfAtStartNode <| Just expressionId)) nodesWithChild
-
-
-
-            
 
   
 
@@ -155,9 +140,6 @@ compile element = case element of
   ParsedCapture child -> CompiledCapture <| compile child
   ParsedCharOrSymbol charOrSymbol -> compileCharOrSymbol charOrSymbol
   ParsedCharset set -> compileCharset set
-
-  ParsedIfAtStart expression -> CompiledIfAtStart <| compile expression
-  ParsedIfAtEnd expression -> CompiledIfAtEnd <| compile expression
 
   ParsedIfFollowedBy { expression, successor } -> CompiledIfFollowedBy
     { expression = compile expression, successor = compile successor }
@@ -259,34 +241,10 @@ extendSequence current = case current of
   Ok (members, text) ->
     if String.isEmpty text || String.startsWith ")" text || String.startsWith "|" text
       then Ok (members, text)
-      else parsePositioned text
+      else parseLookAhead text
         |> Result.map (Tuple.mapFirst (appendTo members))
         |> extendSequence
 
-
-parsePositioned : String -> ParseSubResult ParsedElement
-parsePositioned text = parseMustBeAtLineEnd text
-
-parseMustBeAtLineEnd : String -> ParseSubResult ParsedElement
-parseMustBeAtLineEnd text =
-  let
-    extract (content, rest) = (content, skipIfNext "$" rest)
-    toParsedNode (content, (mustBeAtEnd, rest)) =
-      if mustBeAtEnd then (ParsedIfAtEnd content, rest)
-      else (content, rest)
-
-  in parseMustBeAtLineStart text
-    |> Result.map extract |> Result.map toParsedNode
-
-parseMustBeAtLineStart : String -> ParseSubResult ParsedElement
-parseMustBeAtLineStart text =
-  let
-    (mustBeAtLineStart, rest) =  skipIfNext "^" text
-    contentResult = parseLookAhead rest
-
-  in if mustBeAtLineStart
-    then contentResult |> Result.map (Tuple.mapFirst ParsedIfAtStart)
-    else contentResult
 
 parseLookAhead : String -> ParseSubResult ParsedElement
 parseLookAhead text =
@@ -391,11 +349,14 @@ parseParentheses map openParens text =
     |> Result.map (Tuple.mapFirst map)
 
 parseGenericAtomicChar : String -> ParseSubResult ParsedElement
-parseGenericAtomicChar text = case text |> skipIfNext "." of
-  (True, rest) -> Ok (ParsedCharOrSymbol <| Escaped NonLinebreakChar, rest)
-  (False, rest) -> rest
-      |> parseAtomicChar (maybeOptions symbolizeLetterbased symbolizeTabLinebreak)
-      |> Result.map (Tuple.mapFirst ParsedCharOrSymbol)
+parseGenericAtomicChar text =
+ case String.uncons text of
+   Just ('.', rest) -> Ok (ParsedCharOrSymbol <| Escaped NonLinebreakChar, rest)
+   Just ('$', rest) -> Ok (ParsedCharOrSymbol <| Escaped End, rest)
+   Just ('^', rest) -> Ok (ParsedCharOrSymbol <| Escaped Start, rest)
+   _ -> text
+     |> parseAtomicChar (maybeOptions symbolizeLetterbased symbolizeTabLinebreak)
+     |> Result.map (Tuple.mapFirst ParsedCharOrSymbol)
 
 
 symbolizeTabLinebreak : Char -> Maybe Symbol
