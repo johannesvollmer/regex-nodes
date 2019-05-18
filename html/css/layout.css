@@ -165,6 +165,8 @@ header img {
   display: flex;
   flex-direction: row;
   align-items: stretch;
+  max-height: 40vh;
+  overflow-y: auto;
 
   font-size: 28px;
 }
@@ -174,6 +176,7 @@ header img {
 }
 
 #expression-result code {
+  overflow-y: auto;
   text-align: center;
   flex-grow: 1;
   padding: 12px;

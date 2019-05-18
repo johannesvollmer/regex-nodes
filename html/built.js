@@ -4450,7 +4450,7 @@ function _Browser_load(url)
 }
 var author$project$IdMap$IdMap = F2(
 	function (dict, nextId) {
-		return {o: dict, aL: nextId};
+		return {k: dict, aL: nextId};
 	});
 var elm$core$Dict$RBEmpty_elm_builtin = {$: -2};
 var elm$core$Dict$empty = elm$core$Dict$RBEmpty_elm_builtin;
@@ -4608,7 +4608,7 @@ var elm$core$Dict$isEmpty = function (dict) {
 	}
 };
 var author$project$IdMap$isEmpty = function (idMap) {
-	return elm$core$Dict$isEmpty(idMap.o);
+	return elm$core$Dict$isEmpty(idMap.k);
 };
 var author$project$Model$CreateConnection = function (a) {
 	return {$: 3, a: a};
@@ -5047,7 +5047,7 @@ var author$project$IdMap$remove = F2(
 		return _Utils_update(
 			idMap,
 			{
-				o: A2(elm$core$Dict$remove, id, idMap.o)
+				k: A2(elm$core$Dict$remove, id, idMap.k)
 			});
 	});
 var elm$core$Dict$map = F2(
@@ -5074,13 +5074,13 @@ var author$project$IdMap$updateAll = F2(
 		return _Utils_update(
 			idMap,
 			{
-				o: A2(
+				k: A2(
 					elm$core$Dict$map,
 					F2(
 						function (_n0, v) {
 							return mapper(v);
 						}),
-					idMap.o)
+					idMap.k)
 			});
 	});
 var author$project$Model$AnyRepetitionNode = function (a) {
@@ -5598,7 +5598,6 @@ var author$project$Build$escapeLiteral = author$project$Build$escapeChars('[]{}(
 var author$project$Build$literal = function (chars) {
 	return author$project$Build$escapeLiteral(chars);
 };
-var author$project$Build$maxBuildCost = 100;
 var author$project$Build$maximumRepetition = F3(
 	function (min, maximum, expression) {
 		return A2(
@@ -5755,7 +5754,7 @@ var elm$core$Dict$get = F2(
 	});
 var author$project$IdMap$get = F2(
 	function (id, idMap) {
-		return A2(elm$core$Dict$get, id, idMap.o);
+		return A2(elm$core$Dict$get, id, idMap.k);
 	});
 var elm$core$Basics$composeR = F3(
 	function (f, g, x) {
@@ -5813,7 +5812,7 @@ var elm$core$Tuple$mapSecond = F2(
 	});
 var author$project$Build$buildExpression = F5(
 	function (childMayNeedParens, cost, nodes, ownPrecedence, nodeId) {
-		if (_Utils_cmp(cost, author$project$Build$maxBuildCost) > 0) {
+		if (cost < 0) {
 			return elm$core$Result$Err(author$project$Build$cycles);
 		} else {
 			if (nodeId.$ === 1) {
@@ -5836,7 +5835,7 @@ var author$project$Build$buildExpression = F5(
 						elm$core$Result$map,
 						elm$core$Tuple$mapSecond(
 							parens(node)),
-						A3(author$project$Build$buildNodeExpression, cost + 1, nodes, node));
+						A3(author$project$Build$buildNodeExpression, cost - 1, nodes, node));
 				};
 				var built = A2(
 					elm$core$Result$andThen,
@@ -6044,6 +6043,37 @@ var author$project$Build$buildNodeExpression = F3(
 		}();
 		return string;
 	});
+var elm$core$Basics$composeL = F3(
+	function (g, f, x) {
+		return g(
+			f(x));
+	});
+var elm$core$Dict$sizeHelp = F2(
+	function (n, dict) {
+		sizeHelp:
+		while (true) {
+			if (dict.$ === -2) {
+				return n;
+			} else {
+				var left = dict.d;
+				var right = dict.e;
+				var $temp$n = A2(elm$core$Dict$sizeHelp, n + 1, right),
+					$temp$dict = left;
+				n = $temp$n;
+				dict = $temp$dict;
+				continue sizeHelp;
+			}
+		}
+	});
+var elm$core$Dict$size = function (dict) {
+	return A2(elm$core$Dict$sizeHelp, 0, dict);
+};
+var author$project$IdMap$size = A2(
+	elm$core$Basics$composeL,
+	elm$core$Dict$size,
+	function ($) {
+		return $.k;
+	});
 var author$project$Model$RegexBuild = F2(
 	function (expression, flags) {
 		return {q: expression, aa: flags};
@@ -6080,10 +6110,11 @@ var author$project$Build$buildRegex = F2(
 				return author$project$Model$defaultFlags;
 			}
 		}();
+		var maxCost = author$project$IdMap$size(nodes) * 6;
 		var expression = A5(
 			author$project$Build$buildExpression,
 			false,
-			0,
+			maxCost,
 			nodes,
 			0,
 			elm$core$Maybe$Just(id));
@@ -6375,7 +6406,7 @@ var elm$core$Dict$insert = F3(
 var author$project$IdMap$insertAnonymous = F2(
 	function (value, idMap) {
 		return {
-			o: A3(elm$core$Dict$insert, idMap.aL, value, idMap.o),
+			k: A3(elm$core$Dict$insert, idMap.aL, value, idMap.k),
 			aL: idMap.aL + 1
 		};
 	});
@@ -6482,7 +6513,7 @@ var author$project$IdMap$update = F3(
 		return _Utils_update(
 			idMap,
 			{
-				o: A3(elm$core$Dict$update, id, updateDictValue, idMap.o)
+				k: A3(elm$core$Dict$update, id, updateDictValue, idMap.k)
 			});
 	});
 var author$project$Update$moveNode = F4(
@@ -7946,7 +7977,7 @@ var author$project$Build$constructRegexLiteral = function (regex) {
 	return '/' + (regex.q + ('/' + ((regex.aa.dy ? 'g' : '') + ((regex.aa.b2 ? '' : 'i') + (regex.aa.bN ? 'm' : '')))));
 };
 var author$project$IdMap$toList = function (idMap) {
-	return elm$core$Dict$toList(idMap.o);
+	return elm$core$Dict$toList(idMap.k);
 };
 var author$project$Update$ConfirmDeleteNode = function (a) {
 	return {$: 7, a: a};
@@ -8246,7 +8277,7 @@ var elm$html$Html$Events$custom = F2(
 var elm$json$Json$Decode$map6 = _Json_map6;
 var mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$Event = F6(
 	function (keys, button, clientPos, offsetPos, pagePos, screenPos) {
-		return {aC: button, n: clientPos, dt: keys, dC: offsetPos, dG: pagePos, dQ: screenPos};
+		return {aC: button, o: clientPos, dt: keys, dC: offsetPos, dG: pagePos, dQ: screenPos};
 	});
 var elm$json$Json$Decode$field = _Json_decodeField;
 var elm$json$Json$Decode$int = _Json_decodeInt;
@@ -8629,11 +8660,6 @@ var author$project$View$viewExampleTexts = function (matches) {
 	};
 	return A2(elm$core$List$concatMap, render, matches);
 };
-var elm$core$Basics$composeL = F3(
-	function (g, f, x) {
-		return g(
-			f(x));
-	});
 var elm$html$Html$div = _VirtualDom_node('div');
 var elm$html$Html$textarea = _VirtualDom_node('textarea');
 var elm$html$Html$Attributes$id = elm$html$Html$Attributes$stringProperty('id');
@@ -10015,28 +10041,28 @@ var author$project$View$viewProperties = F3(
 							if (!input.$) {
 								var supplier = input.a.ap;
 								var onChange = input.a.cC;
-								return ((_Utils_cmp(event.n.a, mouse.bC) < 0) && (!_Utils_eq(supplier, elm$core$Maybe$Nothing))) ? author$project$Update$StartEditingConnection(
+								return ((_Utils_cmp(event.o.a, mouse.bC) < 0) && (!_Utils_eq(supplier, elm$core$Maybe$Nothing))) ? author$project$Update$StartEditingConnection(
 									{
-										r: author$project$Vec2$fromTuple(event.n),
+										r: author$project$Vec2$fromTuple(event.o),
 										cy: onChange(elm$core$Maybe$Nothing),
 										cz: nodeId,
 										ap: supplier
 									}) : (output ? author$project$Update$StartCreateConnection(
 									{
-										r: author$project$Vec2$fromTuple(event.n),
+										r: author$project$Vec2$fromTuple(event.o),
 										ap: nodeId
 									}) : author$project$Update$FinishDrag);
 							} else {
 								return output ? author$project$Update$StartCreateConnection(
 									{
-										r: author$project$Vec2$fromTuple(event.n),
+										r: author$project$Vec2$fromTuple(event.o),
 										ap: nodeId
 									}) : author$project$Update$FinishDrag;
 							}
 						} else {
 							return author$project$Update$UpdateDrag(
 								{
-									dz: author$project$Vec2$fromTuple(event.n)
+									dz: author$project$Vec2$fromTuple(event.o)
 								});
 						}
 					}());
@@ -10127,7 +10153,7 @@ var author$project$View$viewProperties = F3(
 						return author$project$Update$DragModeMessage(
 							author$project$Update$RealizeConnection(
 								{
-									r: author$project$Vec2$fromTuple(event.n),
+									r: author$project$Vec2$fromTuple(event.o),
 									dA: onChange(
 										elm$core$Maybe$Just(supplier)),
 									cz: nodeId
@@ -10319,7 +10345,7 @@ var author$project$View$viewNodeContent = F6(
 				bL: author$project$Update$DragModeMessage(
 					author$project$Update$StartPrepareEditingConnection(
 						{
-							r: author$project$Vec2$fromTuple(event.n),
+							r: author$project$Vec2$fromTuple(event.o),
 							cy: nodeId
 						})),
 				z: true,
@@ -10328,7 +10354,7 @@ var author$project$View$viewNodeContent = F6(
 				bL: author$project$Update$DragModeMessage(
 					author$project$Update$StartNodeMove(
 						{
-							r: author$project$Vec2$fromTuple(event.n),
+							r: author$project$Vec2$fromTuple(event.o),
 							cy: nodeId
 						})),
 				z: true,
@@ -10339,7 +10365,7 @@ var author$project$View$viewNodeContent = F6(
 			return _Utils_eq(dragMode, elm$core$Maybe$Nothing) ? author$project$Update$DragModeMessage(
 				author$project$Update$StartPrepareEditingConnection(
 					{
-						r: author$project$Vec2$fromTuple(event.n),
+						r: author$project$Vec2$fromTuple(event.o),
 						cy: nodeId
 					})) : author$project$Update$DoNothing;
 		};
@@ -10974,7 +11000,7 @@ var author$project$View$view = function (model) {
 		return (event.aC === 2) ? author$project$Update$DragModeMessage(
 			author$project$Update$StartViewMove(
 				{
-					r: author$project$Vec2$fromTuple(event.n)
+					r: author$project$Vec2$fromTuple(event.o)
 				})) : author$project$Update$Deselect;
 	};
 	var nodeViews = A2(
@@ -11035,7 +11061,7 @@ var author$project$View$view = function (model) {
 					return author$project$Update$DragModeMessage(
 						author$project$Update$UpdateDrag(
 							{
-								dz: author$project$Vec2$fromTuple(event.n)
+								dz: author$project$Vec2$fromTuple(event.o)
 							}));
 				}),
 				mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$onUp(
@@ -11094,7 +11120,7 @@ var author$project$View$view = function (model) {
 							return author$project$Update$UpdateView(
 								{
 									c3: (event.dh < 0) ? 1 : (-1),
-									dl: author$project$Vec2$fromTuple(event.dx.n)
+									dl: author$project$Vec2$fromTuple(event.dx.o)
 								});
 						}),
 						author$project$View$preventContextMenu(

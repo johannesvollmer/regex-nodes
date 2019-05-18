@@ -7,10 +7,7 @@ import Regex
 import Model exposing (..)
 
 
--- TODO detect cycles??
 
-
-maxBuildCost = 100
 cycles = "Nodes have cycles" -- TODO use enum
 
 {-
@@ -55,8 +52,6 @@ rangedRepetition min minimum maximum expression = expression
 
 ifFollowedBy successor expression = expression ++ "(?=" ++ successor ++ ")"
 ifNotFollowedBy successor expression = expression ++ "(?!" ++ successor ++ ")"
-ifAtEnd expression = expression ++ "$"
-ifAtStart expression = "^" ++ expression
 
 charset chars = "[" ++ escapeCharset chars ++ "]"
 notInCharset chars = "[^" ++ escapeCharset chars ++ "]"
@@ -123,7 +118,7 @@ buildNodeExpression cost nodes node =
 {-| Dereferences a node and returns `buildExpression` of it, handling corner cases -}
 buildExpression : Bool -> Int -> Nodes -> Int -> Maybe NodeId -> BuildResult (Int, String)
 buildExpression childMayNeedParens cost nodes ownPrecedence nodeId =
-  if cost > maxBuildCost then Err cycles
+  if cost < 0 then Err cycles
   else case nodeId of
     Nothing -> Ok (cost, "(nothing)")
 
@@ -137,17 +132,18 @@ buildExpression childMayNeedParens cost nodes ownPrecedence nodeId =
           else identity
 
         build: Node -> BuildResult (Int, String)
-        build node = buildNodeExpression (cost + 1) nodes node |> Result.map (Tuple.mapSecond (parens node))
+        build node = buildNodeExpression (cost - 1) nodes node |> Result.map (Tuple.mapSecond (parens node))
         built = nodeResult |> Result.andThen (.node >> build)
 
       in built
 
 
 
-buildRegex :Nodes -> NodeId -> BuildResult (RegexBuild)
+buildRegex : Nodes -> NodeId -> BuildResult (RegexBuild)
 buildRegex nodes id =
   let
-    expression = buildExpression False 0 nodes 0 (Just id)
+    maxCost = (IdMap.size nodes) * 6
+    expression = buildExpression False maxCost nodes 0 (Just id)
     nodeView = IdMap.get id nodes
     options = case nodeView |> Maybe.map .node of
       Just (FlagsNode { flags }) -> flags

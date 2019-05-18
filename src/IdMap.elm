@@ -52,7 +52,7 @@ toList : IdMap v -> List (Id, v)
 toList idMap = idMap.dict |> Dict.toList
 
 
-
+size = Dict.size << .dict
 
 
 
