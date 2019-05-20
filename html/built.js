@@ -6594,6 +6594,10 @@ var author$project$IdMap$insertListWith = F2(
 			_Utils_Tuple2(_List_Nil, idMap),
 			values);
 	});
+var author$project$Model$CharRangeNode = F2(
+	function (a, b) {
+		return {$: 4, a: a, b: b};
+	});
 var author$project$Model$CharSetNode = function (a) {
 	return {$: 1, a: a};
 };
@@ -6667,7 +6671,7 @@ var author$project$Parse$insert = F3(
 					author$project$Model$SequenceNode(
 						elm$core$Array$fromList(children)));
 				return A2(author$project$IdMap$insert, node, newNodes);
-			case 2:
+			case 3:
 				var sequence = element.a;
 				return A2(
 					author$project$IdMap$insert,
@@ -6685,9 +6689,20 @@ var author$project$Parse$insert = F3(
 						position,
 						author$project$Model$SymbolNode(symbol)),
 					nodes);
-			case 5:
+			case 2:
+				var _n2 = element.a;
+				var a = _n2.a;
+				var b = _n2.b;
+				return A2(
+					author$project$IdMap$insert,
+					A2(
+						author$project$Model$NodeView,
+						position,
+						A2(author$project$Model$CharRangeNode, a, b)),
+					nodes);
+			case 6:
 				var child = element.a;
-				var _n2 = A3(
+				var _n3 = A3(
 					author$project$Parse$insert,
 					A2(
 						author$project$Vec2$add,
@@ -6695,8 +6710,8 @@ var author$project$Parse$insert = F3(
 						A2(author$project$Vec2$Vec2, -200, 0)),
 					child,
 					nodes);
-				var childId = _n2.a;
-				var nodesWithChild = _n2.b;
+				var childId = _n3.a;
+				var nodesWithChild = _n3.b;
 				return A2(
 					author$project$IdMap$insert,
 					A2(
@@ -6705,7 +6720,7 @@ var author$project$Parse$insert = F3(
 						author$project$Model$CaptureNode(
 							elm$core$Maybe$Just(childId))),
 					nodesWithChild);
-			case 3:
+			case 4:
 				var inverted = element.a.aI;
 				var contents = element.a.bF;
 				return A2(
@@ -6715,7 +6730,7 @@ var author$project$Parse$insert = F3(
 						position,
 						inverted ? author$project$Model$NotInCharSetNode(contents) : author$project$Model$CharSetNode(contents)),
 					nodes);
-			case 4:
+			case 5:
 				var options = element.a;
 				var insertChild = F2(
 					function (index, child) {
@@ -6730,22 +6745,22 @@ var author$project$Parse$insert = F3(
 									75 * (index - ((elm$core$List$length(options) / 2) | 0)))),
 							child);
 					});
-				var _n3 = A2(
+				var _n4 = A2(
 					author$project$IdMap$insertListWith,
 					A2(elm$core$List$indexedMap, insertChild, options),
 					nodes);
-				var children = _n3.a;
-				var newNodes = _n3.b;
+				var children = _n4.a;
+				var newNodes = _n4.b;
 				var node = A2(
 					author$project$Model$NodeView,
 					position,
 					author$project$Model$SetNode(
 						elm$core$Array$fromList(children)));
 				return A2(author$project$IdMap$insert, node, newNodes);
-			case 6:
+			case 7:
 				var expression = element.a.q;
 				var successor = element.a.cW;
-				var _n4 = A3(
+				var _n5 = A3(
 					author$project$Parse$insert,
 					A2(
 						author$project$Vec2$add,
@@ -6753,9 +6768,9 @@ var author$project$Parse$insert = F3(
 						A2(author$project$Vec2$Vec2, -200, 0)),
 					expression,
 					nodes);
-				var expressionId = _n4.a;
-				var nodesWithExpression = _n4.b;
-				var _n5 = A3(
+				var expressionId = _n5.a;
+				var nodesWithExpression = _n5.b;
+				var _n6 = A3(
 					author$project$Parse$insert,
 					A2(
 						author$project$Vec2$add,
@@ -6763,8 +6778,8 @@ var author$project$Parse$insert = F3(
 						A2(author$project$Vec2$Vec2, -200, 75)),
 					successor,
 					nodesWithExpression);
-				var successorId = _n5.a;
-				var nodesWithChildren = _n5.b;
+				var successorId = _n6.a;
+				var nodesWithChildren = _n6.b;
 				return A2(
 					author$project$IdMap$insert,
 					A2(
@@ -6776,10 +6791,10 @@ var author$project$Parse$insert = F3(
 								cW: elm$core$Maybe$Just(successorId)
 							})),
 					nodesWithChildren);
-			case 7:
+			case 8:
 				var expression = element.a.q;
 				var successor = element.a.cW;
-				var _n6 = A3(
+				var _n7 = A3(
 					author$project$Parse$insert,
 					A2(
 						author$project$Vec2$add,
@@ -6787,9 +6802,9 @@ var author$project$Parse$insert = F3(
 						A2(author$project$Vec2$Vec2, -200, 0)),
 					expression,
 					nodes);
-				var expressionId = _n6.a;
-				var nodesWithExpression = _n6.b;
-				var _n7 = A3(
+				var expressionId = _n7.a;
+				var nodesWithExpression = _n7.b;
+				var _n8 = A3(
 					author$project$Parse$insert,
 					A2(
 						author$project$Vec2$add,
@@ -6797,8 +6812,8 @@ var author$project$Parse$insert = F3(
 						A2(author$project$Vec2$Vec2, -200, 75)),
 					successor,
 					nodesWithExpression);
-				var successorId = _n7.a;
-				var nodesWithChildren = _n7.b;
+				var successorId = _n8.a;
+				var nodesWithChildren = _n8.b;
 				return A2(
 					author$project$IdMap$insert,
 					A2(
@@ -6810,36 +6825,10 @@ var author$project$Parse$insert = F3(
 								cW: elm$core$Maybe$Just(successorId)
 							})),
 					nodesWithChildren);
-			case 8:
+			case 9:
 				var expression = element.a.q;
 				var minimum = element.a.dw;
 				var maximum = element.a.du;
-				var minimal = element.a.aj;
-				var _n8 = A3(
-					author$project$Parse$insert,
-					A2(
-						author$project$Vec2$add,
-						position,
-						A2(author$project$Vec2$Vec2, -200, 0)),
-					expression,
-					nodes);
-				var expressionId = _n8.a;
-				var nodesWithChild = _n8.b;
-				return A2(
-					author$project$IdMap$insert,
-					A2(
-						author$project$Model$NodeView,
-						position,
-						author$project$Model$RangedRepetitionNode(
-							{
-								q: elm$core$Maybe$Just(expressionId),
-								du: maximum,
-								aj: minimal,
-								dw: minimum
-							})),
-					nodesWithChild);
-			case 9:
-				var expression = element.a.q;
 				var minimal = element.a.aj;
 				var _n9 = A3(
 					author$project$Parse$insert,
@@ -6856,10 +6845,12 @@ var author$project$Parse$insert = F3(
 					A2(
 						author$project$Model$NodeView,
 						position,
-						author$project$Model$OptionalNode(
+						author$project$Model$RangedRepetitionNode(
 							{
 								q: elm$core$Maybe$Just(expressionId),
-								aj: minimal
+								du: maximum,
+								aj: minimal,
+								dw: minimum
 							})),
 					nodesWithChild);
 			case 10:
@@ -6880,7 +6871,7 @@ var author$project$Parse$insert = F3(
 					A2(
 						author$project$Model$NodeView,
 						position,
-						author$project$Model$AtLeastOneNode(
+						author$project$Model$OptionalNode(
 							{
 								q: elm$core$Maybe$Just(expressionId),
 								aj: minimal
@@ -6904,15 +6895,15 @@ var author$project$Parse$insert = F3(
 					A2(
 						author$project$Model$NodeView,
 						position,
-						author$project$Model$AnyRepetitionNode(
+						author$project$Model$AtLeastOneNode(
 							{
 								q: elm$core$Maybe$Just(expressionId),
 								aj: minimal
 							})),
 					nodesWithChild);
-			default:
+			case 12:
 				var expression = element.a.q;
-				var flags = element.a.aa;
+				var minimal = element.a.aj;
 				var _n12 = A3(
 					author$project$Parse$insert,
 					A2(
@@ -6923,6 +6914,30 @@ var author$project$Parse$insert = F3(
 					nodes);
 				var expressionId = _n12.a;
 				var nodesWithChild = _n12.b;
+				return A2(
+					author$project$IdMap$insert,
+					A2(
+						author$project$Model$NodeView,
+						position,
+						author$project$Model$AnyRepetitionNode(
+							{
+								q: elm$core$Maybe$Just(expressionId),
+								aj: minimal
+							})),
+					nodesWithChild);
+			default:
+				var expression = element.a.q;
+				var flags = element.a.aa;
+				var _n13 = A3(
+					author$project$Parse$insert,
+					A2(
+						author$project$Vec2$add,
+						position,
+						A2(author$project$Vec2$Vec2, -200, 0)),
+					expression,
+					nodes);
+				var expressionId = _n13.a;
+				var nodesWithChild = _n13.b;
 				return A2(
 					author$project$IdMap$insert,
 					A2(
@@ -6941,70 +6956,78 @@ var author$project$Parse$addCompiledElement = F3(
 		return A3(author$project$Parse$insert, position, parsed, nodes);
 	});
 var author$project$Parse$CompiledAnyRepetition = function (a) {
-	return {$: 11, a: a};
-};
-var author$project$Parse$CompiledAtLeastOne = function (a) {
-	return {$: 10, a: a};
-};
-var author$project$Parse$CompiledCapture = function (a) {
-	return {$: 5, a: a};
-};
-var author$project$Parse$CompiledCharSequence = function (a) {
-	return {$: 2, a: a};
-};
-var author$project$Parse$CompiledFlags = function (a) {
 	return {$: 12, a: a};
 };
-var author$project$Parse$CompiledIfFollowedBy = function (a) {
+var author$project$Parse$CompiledAtLeastOne = function (a) {
+	return {$: 11, a: a};
+};
+var author$project$Parse$CompiledCapture = function (a) {
 	return {$: 6, a: a};
 };
-var author$project$Parse$CompiledIfNotFollowedBy = function (a) {
+var author$project$Parse$CompiledCharSequence = function (a) {
+	return {$: 3, a: a};
+};
+var author$project$Parse$CompiledFlags = function (a) {
+	return {$: 13, a: a};
+};
+var author$project$Parse$CompiledIfFollowedBy = function (a) {
 	return {$: 7, a: a};
 };
+var author$project$Parse$CompiledIfNotFollowedBy = function (a) {
+	return {$: 8, a: a};
+};
 var author$project$Parse$CompiledOptional = function (a) {
-	return {$: 9, a: a};
+	return {$: 10, a: a};
 };
 var author$project$Parse$CompiledRangedRepetition = function (a) {
-	return {$: 8, a: a};
+	return {$: 9, a: a};
 };
 var author$project$Parse$CompiledSequence = function (a) {
 	return {$: 0, a: a};
 };
 var author$project$Parse$CompiledSet = function (a) {
+	return {$: 5, a: a};
+};
+var author$project$Parse$CompiledCharRange = function (a) {
+	return {$: 2, a: a};
+};
+var author$project$Parse$CompiledCharset = function (a) {
 	return {$: 4, a: a};
 };
 var author$project$Parse$CompiledSymbol = function (a) {
 	return {$: 1, a: a};
 };
-var author$project$Parse$compileCharOrSymbol = function (charOrSymbol) {
-	if (!charOrSymbol.$) {
-		var _char = charOrSymbol.a;
-		return author$project$Parse$CompiledCharSequence(
-			elm$core$String$fromChar(_char));
-	} else {
-		var symbol = charOrSymbol.a;
-		return author$project$Parse$CompiledSymbol(symbol);
-	}
-};
-var author$project$Parse$CompiledCharset = function (a) {
-	return {$: 3, a: a};
-};
 var author$project$Parse$compileCharsetOption = F2(
 	function (member, _n0) {
 		var chars = _n0.a;
-		var options = _n0.b;
-		if (!member.$) {
-			var _char = member.a;
-			return _Utils_Tuple2(
-				_Utils_ap(
-					elm$core$String$fromChar(_char),
-					chars),
-				options);
-		} else {
-			var symbol = member.a;
-			return _Utils_Tuple2(
-				chars,
-				A2(elm$core$List$cons, symbol, options));
+		var symbols = _n0.b;
+		var ranges = _n0.c;
+		switch (member.$) {
+			case 0:
+				var _char = member.a;
+				return _Utils_Tuple3(
+					_Utils_ap(
+						elm$core$String$fromChar(_char),
+						chars),
+					symbols,
+					ranges);
+			case 1:
+				var symbol = member.a;
+				return _Utils_Tuple3(
+					chars,
+					A2(elm$core$List$cons, symbol, symbols),
+					ranges);
+			default:
+				var _n2 = member.a;
+				var start = _n2.a;
+				var end = _n2.b;
+				return _Utils_Tuple3(
+					chars,
+					symbols,
+					A2(
+						elm$core$List$cons,
+						_Utils_Tuple2(start, end),
+						ranges));
 		}
 	});
 var author$project$Parse$compileCharset = function (_n0) {
@@ -7013,33 +7036,75 @@ var author$project$Parse$compileCharset = function (_n0) {
 	var _n1 = A3(
 		elm$core$List$foldr,
 		author$project$Parse$compileCharsetOption,
-		_Utils_Tuple2('', _List_Nil),
+		_Utils_Tuple3('', _List_Nil, _List_Nil),
 		contents);
-	if (_n1.a === '') {
-		if (_n1.b.b && (!_n1.b.b.b)) {
-			var _n2 = _n1.b;
-			var symbol = _n2.a;
+	_n1$3:
+	while (true) {
+		_n1$4:
+		while (true) {
+			if (_n1.b.b) {
+				if (_n1.a === '') {
+					if ((!_n1.b.b.b) && (!_n1.c.b)) {
+						var _n2 = _n1.b;
+						var symbol = _n2.a;
+						return author$project$Parse$CompiledSymbol(symbol);
+					} else {
+						break _n1$3;
+					}
+				} else {
+					break _n1$4;
+				}
+			} else {
+				if (!_n1.c.b) {
+					var chars = _n1.a;
+					return author$project$Parse$CompiledCharset(
+						{bF: chars, aI: inverted});
+				} else {
+					if (_n1.a === '') {
+						if (!_n1.c.b.b) {
+							var _n3 = _n1.c;
+							var range = _n3.a;
+							return author$project$Parse$CompiledCharRange(range);
+						} else {
+							break _n1$3;
+						}
+					} else {
+						break _n1$4;
+					}
+				}
+			}
+		}
+		var chars = _n1.a;
+		var symbols = _n1.b;
+		var ranges = _n1.c;
+		return author$project$Parse$CompiledSet(
+			A2(
+				elm$core$List$cons,
+				author$project$Parse$CompiledCharset(
+					{bF: chars, aI: inverted}),
+				_Utils_ap(
+					A2(elm$core$List$map, author$project$Parse$CompiledSymbol, symbols),
+					A2(elm$core$List$map, author$project$Parse$CompiledCharRange, ranges))));
+	}
+	var symbols = _n1.b;
+	var ranges = _n1.c;
+	return author$project$Parse$CompiledSet(
+		_Utils_ap(
+			A2(elm$core$List$map, author$project$Parse$CompiledSymbol, symbols),
+			A2(elm$core$List$map, author$project$Parse$CompiledCharRange, ranges)));
+};
+var author$project$Parse$compileCharsetAtom = function (charOrSymbol) {
+	switch (charOrSymbol.$) {
+		case 0:
+			var _char = charOrSymbol.a;
+			return author$project$Parse$CompiledCharSequence(
+				elm$core$String$fromChar(_char));
+		case 1:
+			var symbol = charOrSymbol.a;
 			return author$project$Parse$CompiledSymbol(symbol);
-		} else {
-			var symbols = _n1.b;
-			return author$project$Parse$CompiledSet(
-				A2(elm$core$List$map, author$project$Parse$CompiledSymbol, symbols));
-		}
-	} else {
-		if (!_n1.b.b) {
-			var chars = _n1.a;
-			return author$project$Parse$CompiledCharset(
-				{bF: chars, aI: inverted});
-		} else {
-			var chars = _n1.a;
-			var symbols = _n1.b;
-			return author$project$Parse$CompiledSet(
-				A2(
-					elm$core$List$cons,
-					author$project$Parse$CompiledCharset(
-						{bF: chars, aI: inverted}),
-					A2(elm$core$List$map, author$project$Parse$CompiledSymbol, symbols)));
-		}
+		default:
+			var range = charOrSymbol.a;
+			return author$project$Parse$CompiledCharRange(range);
 	}
 };
 var author$project$Parse$compile = function (element) {
@@ -7067,7 +7132,7 @@ var author$project$Parse$compile = function (element) {
 					author$project$Parse$compile(child));
 			case 1:
 				var charOrSymbol = element.a;
-				return author$project$Parse$compileCharOrSymbol(charOrSymbol);
+				return author$project$Parse$compileCharsetAtom(charOrSymbol);
 			case 2:
 				var set = element.a;
 				return author$project$Parse$compileCharset(set);
@@ -7148,7 +7213,7 @@ var author$project$Parse$compileSequenceMember = F2(
 	function (member, compiled) {
 		if ((member.$ === 1) && (!member.a.$)) {
 			var character = member.a.a;
-			if (compiled.b && (compiled.a.$ === 2)) {
+			if (compiled.b && (compiled.a.$ === 3)) {
 				var collapsed = compiled.a.a;
 				var alreadyCompiled = compiled.b;
 				return A2(
@@ -7211,6 +7276,24 @@ var author$project$Parse$ParsedCharset = function (a) {
 var author$project$Parse$Expected = function (a) {
 	return {$: 1, a: a};
 };
+var author$project$Parse$Plain = function (a) {
+	return {$: 0, a: a};
+};
+var author$project$Parse$Range = function (a) {
+	return {$: 2, a: a};
+};
+var author$project$Parse$atomToCharOrErr = function (_n0) {
+	var atom = _n0.a;
+	var rest = _n0.b;
+	if (!atom.$) {
+		var _char = atom.a;
+		return elm$core$Result$Ok(
+			_Utils_Tuple2(_char, rest));
+	} else {
+		return elm$core$Result$Err(
+			author$project$Parse$Expected('Plain Character'));
+	}
+};
 var author$project$Parse$maybeOptions = F3(
 	function (first, second, value) {
 		var _n0 = first(value);
@@ -7223,9 +7306,6 @@ var author$project$Parse$maybeOptions = F3(
 	});
 var author$project$Parse$Escaped = function (a) {
 	return {$: 1, a: a};
-};
-var author$project$Parse$Plain = function (a) {
-	return {$: 0, a: a};
 };
 var author$project$Parse$ExpectedMoreChars = {$: 0};
 var author$project$Parse$okOrErr = function (error) {
@@ -7330,8 +7410,49 @@ var author$project$Parse$symbolizeTabLinebreakDot = function (token) {
 			return elm$core$Maybe$Nothing;
 	}
 };
-var author$project$Parse$parseCharsetAtom = author$project$Parse$parseAtomicChar(
-	A2(author$project$Parse$maybeOptions, author$project$Parse$symbolizeLetterbased, author$project$Parse$symbolizeTabLinebreakDot));
+var elm$core$Tuple$pair = F2(
+	function (a, b) {
+		return _Utils_Tuple2(a, b);
+	});
+var author$project$Parse$parseCharsetAtom = function (text) {
+	var atom = author$project$Parse$parseAtomicChar(
+		A2(author$project$Parse$maybeOptions, author$project$Parse$symbolizeLetterbased, author$project$Parse$symbolizeTabLinebreakDot));
+	var extractRange = function (_n3) {
+		var firstAtom = _n3.a;
+		var remaining = _n3.b;
+		var _n2 = A2(author$project$Parse$skipIfNext, '-', remaining);
+		if (_n2.a) {
+			var rest = _n2.b;
+			return A2(
+				elm$core$Result$map,
+				elm$core$Tuple$mapFirst(
+					A2(
+						elm$core$Basics$composeR,
+						elm$core$Tuple$pair(firstAtom),
+						author$project$Parse$Range)),
+				A2(
+					elm$core$Result$andThen,
+					author$project$Parse$atomToCharOrErr,
+					atom(rest)));
+		} else {
+			return elm$core$Result$Ok(
+				_Utils_Tuple2(
+					author$project$Parse$Plain(firstAtom),
+					remaining));
+		}
+	};
+	var _n0 = atom(text);
+	if ((!_n0.$) && (!_n0.a.a.$)) {
+		var _n1 = _n0.a;
+		var _char = _n1.a.a;
+		var rest = _n1.b;
+		return extractRange(
+			_Utils_Tuple2(_char, rest));
+	} else {
+		var other = _n0;
+		return other;
+	}
+};
 var elm$core$String$isEmpty = function (string) {
 	return string === '';
 };
@@ -7403,7 +7524,7 @@ var author$project$Parse$parseCharset = function (text) {
 };
 var author$project$Model$End = 14;
 var author$project$Model$Start = 13;
-var author$project$Parse$ParsedCharOrSymbol = function (a) {
+var author$project$Parse$ParsedCharsetAtom = function (a) {
 	return {$: 1, a: a};
 };
 var author$project$Parse$symbolizeTabLinebreak = function (token) {
@@ -7427,7 +7548,7 @@ var author$project$Parse$parseGenericAtomicChar = function (text) {
 					var rest = _n1.b;
 					return elm$core$Result$Ok(
 						_Utils_Tuple2(
-							author$project$Parse$ParsedCharOrSymbol(
+							author$project$Parse$ParsedCharsetAtom(
 								author$project$Parse$Escaped(9)),
 							rest));
 				case '$':
@@ -7435,7 +7556,7 @@ var author$project$Parse$parseGenericAtomicChar = function (text) {
 					var rest = _n2.b;
 					return elm$core$Result$Ok(
 						_Utils_Tuple2(
-							author$project$Parse$ParsedCharOrSymbol(
+							author$project$Parse$ParsedCharsetAtom(
 								author$project$Parse$Escaped(14)),
 							rest));
 				case '^':
@@ -7443,7 +7564,7 @@ var author$project$Parse$parseGenericAtomicChar = function (text) {
 					var rest = _n3.b;
 					return elm$core$Result$Ok(
 						_Utils_Tuple2(
-							author$project$Parse$ParsedCharOrSymbol(
+							author$project$Parse$ParsedCharsetAtom(
 								author$project$Parse$Escaped(13)),
 							rest));
 				default:
@@ -7455,7 +7576,7 @@ var author$project$Parse$parseGenericAtomicChar = function (text) {
 	}
 	return A2(
 		elm$core$Result$map,
-		elm$core$Tuple$mapFirst(author$project$Parse$ParsedCharOrSymbol),
+		elm$core$Tuple$mapFirst(author$project$Parse$ParsedCharsetAtom),
 		A2(
 			author$project$Parse$parseAtomicChar,
 			A2(author$project$Parse$maybeOptions, author$project$Parse$symbolizeLetterbased, author$project$Parse$symbolizeTabLinebreak),
@@ -8786,10 +8907,6 @@ var author$project$Model$TitleProperty = {$: 6};
 var author$project$Model$symbolDescriptions = {aY: 'Matches any char, including linebreaks and whitespace', a1: 'Match any numerical char, from `0` to `9`, excluding punctuation', a3: 'The end of line if Multiline Matches are enabled, or the end of the text otherwise', a7: 'Matches the linebreak, or newline, char `\\n`', bc: 'Match any char but numerical ones, matching punctuation', bd: 'Matches anything but the linebreak char `\\n`', be: 'Match any char that is not invisible, for example neither space nor linebreaks', bf: 'Match any char, but not alphabetical ones and not the underscore char `_`', bg: 'Matches anywhere but not where a word char has a whitespace neighbour', bh: 'Matches nothing ever, really', bv: 'The start of line if Multiline Matches are enabled, or the start of the text otherwise', bw: 'Matches the tab char `\\t`', bz: 'Match any invisible char, such as the space between words and linebreaks', bA: 'Match any alphabetical chars, and the underscore char `_`', bB: 'Matches where a word char has a whitespace neighbour'};
 var author$project$Model$symbolDescription = author$project$Model$symbolProperty(author$project$Model$symbolDescriptions);
 var author$project$Model$typeDescriptions = {ay: 'Allow this expression to occur multiple times or not at all', az: 'Allow this expression to occur multiple times', aD: 'Capture this expression for later use, like replacing', a_: 'Matches any char between the lower and upper range bound', a$: 'Matches, where any char of the set is matched', a4: 'Match where an expression is repeated exactly n times', aa: 'Configure how the whole regex operates', aG: 'Match this expression only if the successor is also matched, without matching the successor itself', aH: 'Match this expression only if the successor is not matched, without matching the successor itself', a9: 'Matches where that exact sequence of chars is found', ba: 'Match where an expression is repeated no more than n times', bb: 'Match where an expression is repeated at least n times', bi: 'Matches any char outside of the range', bj: 'Matches where not a single char of the set is matched', aM: 'Allow omitting this expression and match anyways', br: 'Only match if the expression is repeated in range', aO: 'Matches, where all members in the exact order are matched one after another', aP: 'Matches, where at least one of the options matches'};
-var author$project$Model$CharRangeNode = F2(
-	function (a, b) {
-		return {$: 4, a: a, b: b};
-	});
 var author$project$Model$maxChar = F2(
 	function (a, b) {
 		return (_Utils_cmp(a, b) > 0) ? a : b;

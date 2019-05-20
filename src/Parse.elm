@@ -14,13 +14,15 @@ type ParseError
   | Expected String
 
 
+-- TODO this parsing code is more complex than it needs to be (brackets must always be escaped and such)
+
 -- TODO not all-or-nothing, but try the best guess at invalid input!
 
 -- closer to the textual JS regex than to the node graph
 type ParsedElement
   = ParsedSequence (List ParsedElement)
-  | ParsedCharOrSymbol CharOrSymbol
-  | ParsedCharset { inverted: Bool, contents: List CharOrSymbol }
+  | ParsedCharsetAtom CharsetAtom
+  | ParsedCharset { inverted: Bool, contents: List CharsetAtom }
   | ParsedSet (List ParsedElement)
   | ParsedCapture ParsedElement
   | ParsedIfFollowedBy { expression: ParsedElement, successor: ParsedElement }
@@ -36,6 +38,7 @@ type ParsedElement
 type CompiledElement
   = CompiledSequence (List CompiledElement)
   | CompiledSymbol Symbol
+  | CompiledCharRange (Char, Char)
   | CompiledCharSequence String
   | CompiledCharset { inverted: Bool, contents: String }
   | CompiledSet (List CompiledElement)
@@ -49,6 +52,7 @@ type CompiledElement
   | CompiledFlags { expression : CompiledElement, flags : RegexFlags }
 
 
+type CharsetAtom = Plain Char | Escaped Symbol | Range (Char, Char)
 
 addParsedRegexNode : Vec2 -> Nodes -> String -> ParseResult (NodeId, Nodes)
 addParsedRegexNode position nodes regex = parse regex
@@ -75,6 +79,9 @@ insert position element nodes = case element of
 
   CompiledSymbol symbol -> IdMap.insert
     (NodeView position (SymbolNode symbol)) nodes
+
+  CompiledCharRange (a, b) -> IdMap.insert
+    (NodeView position (CharRangeNode a b)) nodes
 
   CompiledCapture child ->
     let (childId, nodesWithChild) = insert (Vec2 -200 0 |> Vec2.add position) child nodes
@@ -140,7 +147,7 @@ compile element = case element of
   ParsedSet options -> CompiledSet <| List.map compile options
   ParsedSequence manyMembers -> compileSequence manyMembers
   ParsedCapture child -> CompiledCapture <| compile child
-  ParsedCharOrSymbol charOrSymbol -> compileCharOrSymbol charOrSymbol
+  ParsedCharsetAtom charOrSymbol -> compileCharsetAtom charOrSymbol
   ParsedCharset set -> compileCharset set
 
   ParsedIfFollowedBy { expression, successor } -> CompiledIfFollowedBy
@@ -167,9 +174,10 @@ compile element = case element of
 
 
 
-compileCharOrSymbol charOrSymbol = case charOrSymbol of
+compileCharsetAtom charOrSymbol = case charOrSymbol of
   Plain char -> CompiledCharSequence <| String.fromChar char
   Escaped symbol -> CompiledSymbol symbol
+  Range range -> CompiledCharRange range
 
 -- collapse all subsequent chars into a literal
 compileSequence members = case List.foldr compileSequenceMember [] members of
@@ -177,7 +185,7 @@ compileSequence members = case List.foldr compileSequenceMember [] members of
   moreMembers -> CompiledSequence moreMembers
 
 compileSequenceMember member compiled = case member of
-  ParsedCharOrSymbol (Plain character) -> case compiled of
+  ParsedCharsetAtom (Plain character) -> case compiled of
      CompiledCharSequence collapsed :: alreadyCompiled ->
          (CompiledCharSequence (String.fromChar character ++ collapsed)) :: alreadyCompiled
 
@@ -190,23 +198,21 @@ compileSequenceMember member compiled = case member of
 
 
 compileCharset { inverted, contents } =
-  case List.foldr compileCharsetOption ("", []) contents of
-      ("", [symbol]) -> CompiledSymbol symbol -- FIXME will ignore `inverted`
-      ("", symbols) -> CompiledSet (List.map CompiledSymbol symbols)  -- FIXME will ignore `inverted`
-      (chars, []) -> CompiledCharset { inverted = inverted, contents = chars }
-      (chars, symbols) -> CompiledSet <|
+  case List.foldr compileCharsetOption ("", [], []) contents of
+      (chars, [], []) -> CompiledCharset { inverted = inverted, contents = chars }
+      ("", [symbol], []) -> CompiledSymbol symbol -- FIXME will ignore `inverted`
+      ("", [], [range]) -> CompiledCharRange range
+      ("", symbols, ranges) -> CompiledSet (List.map CompiledSymbol symbols ++ List.map CompiledCharRange ranges)  -- FIXME will ignore `inverted`
+      (chars, symbols, ranges) -> CompiledSet <|
         CompiledCharset { inverted = inverted, contents = chars }
           :: (List.map CompiledSymbol symbols) -- TODO dry -- FIXME will ignore `inverted` in symbols
+          ++ (List.map CompiledCharRange ranges) -- TODO dry -- FIXME will ignore `inverted` in symbols
 
 -- TODO filter duplicate options
-compileCharsetOption member (chars, options) = case member of
-  Plain char -> (String.fromChar char ++ chars, options)
-  Escaped symbol -> (chars, symbol :: options)
-
-
-
-
-
+compileCharsetOption member (chars, symbols, ranges) = case member of
+  Plain char -> (String.fromChar char ++ chars, symbols, ranges)
+  Escaped symbol -> (chars, symbol :: symbols, ranges)
+  Range (start, end) -> (chars, symbols, (start, end) :: ranges)
 
 
 parse : String -> ParseResult ParsedElement
@@ -353,12 +359,12 @@ parseParentheses map openParens text =
 parseGenericAtomicChar : String -> ParseSubResult ParsedElement
 parseGenericAtomicChar text =
  case String.uncons text of
-   Just ('.', rest) -> Ok (ParsedCharOrSymbol <| Escaped NonLinebreakChar, rest)
-   Just ('$', rest) -> Ok (ParsedCharOrSymbol <| Escaped End, rest)
-   Just ('^', rest) -> Ok (ParsedCharOrSymbol <| Escaped Start, rest)
+   Just ('.', rest) -> Ok (ParsedCharsetAtom <| Escaped NonLinebreakChar, rest)
+   Just ('$', rest) -> Ok (ParsedCharsetAtom <| Escaped End, rest)
+   Just ('^', rest) -> Ok (ParsedCharsetAtom <| Escaped Start, rest)
    _ -> text
      |> parseAtomicChar (maybeOptions symbolizeLetterbased symbolizeTabLinebreak)
-     |> Result.map (Tuple.mapFirst ParsedCharOrSymbol)
+     |> Result.map (Tuple.mapFirst ParsedCharsetAtom)
 
 
 symbolizeTabLinebreak : Char -> Maybe Symbol
@@ -383,7 +389,7 @@ parseCharset text =
 
 
 -- TODO use foldr or similar?
-extendCharset : ParseSubResult (List CharOrSymbol) -> ParseSubResult (List CharOrSymbol)
+extendCharset : ParseSubResult (List CharsetAtom) -> ParseSubResult (List CharsetAtom)
 extendCharset current = case current of
   Err error -> Err error
   Ok (options, remaining) ->
@@ -398,8 +404,28 @@ extendCharset current = case current of
 
 
 
-parseCharsetAtom : String -> ParseSubResult CharOrSymbol
-parseCharsetAtom = parseAtomicChar (maybeOptions symbolizeLetterbased symbolizeTabLinebreakDot)
+parseCharsetAtom : String -> ParseSubResult CharsetAtom
+parseCharsetAtom text =
+  let
+      atom = parseAtomicChar (maybeOptions symbolizeLetterbased symbolizeTabLinebreakDot)
+
+      extractRange : (Char, String) -> ParseSubResult CharsetAtom
+      extractRange (firstAtom, remaining) = case skipIfNext "-" remaining of
+        (True, rest) -> atom rest |> Result.andThen atomToCharOrErr
+                                  |> Result.map (Tuple.mapFirst (Tuple.pair firstAtom >> Range))
+
+        _ -> Ok (Plain firstAtom, remaining)
+
+  in case atom text of
+      Ok (Plain char, rest) -> extractRange (char, rest)
+      other -> other
+
+
+atomToCharOrErr : (CharsetAtom, String) -> ParseSubResult Char
+atomToCharOrErr (atom, rest) = case atom of
+  Plain char -> Ok (char, rest)
+  _ -> Err (Expected "Plain Character")
+
 
 -- in a charset, the dot char must be escaped, because a plain dot is just a dot and not anything but linebreak
 symbolizeTabLinebreakDot : Char -> Maybe Symbol
@@ -423,10 +449,9 @@ symbolizeLetterbased token = case token of
   _ -> Nothing
 
 
-type CharOrSymbol = Plain Char | Escaped Symbol
 
 
-parseAtomicChar : (Char -> Maybe Symbol) -> String -> ParseSubResult (CharOrSymbol)
+parseAtomicChar : (Char -> Maybe Symbol) -> String -> ParseSubResult (CharsetAtom)
 parseAtomicChar escape text =
   let
     (isEscaped, charSubResult) = skipIfNext "\\" text |> Tuple.mapSecond parseSingleChar
