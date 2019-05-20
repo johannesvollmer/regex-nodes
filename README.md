@@ -20,6 +20,13 @@ reusing, grouping and parameterizing expressions,
 and automatic optimizations.
 
 
+# Core Features
+- Construct regular expressions using a visual editor
+- Load existing regular expressions as Node graph for easier analyzing and visualization
+- Use the generated expression in Javascript
+- See effects of the regular expression live using a customizable example text
+- Coming Soon: Reuse existing patterns by utilizing Node groups
+
 # Build 
 
 With elm installed on your system, run 
