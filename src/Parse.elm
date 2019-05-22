@@ -38,7 +38,7 @@ type ParsedElement
 type CompiledElement
   = CompiledSequence (List CompiledElement)
   | CompiledSymbol Symbol
-  | CompiledCharRange (Char, Char)
+  | CompiledCharRange Bool (Char, Char)
   | CompiledCharSequence String
   | CompiledCharset { inverted: Bool, contents: String }
   | CompiledSet (List CompiledElement)
@@ -80,8 +80,8 @@ insert position element nodes = case element of
   CompiledSymbol symbol -> IdMap.insert
     (NodeView position (SymbolNode symbol)) nodes
 
-  CompiledCharRange (a, b) -> IdMap.insert
-    (NodeView position (CharRangeNode a b)) nodes
+  CompiledCharRange inverted (a, b) -> IdMap.insert
+    (NodeView position ((if inverted then NotInCharRangeNode else CharRangeNode) a b)) nodes
 
   CompiledCapture child ->
     let (childId, nodesWithChild) = insert (Vec2 -200 0 |> Vec2.add position) child nodes
@@ -147,7 +147,7 @@ compile element = case element of
   ParsedSet options -> CompiledSet <| List.map compile options
   ParsedSequence manyMembers -> compileSequence manyMembers
   ParsedCapture child -> CompiledCapture <| compile child
-  ParsedCharsetAtom charOrSymbol -> compileCharsetAtom charOrSymbol
+  ParsedCharsetAtom charOrSymbol -> compileCharOrSymbol charOrSymbol
   ParsedCharset set -> compileCharset set
 
   ParsedIfFollowedBy { expression, successor } -> CompiledIfFollowedBy
@@ -174,10 +174,10 @@ compile element = case element of
 
 
 
-compileCharsetAtom charOrSymbol = case charOrSymbol of
+compileCharOrSymbol charOrSymbol = case charOrSymbol of
   Plain char -> CompiledCharSequence <| String.fromChar char
   Escaped symbol -> CompiledSymbol symbol
-  Range range -> CompiledCharRange range
+  Range (a, b)-> CompiledCharSequence (String.fromChar a ++ "-" ++ String.fromChar b) -- should not happen outside of char sets?
 
 -- collapse all subsequent chars into a literal
 compileSequence members = case List.foldr compileSequenceMember [] members of
@@ -196,23 +196,25 @@ compileSequenceMember member compiled = case member of
   symbol -> compile symbol :: compiled
 
 
-
-compileCharset { inverted, contents } =
+compileCharset { inverted, contents } = -- FIXME [^ax-z] != [^a]|[^x-z] !!!!
   case List.foldr compileCharsetOption ("", [], []) contents of
       (chars, [], []) -> CompiledCharset { inverted = inverted, contents = chars }
       ("", [symbol], []) -> CompiledSymbol symbol -- FIXME will ignore `inverted`
-      ("", [], [range]) -> CompiledCharRange range
-      ("", symbols, ranges) -> CompiledSet (List.map CompiledSymbol symbols ++ List.map CompiledCharRange ranges)  -- FIXME will ignore `inverted`
+      ("", [], [range]) -> CompiledCharRange inverted range
+      ("", symbols, ranges) -> CompiledSet (List.map CompiledSymbol symbols ++ List.map (CompiledCharRange inverted) ranges)  -- FIXME will ignore `inverted`
       (chars, symbols, ranges) -> CompiledSet <|
         CompiledCharset { inverted = inverted, contents = chars }
           :: (List.map CompiledSymbol symbols) -- TODO dry -- FIXME will ignore `inverted` in symbols
-          ++ (List.map CompiledCharRange ranges) -- TODO dry -- FIXME will ignore `inverted` in symbols
+          ++ (List.map (CompiledCharRange inverted) ranges) -- TODO dry -- FIXME will ignore `inverted` in symbols
 
 -- TODO filter duplicate options
 compileCharsetOption member (chars, symbols, ranges) = case member of
   Plain char -> (String.fromChar char ++ chars, symbols, ranges)
   Escaped symbol -> (chars, symbol :: symbols, ranges)
   Range (start, end) -> (chars, symbols, (start, end) :: ranges)
+
+
+
 
 
 parse : String -> ParseResult ParsedElement

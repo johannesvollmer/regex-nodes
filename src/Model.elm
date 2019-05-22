@@ -9,7 +9,17 @@ import IdMap exposing (IdMap)
 
 -- TODO improve structure
 
-type alias Model =
+type alias Model = History BaseModel
+
+
+type alias History a =
+  { past: List a
+  , present: a
+  , future: List a
+  }
+
+
+type alias BaseModel =
   { nodes: Nodes
   , outputNode: OutputNode
   , selectedNode: Maybe NodeId
@@ -20,20 +30,23 @@ type alias Model =
   , search: Maybe String
   , dragMode: Maybe DragMode
 
-  , confirmDeletion : Maybe NodeId
   , cyclesError: Bool
 
   , view: View
+
   }
 
-initialValue : Model
-initialValue =
+
+initialValue = { past = [], present = initialBaseValue, future = [] }
+
+
+initialBaseValue : BaseModel
+initialBaseValue =
   { nodes = IdMap.empty
   , outputNode = { id = Nothing, locked = False }
   , dragMode = Nothing
   , search = Nothing
   , view = View 0 (Vec2 0 0)
-  , confirmDeletion = Nothing
   , selectedNode = Nothing
   , cachedRegex = Nothing
   , cyclesError = False
@@ -48,6 +61,12 @@ initialValue =
 type alias NodeId = IdMap.Id
 type alias Nodes = IdMap NodeView
 
+-- TODO
+type alias Notifications =
+  { cyclesError: Bool
+  , parseRegexError: Bool
+  , deletedNode: Bool -- TODO undo on click
+  }
 
 type alias BuildResult a = Result String a
 

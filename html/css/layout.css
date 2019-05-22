@@ -1,11 +1,17 @@
+@import url('https://fonts.googleapis.com/css?family=Ubuntu+Mono:700');
+@import url('https://fonts.googleapis.com/css?family=Roboto+Condensed:400,700');
+
+/* TODO remove confirm-deletion-alert */
 
 * {
   margin: 0;
   padding: 0;
-
 	overflow: hidden;
-}
 
+  font-family: 'Roboto Condensed', "Roboto", "Ubuntu", "Cantarell", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
 
 body, #main, #overlay, #node-graph, #connection-graph, #example-text, #confirm-deletion-alert {
 	position: fixed;
@@ -142,6 +148,33 @@ header img {
   flex-direction: column;
   justify-content: flex-start;
   align-items: stretch;
+}
+#history {
+  position: fixed;
+  top: 8px;
+  left: 66vw;
+  height: 44px;
+
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+}
+#history .button {
+  padding: 8px;
+}
+#history .disabled.button {
+  opacity: 0.2;
+  pointer-events: none;
+}
+#history .button:hover {
+  background-color: #444;
+}
+#history img {
+  height: 20px;
+}
+#history #redo img {
+  transform: scale(-1, 1);
 }
 
 #search input {

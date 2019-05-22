@@ -62,8 +62,9 @@ stringWidth length =  (Basics.max 5 length) * (if length < 14 then 13 else 9)
 
 
 view : Model -> Html Message
-view model =
+view history =
   let
+    model = history.present
     expressionResult = model.cachedRegex |> Maybe.map (Result.map constructRegexLiteral)
 
     (moveDragging, connectDragId, mousePosition) = case model.dragMode of
@@ -158,6 +159,22 @@ view model =
         , viewSearchResults model.search
         ]
 
+      , div [ id "history" ]
+        [ div
+          [ id "undo", title "Undo the last action"
+          , classes "button" [(List.isEmpty history.past, "disabled")]
+          , Mouse.onClick (always Undo)
+          ]
+          [ img [ src "html/img/arrow-left.svg" ]  [] ]
+
+        , div
+          [ id "redo", title "Undo the last action"
+          , classes "button" [(List.isEmpty history.future, "disabled")]
+          , Mouse.onClick (always Redo)
+          ]
+          [ img [ src "html/img/arrow-left.svg" ] []  ]
+        ]
+
       , div [ id "expression-result", classes "" [(expressionResult == Nothing, "no")] ]
         [ code []
           [ span [ id "declaration" ] [ text "const regex = " ]
@@ -173,7 +190,7 @@ view model =
         ]
       ]
 
-    , div
+    {-, div
       [ id "confirm-deletion"
       , classes "alert" [(model.confirmDeletion /= Nothing, "show")]
       , Mouse.onClick <| always <| ConfirmDeleteNode False
@@ -193,7 +210,7 @@ view model =
           ]
 
         ]
-      ]
+      ]-}
 
     , div
       [ id "cycles-detected"
@@ -490,19 +507,18 @@ viewNodeContent dragMode selectedNode outputNode nodeId props nodeView =
     , div
       [ class "menu" ]
       [ div
-          [ mayStopPropagation "mousedown" duplicateAndStopPropagation -- must be mousedown because click would be triggered after deselect on mouse down
-          , class "duplicate button"
-          , title "Duplicate this Node"
-          ]
-          [ img [ src "html/img/copy.svg" ] [] ]
+        [ mayStopPropagation "mousedown" duplicateAndStopPropagation -- must be mousedown because click would be triggered after deselect on mouse down
+        , class "duplicate button"
+        , title "Duplicate this Node"
+        ]
+        [ img [ src "html/img/copy.svg" ] [] ]
 
       , div
-          [ mayStopPropagation "mousedown" deleteAndStopPropagation -- must be mousedown because click would be triggered after deselect on mouse down
-          , class "delete button"
-          , title "Delete this Node"
-          ]
-          [ img [ src "html/img/bin.svg" ] [] ]
-
+        [ mayStopPropagation "mousedown" deleteAndStopPropagation -- must be mousedown because click would be triggered after deselect on mouse down
+        , class "delete button"
+        , title "Delete this Node"
+        ]
+        [ img [ src "html/img/bin.svg" ] [] ]
       ]
 
     ]
