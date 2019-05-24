@@ -129,6 +129,15 @@ nav {
   color: #ddd;
 }
 
+#history .button {
+  opacity: 0.7;
+}
+#history .button:hover {
+  opacity: 0.9;
+}
+#history .disabled.button {
+  opacity: 0.2;
+}
 
 #example-text {
   /*animation: enterEditableText 0.2s forwards reverse; FIXME would flash on page load */

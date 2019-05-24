@@ -57,122 +57,112 @@ type DragModeMessage
 
 maxUndoSteps = 100
 
+
 update : Message -> Model -> Model
-update message history =
+update message model =
   let
-    advance = advanceHistory history
-    set = updateHistory history
-    model = history.present
+    coreModel = model.history.present
+    advance newPresent = { model | history = advanceHistory model.history newPresent }
+    advanceModel newModel = { newModel | history = advanceHistory model.history newModel.history.present }
 
   in case message of
-    DoNothing -> history
+    DoNothing -> model
 
-    Undo -> undo history
-    Redo -> redo history
+    Undo -> { model | history = undo model.history }
+    Redo -> { model | history = redo model.history }
 
-    DismissCyclesError -> advance { model | cyclesError = False }
+    DismissCyclesError -> advance { coreModel | cyclesError = False }
 
-    Deselect -> if model.outputNode.locked
-      then advance { model | selectedNode = Nothing }
-      else advance <| updateCache { model | selectedNode = Nothing, outputNode = { locked = False, id = Nothing } } model
+    Deselect -> if coreModel.outputNode.locked
+      then advance { coreModel | selectedNode = Nothing }
+      else advance <| updateCache { coreModel | selectedNode = Nothing, outputNode = { locked = False, id = Nothing } } coreModel
 
     UpdateExampleText textMessage -> case textMessage of
 
       SetEditing enabled -> if not enabled
         -- update cache because text contents or match limit could have been changed
-        then advance <| updateCache (enableEditingExampleText model enabled) model
-        else advance <| enableEditingExampleText model enabled
+        then advance <| updateCache (enableEditingExampleText enabled coreModel) coreModel
+        else advance <| enableEditingExampleText enabled coreModel
 
-      UpdateContents text -> let old = model.exampleText in
-        advance { model | exampleText = { old | contents = text } }
+      UpdateContents text -> let old = coreModel.exampleText in
+        advance { coreModel | exampleText = { old | contents = text } }
 
-      UpdateMaxMatchLimit limit -> let old = model.exampleText in
-        advance { model | exampleText = { old | maxMatches = limit } }
+      UpdateMaxMatchLimit limit -> let old = coreModel.exampleText in
+        advance { coreModel | exampleText = { old | maxMatches = limit } }
 
 
     UpdateView viewMessage ->
-      if model.exampleText.isEditing
-        || IdMap.isEmpty model.nodes
+      if coreModel.exampleText.isEditing
+        || IdMap.isEmpty coreModel.nodes
 
-      then history
+      then model
 
       else case viewMessage of
           MagnifyView { amount, focus } ->
-            set { model | view = updateView amount focus model.view }
+            { model | view = updateView amount focus model.view }
 
     SetOutputLocked locked ->
-      advance { model | outputNode = { id = model.outputNode.id, locked = locked } }
+      advance { coreModel | outputNode = { id = coreModel.outputNode.id, locked = locked } }
 
     UpdateNodeMessage id value ->
-      advance <| updateCache { model | nodes = updateNode model.nodes id value } model
+      advance <| updateCache { coreModel | nodes = updateNode coreModel.nodes id value } coreModel
 
-    DuplicateNode id -> advance <| duplicateNode model id
-    DeleteNode id -> advance <| deleteNode id model
+    DuplicateNode id -> advance <| duplicateNode coreModel id
+    DeleteNode id -> advanceModel <| deleteNode id model
 
     SearchMessage searchMessage ->
       case searchMessage of
-        UpdateSearch query -> set { model | search = Just query }
+        UpdateSearch query -> { model | search = Just query }
         FinishSearch result -> case result of
-          NoResult -> set { model | search = Nothing }
-          InsertLiteral text -> advance <| insertNode (LiteralNode text) model
-          InsertPrototype prototype -> advance <| stopEditingExampleText (insertNode prototype model)
-          ParseRegex regex -> advance <| stopEditingExampleText
-            (parseRegexNodes model regex)
+          NoResult -> { model | search = Nothing }
+          InsertLiteral text -> advanceModel <| insertNode (LiteralNode text) model
+          InsertPrototype prototype -> advanceModel <| (insertNode prototype (stopEditingExampleText model))
+          ParseRegex regex -> advanceModel <|
+            (parseRegexNodes (stopEditingExampleText model) regex)
 
     DragModeMessage modeMessage ->
       case modeMessage of
         StartNodeMove { node, mouse } ->
-          advance <| startNodeMove mouse node model
+          advanceModel <| startNodeMove mouse node model
 
         StartViewMove drag ->
-          set { model | dragMode = (Just <| MoveViewDrag drag) }
+          { model | dragMode = (Just <| MoveViewDrag drag) }
 
         -- update the subject node (disconnecting the input)
         -- and then start editing the connection of the old supplier
         -- TODO if current drag mode is retain, then reconnect to old node?
         StartEditingConnection { nodeId, node, supplier, mouse } ->
-          set <| Maybe.withDefault model <| Maybe.map
-            (\oldSupplier ->
-              updateCache
-                { model | nodes = updateNode model.nodes nodeId node
-                , dragMode = Just (CreateConnection { supplier = oldSupplier, openEnd = mouse })
-                }
-                model
-            )
-            supplier
+          advanceModel <| startEditingConnection nodeId node supplier mouse model
 
 
         StartCreateConnection { supplier, mouse } ->
-          set <| { model | dragMode = Just (CreateConnection { supplier = supplier, openEnd = mouse }) }
+          { model | dragMode = Just (CreateConnection { supplier = supplier, openEnd = mouse }) }
 
         StartPrepareEditingConnection { node, mouse } ->
-          set <| { model | dragMode = Just (PrepareEditingConnection { node = node, mouse = mouse }) }
+          { model | dragMode = Just (PrepareEditingConnection { node = node, mouse = mouse }) }
 
         UpdateDrag { newMouse } ->
           case model.dragMode of
             Just (MoveNodeDrag { node, mouse }) ->
-              set <| moveNodeInModel newMouse mouse node model
+              moveNodeInModel newMouse mouse node model
 
             Just (MoveViewDrag { mouse }) ->
-              set <| moveViewInModel newMouse mouse model
+              moveViewInModel newMouse mouse model
 
             Just (CreateConnection { supplier }) ->
-              set <| { model | dragMode = Just <| CreateConnection { supplier = supplier, openEnd = newMouse } }
+              { model | dragMode = Just <| CreateConnection { supplier = supplier, openEnd = newMouse } }
 
-            _ -> set model
+            _ -> model
 
         -- when a connection is established, update the drag mode of the model,
         -- but also already make the connection real
         RealizeConnection { nodeId, newNode, mouse } ->
-          advance <| realizeConnection model nodeId newNode mouse
+          advanceModel <| realizeConnection model nodeId newNode mouse
 
         FinishDrag ->
-          set { model | dragMode = Nothing }
+          { model | dragMode = Nothing }
 
 
-
-updateHistory history model =
-  { history | present = model }
 
 advanceHistory history model =
   { past = List.take maxUndoSteps (history.present :: history.past), present = model, future = [] }
@@ -186,34 +176,51 @@ redo history = case history.future of
   _ -> history
 
 
+updatePresent model presentUpdater =
+  let  history = model.history in
+  { model | history = { history | present = presentUpdater history.present } }
+
 
 -- FIXME should not connect at all
 realizeConnection model nodeId newNode mouse =
-  updateCache
-    { model | nodes = updateNode model.nodes nodeId newNode
-    , dragMode = Just <|
-        RetainPrototypedConnection
-          { mouse = mouse, node = nodeId
-          , previousNodeValue = IdMap.get nodeId model.nodes |> Maybe.map .node
-          }
-    } model
+  let
+    newPresent present = updateCache
+      { present | nodes = updateNode present.nodes nodeId newNode }
+      present
 
+    newDragMode = RetainPrototypedConnection
+      { mouse = mouse, node = nodeId
+      , previousNodeValue = IdMap.get nodeId model.history.present.nodes |> Maybe.map .node
+      }
+
+    newModel = updatePresent model newPresent
+
+  in
+    { newModel | dragMode = Just newDragMode }
+
+deleteNode: NodeId -> Model -> Model
 deleteNode nodeId model =
   let
-    output = if model.outputNode.id == Just nodeId
-      then Nothing else model.outputNode.id
+    output = if model.history.present.outputNode.id == Just nodeId
+      then Nothing else model.history.present.outputNode.id
 
-    newNodeValues = model.nodes |> IdMap.remove nodeId
+    newNodeValues = model.history.present.nodes |> IdMap.remove nodeId
       |> IdMap.updateAll (\view -> { view | node = onNodeDeleted nodeId view.node })
 
-  in updateCache { model
-    | nodes = newNodeValues
-    , outputNode = { id = output, locked = model.outputNode.locked }
-    , dragMode = Nothing
-    } model
+    newPresent present = updateCache
+      { present
+      | nodes = newNodeValues
+      , outputNode = { id = output, locked = present.outputNode.locked }
+      }
+      present
+
+    newModel = updatePresent model newPresent
+
+  in
+    { newModel | dragMode = Nothing }
 
 
-duplicateNode: BaseModel -> NodeId -> BaseModel
+duplicateNode: CoreModel -> NodeId -> CoreModel
 duplicateNode model nodeId =
   let
     nodes = model.nodes
@@ -228,23 +235,60 @@ duplicateNode model nodeId =
 
         in { model | nodes = IdMap.insertAnonymous clone nodes }
 
+insertNode: Node -> Model -> Model
 insertNode node model =
-    let position = Vec2.inverseTransform (Vec2 800 400) (viewTransform model.view)
-    in { model | nodes = IdMap.insertAnonymous (NodeView position node) model.nodes, search = Nothing }
+    let
+      position = Vec2.inverseTransform (Vec2 800 400) (viewTransform model.view)
+      newPresent present = { present | nodes = IdMap.insertAnonymous (NodeView position node) present.nodes }
+      newModel = updatePresent model newPresent
+    in { newModel | search = Nothing }
 
+parseRegexNodes: Model -> String -> Model
 parseRegexNodes model regex =
     let
+      history = model.history
+      coreModel = history.present
+
       position = Vec2.inverseTransform (Vec2 1000 400) (viewTransform model.view)
-      resultNodes = addParsedRegexNode position model.nodes regex
+      resultNodes = addParsedRegexNode position coreModel.nodes regex
 
       -- select the generated result
-      resultModel (resultNodeId, nodes) = selectNode resultNodeId { model | nodes = nodes, search = Nothing }
+      resultHistory resultNodeId nodes =
+        { history | present = selectNode resultNodeId { coreModel | nodes = nodes } }
+
+      resultModel (resultNodeId, nodes) =
+        { model | history = resultHistory resultNodeId nodes, search = Nothing }
+
     in resultNodes |> Result.map resultModel |> Result.withDefault model
 
+
+startNodeMove: Vec2 -> NodeId -> Model -> Model
 startNodeMove mouse node model =
-  selectNode node { model | dragMode = Just (MoveNodeDrag { node = node, mouse = mouse }) }
+  let
+    history = model.history
+    present = history.present
+
+  in { model
+    | dragMode = Just (MoveNodeDrag { node = node, mouse = mouse })
+    , history = { history | present = selectNode node present }
+    }
+
+startEditingConnection : NodeId -> Node -> Maybe NodeId -> Vec2 -> Model -> Model
+startEditingConnection nodeId node currentSupplier mouse model =
+  let
+    newPresent present = updateCache
+      { present | nodes = updateNode present.nodes nodeId node }
+      present
+
+    newModel = updatePresent model newPresent
+
+    updateIt oldSupplier =
+      { newModel | dragMode = Just (CreateConnection { supplier = oldSupplier, openEnd = mouse }) }
+
+  in currentSupplier |>  Maybe.map updateIt |> Maybe.withDefault model
 
 
+selectNode: NodeId -> CoreModel -> CoreModel
 selectNode node model =
   let
     safeModel = { model | selectedNode = Just node }
@@ -261,10 +305,12 @@ selectNode node model =
 
 
 
+stopEditingExampleText: Model -> Model
 stopEditingExampleText model =
-  enableEditingExampleText model False
+  updatePresent model (enableEditingExampleText False)
 
-enableEditingExampleText model enabled =
+enableEditingExampleText: Bool -> CoreModel -> CoreModel
+enableEditingExampleText enabled model =
   let old = model.exampleText in
   { model | exampleText = { old | isEditing = enabled } }
 
@@ -274,12 +320,16 @@ updateNode nodes id newNode =
   nodes |> IdMap.update id (\nodeView -> { nodeView | node = newNode })
 
 
+moveNodeInModel: Vec2 -> Vec2 -> NodeId -> Model -> Model
 moveNodeInModel newMouse mouse node model =
-  let delta = Vec2.sub newMouse mouse in
-  { model | nodes = moveNode model.view model.nodes node delta
-  , dragMode = Just (MoveNodeDrag { node = node, mouse = newMouse })
-  }
+  let
+    delta = Vec2.sub newMouse mouse
+    newPresent present = { present |nodes = moveNode model.view present.nodes node delta }
+    newModel = updatePresent model newPresent
 
+  in { newModel | dragMode = Just (MoveNodeDrag { node = node, mouse = newMouse }) }
+
+moveViewInModel: Vec2 -> Vec2 -> Model -> Model
 moveViewInModel newMouse mouse model =
   let
     view = model.view
@@ -318,7 +368,7 @@ updateView amount focus oldView =
 
 
 
-updateCache : BaseModel -> BaseModel -> BaseModel
+updateCache : CoreModel -> CoreModel -> CoreModel
 updateCache model fallback =
   let
     example = model.exampleText

@@ -62,19 +62,19 @@ stringWidth length =  (Basics.max 5 length) * (if length < 14 then 13 else 9)
 
 
 view : Model -> Html Message
-view history =
+view untrackedModel =
   let
-    model = history.present
-    expressionResult = model.cachedRegex |> Maybe.map (Result.map constructRegexLiteral)
+    trackedModel = untrackedModel.history.present
+    expressionResult = trackedModel.cachedRegex |> Maybe.map (Result.map constructRegexLiteral)
 
-    (moveDragging, connectDragId, mousePosition) = case model.dragMode of
+    (moveDragging, connectDragId, mousePosition) = case untrackedModel.dragMode of
         Just (MoveNodeDrag { mouse }) -> (True, Nothing, mouse)
         Just (CreateConnection { supplier, openEnd }) -> (False, Just supplier, openEnd)
         _ -> (False, Nothing, Vec2 0 0)
 
     connectDragging = connectDragId /= Nothing
 
-    nodeViews = (List.map (viewNode model.dragMode model.selectedNode model.outputNode.id model.nodes) (IdMap.toList model.nodes))
+    nodeViews = (List.map (viewNode untrackedModel.dragMode trackedModel.selectedNode trackedModel.outputNode.id trackedModel.nodes) (IdMap.toList trackedModel.nodes))
 
     connections = flattenList (List.map .connections nodeViews)
 
@@ -93,14 +93,14 @@ view history =
 
 
     , id "main"
-    , classes "" [(moveDragging, "move-dragging"), (connectDragging, "connect-dragging"), (model.exampleText.isEditing, "editing-example-text")]
+    , classes "" [(moveDragging, "move-dragging"), (connectDragging, "connect-dragging"), (trackedModel.exampleText.isEditing, "editing-example-text")]
     ]
 
-    [ lazy viewExampleText model.exampleText
+    [ lazy viewExampleText trackedModel.exampleText
 
     , svg [ id "connection-graph" ]
-      [ g [ magnifyAndOffsetSVG model.view ]
-        (if connectDragging then connections ++ [ viewConnectDrag model.view model.nodes connectDragId mousePosition ] else connections)
+      [ g [ magnifyAndOffsetSVG untrackedModel.view ]
+        (if connectDragging then connections ++ [ viewConnectDrag untrackedModel.view trackedModel.nodes connectDragId mousePosition ] else connections)
       ]
 
     , div
@@ -116,7 +116,7 @@ view history =
         ]
       )
 
-      [ div [ class "transform-wrapper", magnifyAndOffsetHTML model.view ]
+      [ div [ class "transform-wrapper", magnifyAndOffsetHTML untrackedModel.view ]
         (List.map .node nodeViews)
       ]
 
@@ -135,18 +135,18 @@ view history =
         , div [ id "example-options" ]
           [ div
             [ id "match-limit"
-            , title ("Display no more than " ++ String.fromInt model.exampleText.maxMatches
+            , title ("Display no more than " ++ String.fromInt trackedModel.exampleText.maxMatches
               ++ " Matches from the example text, in order to perserve responsivenes"
               )
             ]
             [ text "Example Match Limit"
-            , viewPositiveIntInput model.exampleText.maxMatches (UpdateExampleText << UpdateMaxMatchLimit)
+            , viewPositiveIntInput trackedModel.exampleText.maxMatches (UpdateExampleText << UpdateMaxMatchLimit)
             ]
 
           , div
             [ id "edit-example", class "button"
-            , checked model.exampleText.isEditing
-            , Mouse.onClick (always <| UpdateExampleText <| SetEditing <| not model.exampleText.isEditing)
+            , checked trackedModel.exampleText.isEditing
+            , Mouse.onClick (always <| UpdateExampleText <| SetEditing <| not trackedModel.exampleText.isEditing)
             , title "Edit the Text which is displayed in the background"
             ]
 
@@ -155,21 +155,21 @@ view history =
         ]
 
       , div [ id "search" ]
-        [ viewSearchBar model.search
-        , viewSearchResults model.search
+        [ viewSearchBar untrackedModel.search
+        , viewSearchResults untrackedModel.search
         ]
 
       , div [ id "history" ]
         [ div
           [ id "undo", title "Undo the last action"
-          , classes "button" [(List.isEmpty history.past, "disabled")]
+          , classes "button" [(List.isEmpty untrackedModel.history.past, "disabled")]
           , Mouse.onClick (always Undo)
           ]
           [ img [ src "html/img/arrow-left.svg" ]  [] ]
 
         , div
           [ id "redo", title "Undo the last action"
-          , classes "button" [(List.isEmpty history.future, "disabled")]
+          , classes "button" [(List.isEmpty untrackedModel.history.future, "disabled")]
           , Mouse.onClick (always Redo)
           ]
           [ img [ src "html/img/arrow-left.svg" ] []  ]
@@ -182,8 +182,8 @@ view history =
           ]
 
         , div
-          [ id "lock", classes "button" [(model.outputNode.locked, "checked")]
-          , Mouse.onClick (always <| SetOutputLocked <| not model.outputNode.locked)
+          [ id "lock", classes "button" [(trackedModel.outputNode.locked, "checked")]
+          , Mouse.onClick (always <| SetOutputLocked <| not trackedModel.outputNode.locked)
           , title "Always show the regex of the selected Node"
           ]
           [ lockSvg ]
@@ -214,7 +214,7 @@ view history =
 
     , div
       [ id "cycles-detected"
-      , classes "notification button" [(model.cyclesError, "show")]
+      , classes "notification button" [(trackedModel.cyclesError, "show")]
       , Mouse.onClick <| always <| DismissCyclesError
       ]
 

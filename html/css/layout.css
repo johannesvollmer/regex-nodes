@@ -152,7 +152,7 @@ header img {
 #history {
   position: fixed;
   top: 8px;
-  left: 66vw;
+  left: 68vw;
   height: 44px;
 
   display: flex;
@@ -164,7 +164,6 @@ header img {
   padding: 8px;
 }
 #history .disabled.button {
-  opacity: 0.2;
   pointer-events: none;
 }
 #history .button:hover {

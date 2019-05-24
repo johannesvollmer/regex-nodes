@@ -9,17 +9,23 @@ import IdMap exposing (IdMap)
 
 -- TODO improve structure
 
-type alias Model = History BaseModel
+type alias Model =
+  { history: History
 
-
-type alias History a =
-  { past: List a
-  , present: a
-  , future: List a
+  , view: View
+  , search: Maybe String
+  , dragMode: Maybe DragMode
   }
 
 
-type alias BaseModel =
+type alias History =
+  { past: List CoreModel
+  , present: CoreModel
+  , future: List CoreModel
+  }
+
+
+type alias CoreModel =
   { nodes: Nodes
   , outputNode: OutputNode
   , selectedNode: Maybe NodeId
@@ -27,26 +33,22 @@ type alias BaseModel =
   , exampleText: ExampleText
   , cachedRegex: Maybe (BuildResult RegexBuild)
 
-  , search: Maybe String
-  , dragMode: Maybe DragMode
-
   , cyclesError: Bool
-
-  , view: View
-
   }
 
 
-initialValue = { past = [], present = initialBaseValue, future = [] }
-
-
-initialBaseValue : BaseModel
-initialBaseValue =
-  { nodes = IdMap.empty
-  , outputNode = { id = Nothing, locked = False }
+initialValue =
+  { history = { past = [], present = initialHistoryValue, future = [] }
   , dragMode = Nothing
   , search = Nothing
   , view = View 0 (Vec2 0 0)
+  }
+
+
+initialHistoryValue : CoreModel
+initialHistoryValue =
+  { nodes = IdMap.empty
+  , outputNode = { id = Nothing, locked = False }
   , selectedNode = Nothing
   , cachedRegex = Nothing
   , cyclesError = False
