@@ -57,7 +57,8 @@ BrowserStack loves Open Source, and Open Source loves BrowserStack.
 - [ ] Use node width and property count when layouting parsed nodes
 - [x] Parse regex code in "Add Nodes"
     - [x] Charset `[abc]`
-        - [ ] Char ranges `[a-bc-d][^a-b]`
+        - [x] Char ranges `[a-bc-d][^a-b]`
+        - [ ] Fix composed negation being ignored
     - [x] Alternation `(a|b)`
     - [x] Escaped Characters `\W`
         - [ ] Unicode literals? `\x01`
