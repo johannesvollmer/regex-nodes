@@ -156,13 +156,13 @@ constructRegexLiteral : RegexBuild -> String
 constructRegexLiteral regex =
   "/" ++ regex.expression ++ "/"
      ++ (if regex.flags.multiple then "g" else "")
-     ++ (if regex.flags.caseSensitive then "" else "i")
+     ++ (if regex.flags.caseInsensitive then "i" else "")
      ++ (if regex.flags.multiline then "m" else "")
 
 
 compileRegex : RegexBuild -> Regex.Regex
 compileRegex build =
-  let options = { caseInsensitive = not build.flags.caseSensitive, multiline = build.flags.multiline }
+  let options = { caseInsensitive = not build.flags.caseInsensitive, multiline = build.flags.multiline }
   in Regex.fromStringWith options build.expression |> Maybe.withDefault Regex.never
 
 

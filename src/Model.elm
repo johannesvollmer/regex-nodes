@@ -299,7 +299,7 @@ typeDescriptions =
 
 type alias RegexFlags =
   { multiple : Bool
-  , caseSensitive : Bool
+  , caseInsensitive : Bool
   , multiline : Bool
   }
 
@@ -309,7 +309,7 @@ viewTransform { magnification, offset} =
   , scale = 2 ^ (magnification * 0.4)
   }
 
-defaultFlags = RegexFlags True True True
+defaultFlags = RegexFlags True False True
 
 
 
@@ -419,7 +419,7 @@ nodeProperties node =
           (BoolProperty flagsNode.flags.multiple (updateFlagsMultiple flagsNode)) False
 
       , Property "Case Insensitive" "Match as if everything had the same case"
-          (BoolProperty flagsNode.flags.caseSensitive (updateFlagsInsensitivity flagsNode)) False
+          (BoolProperty flagsNode.flags.caseInsensitive (updateFlagsInsensitivity flagsNode)) False
 
       , Property "Multiline Matches" "Allow every matches to be found across multiple lines"
           (BoolProperty flagsNode.flags.multiline (updateFlagsMultiline flagsNode)) False
@@ -580,7 +580,7 @@ updateRangedRepetitionMaximum repetition count = RangedRepetitionNode
 updateFlagsExpression flags newInput = FlagsNode { flags | expression = newInput }
 updateFlags expression newFlags = FlagsNode { expression = expression, flags = newFlags }
 updateFlagsMultiple { expression, flags } multiple = updateFlags expression { flags | multiple = multiple }
-updateFlagsInsensitivity { expression, flags } caseSensitive = updateFlags expression { flags | caseSensitive = caseSensitive }
+updateFlagsInsensitivity { expression, flags } caseInsensitive = updateFlags expression { flags | caseInsensitive = caseInsensitive }
 updateFlagsMultiline { expression, flags } multiline = updateFlags expression { flags | multiline = multiline }
 
 positive = Basics.max 0

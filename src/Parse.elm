@@ -218,10 +218,37 @@ compileCharsetOption member (chars, symbols, ranges) = case member of
 
 
 parse : String -> ParseResult ParsedElement
-parse regex = parseFlags regex |> Result.map Tuple.first
+parse regex = parseFlags regex
 
-parseFlags : String -> ParseSubResult ParsedElement
-parseFlags text = parseSet text -- TODO
+parseFlags : String -> ParseResult ParsedElement
+parseFlags text =
+  let
+    (hasModifiers, remaining) = skipIfNext "/" text
+    expression = parseSet remaining
+
+    parseRegexFlags chars =
+        RegexFlags
+          (String.contains "g" chars)
+          (String.contains "i" chars)
+          (String.contains "m" chars)
+
+    wrapInFlags content flags =
+        if flags /= defaultFlags
+          then ParsedFlags { expression = content, flags = flags }
+          else content
+
+    parseModifiers (content, remaining1) =
+        let
+          skipSlash = skipOrErr "/" remaining1
+          flags = skipSlash |> Result.map parseRegexFlags
+
+        in flags |> Result.map (wrapInFlags content)
+
+  in if hasModifiers
+    then expression |> Result.andThen parseModifiers
+    else expression |> Result.map Tuple.first
+
+
 
 parseSet : String -> ParseSubResult ParsedElement
 parseSet text =
@@ -249,7 +276,7 @@ extendSequence : ParseSubResult (List ParsedElement) -> ParseSubResult (List Par
 extendSequence current = case current of
   Err error -> Err error
   Ok (members, text) ->
-    if String.isEmpty text || String.startsWith ")" text || String.startsWith "|" text
+    if String.isEmpty text || String.startsWith ")" text || String.startsWith "|" text || String.startsWith "/" text
       then Ok (members, text)
       else parseLookAhead text
         |> Result.map (Tuple.mapFirst (appendTo members))

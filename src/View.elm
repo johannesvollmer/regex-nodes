@@ -664,7 +664,7 @@ viewBoolInput value onToggle = input
 viewCharsInput : String -> (String -> Message) -> Html Message
 viewCharsInput chars onChange = input
   [ type_ "text"
-  , placeholder "AEIOU"
+  , placeholder "chars"
   , value (insertWhitePlaceholder chars)-- FIXME this will reset the cursor position
   , onInput (removeWhitePlaceholder >> onChange)
   , class "chars input"
