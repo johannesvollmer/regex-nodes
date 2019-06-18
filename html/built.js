@@ -6285,7 +6285,7 @@ var elm$regex$Regex$Match = F4(
 var elm$regex$Regex$fromStringWith = _Regex_fromStringWith;
 var elm$regex$Regex$never = _Regex_never;
 var author$project$Build$compileRegex = function (build) {
-	var options = {bE: !build._.bE, bO: build._.bO};
+	var options = {bE: build._.bE, bO: build._.bO};
 	return A2(
 		elm$core$Maybe$withDefault,
 		elm$regex$Regex$never,
@@ -11999,7 +11999,7 @@ var author$project$Main$main = elm$browser$Browser$sandbox(
 			author$project$Update$update,
 			author$project$Update$SearchMessage(
 				author$project$Update$FinishSearch(
-					author$project$Update$ParseRegex('\\s(?:the|for)'))),
+					author$project$Update$ParseRegex('/\\s(?:the|for)/g'))),
 			author$project$Model$initialValue),
 		d2: author$project$Update$update,
 		d5: author$project$View$view

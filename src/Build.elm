@@ -162,7 +162,7 @@ constructRegexLiteral regex =
 
 compileRegex : RegexBuild -> Regex.Regex
 compileRegex build =
-  let options = { caseInsensitive = not build.flags.caseInsensitive, multiline = build.flags.multiline }
+  let options = { caseInsensitive = build.flags.caseInsensitive, multiline = build.flags.multiline }
   in Regex.fromStringWith options build.expression |> Maybe.withDefault Regex.never
 
 
