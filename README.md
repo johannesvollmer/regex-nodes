@@ -27,7 +27,7 @@ and automatic optimizations.
 
 # Core Features
 - Construct regular expressions using a visual editor
-- Load existing regular expressions as Node graph for easier analyzing and visualization
+- Load existing regular expressions from your Javascript code into the editor and edit it utilizing nodes
 - Use the generated expression in Javascript
 - See effects of the regular expression live using a customizable example text
 - Coming Soon: Reuse common patterns to not spend time reinventing the regex wheel
