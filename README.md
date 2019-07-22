@@ -48,7 +48,7 @@ in this directory to compile on every file save.
    When parsing a regular expression, those patterns should be recognized.
 2. To fully quality as an editor, the parser must support repetition ranges in curly 
    braces and Unicode literals at all costs.
-3. UX research!
+3. Simply connecting and rearranging properties of set nodes and sequence nodes.
    
 
 # Shoutout
