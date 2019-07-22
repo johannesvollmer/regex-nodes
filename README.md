@@ -1,22 +1,27 @@
 # Regex Nodes
 
 [This node-based regular expression editor](https://johannesvollmer.github.io/regex-nodes/) 
-helps you understanding and editing regular expressions for use in Javascript.
-If your regular expressions are complex enough to give this editor relevance, 
-you probably shouldn't use regular expressions, haha.
+helps you understand and edit regular expressions for use in your Javascript code.
+
+> If your regular expressions are complex enough to give this editor relevance, 
+> you probably should consider not using regular expressions, haha.
 
 # Why Nodes?
 
 One of the problems with regular expressions is
 that they get quite messy very quickly. Operator 
 precedence is not always obvious and can be misleading.
-Nodes are a visual hierarchy in contrast to a line of text,
-which cannot simply be broken into several lines or indented, 
-because that would alter the meaning of the expression.
-Nodes can be rearranged however you like.
+Nodes, on the other hand, are a visual hierarchy. A text-based regex
+cannot simply be broken into several lines or indented, 
+because that would alter the meaning of the expression. 
 
-Also, Nodes offer various other advantages, such as
-reusing, grouping and parameterizing expressions, 
+The other major benefit of nodes is that the editor will prevent you from
+producing invalid expressions. Other regex editors analyze the possibly incorrect
+regular expression that the user has come up with. The node editor will
+allow you to enter your intention and generate a correct regular expression.
+
+In addition, nodes offer various other advantages, such as
+reusing subexpressions, automatic character escaping, grouping and parameterizing expressions, 
 and automatic optimizations.
 
 
@@ -25,7 +30,7 @@ and automatic optimizations.
 - Load existing regular expressions as Node graph for easier analyzing and visualization
 - Use the generated expression in Javascript
 - See effects of the regular expression live using a customizable example text
-- Coming Soon: Reuse existing patterns by utilizing Node groups
+- Coming Soon: Reuse common patterns to not spend time reinventing the regex wheel
 
 # Build 
 
@@ -36,6 +41,15 @@ With elm installed on your system, run
 Alternatively, use [modd](https://github.com/cortesi/modd) 
 in this directory to compile on every file save.
 
+
+# Roadmap
+1. As I have realized that node groups would not be worth development time
+   right now, the editor should offer common regex patterns as hard-coded nodes.
+   When parsing a regular expression, those patterns should be recognized.
+2. To fully quality as an editor, the parser must support repetition ranges in curly 
+   braces and Unicode literals at all costs.
+3. UX research!
+   
 
 # Shoutout
 
@@ -81,7 +95,7 @@ BrowserStack loves Open Source, and Open Source loves BrowserStack.
 - [x] Tooltips
     - [ ] Custom, styled tooltips?
 - [ ] Live Explanations!!
-- [ ] Move node including all input nodes?
+- [ ] Move node including all input nodes? (Next to duplicate and delete)
 - [ ] Iterative Auto-layout using physics simulation?
 - [ ] Reconnect replaced connections 
       when reverting connection prototype
@@ -90,3 +104,6 @@ BrowserStack loves Open Source, and Open Source loves BrowserStack.
 - [ ] Consider rewriting Css to Sass
 - [ ] On input focus select container node
 - [ ] Node Groups!
+- [ ] Take care of Unicode in the output regex
+- [ ] Unicode literal node?
+- [ ] add support for mobile devices
