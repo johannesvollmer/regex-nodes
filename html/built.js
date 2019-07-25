@@ -9970,6 +9970,39 @@ var author$project$Update$UpdateNodeMessage = F2(
 	function (a, b) {
 		return {$: 3, a: a, b: b};
 	});
+var elm$core$Array$length = function (_n0) {
+	var len = _n0.a;
+	return len;
+};
+var elm$core$Elm$JsArray$appendN = _JsArray_appendN;
+var elm$core$Elm$JsArray$slice = _JsArray_slice;
+var elm$core$Array$appendHelpBuilder = F2(
+	function (tail, builder) {
+		var tailLen = elm$core$Elm$JsArray$length(tail);
+		var notAppended = (elm$core$Array$branchFactor - elm$core$Elm$JsArray$length(builder.i)) - tailLen;
+		var appended = A3(elm$core$Elm$JsArray$appendN, elm$core$Array$branchFactor, builder.i, tail);
+		return (notAppended < 0) ? {
+			j: A2(
+				elm$core$List$cons,
+				elm$core$Array$Leaf(appended),
+				builder.j),
+			g: builder.g + 1,
+			i: A3(elm$core$Elm$JsArray$slice, notAppended, tailLen, tail)
+		} : ((!notAppended) ? {
+			j: A2(
+				elm$core$List$cons,
+				elm$core$Array$Leaf(appended),
+				builder.j),
+			g: builder.g + 1,
+			i: elm$core$Elm$JsArray$empty
+		} : {j: builder.j, g: builder.g, i: appended});
+	});
+var elm$core$Bitwise$shiftLeftBy = _Bitwise_shiftLeftBy;
+var elm$core$Bitwise$shiftRightZfBy = _Bitwise_shiftRightZfBy;
+var elm$core$Array$tailIndex = function (len) {
+	return (len >>> 5) << 5;
+};
+var elm$core$Basics$ge = _Utils_ge;
 var elm$core$List$drop = F2(
 	function (n, list) {
 		drop:
@@ -9990,6 +10023,204 @@ var elm$core$List$drop = F2(
 				}
 			}
 		}
+	});
+var elm$core$Array$sliceLeft = F2(
+	function (from, array) {
+		var len = array.a;
+		var tree = array.c;
+		var tail = array.d;
+		if (!from) {
+			return array;
+		} else {
+			if (_Utils_cmp(
+				from,
+				elm$core$Array$tailIndex(len)) > -1) {
+				return A4(
+					elm$core$Array$Array_elm_builtin,
+					len - from,
+					elm$core$Array$shiftStep,
+					elm$core$Elm$JsArray$empty,
+					A3(
+						elm$core$Elm$JsArray$slice,
+						from - elm$core$Array$tailIndex(len),
+						elm$core$Elm$JsArray$length(tail),
+						tail));
+			} else {
+				var skipNodes = (from / elm$core$Array$branchFactor) | 0;
+				var helper = F2(
+					function (node, acc) {
+						if (!node.$) {
+							var subTree = node.a;
+							return A3(elm$core$Elm$JsArray$foldr, helper, acc, subTree);
+						} else {
+							var leaf = node.a;
+							return A2(elm$core$List$cons, leaf, acc);
+						}
+					});
+				var leafNodes = A3(
+					elm$core$Elm$JsArray$foldr,
+					helper,
+					_List_fromArray(
+						[tail]),
+					tree);
+				var nodesToInsert = A2(elm$core$List$drop, skipNodes, leafNodes);
+				if (!nodesToInsert.b) {
+					return elm$core$Array$empty;
+				} else {
+					var head = nodesToInsert.a;
+					var rest = nodesToInsert.b;
+					var firstSlice = from - (skipNodes * elm$core$Array$branchFactor);
+					var initialBuilder = {
+						j: _List_Nil,
+						g: 0,
+						i: A3(
+							elm$core$Elm$JsArray$slice,
+							firstSlice,
+							elm$core$Elm$JsArray$length(head),
+							head)
+					};
+					return A2(
+						elm$core$Array$builderToArray,
+						true,
+						A3(elm$core$List$foldl, elm$core$Array$appendHelpBuilder, initialBuilder, rest));
+				}
+			}
+		}
+	});
+var elm$core$Array$bitMask = 4294967295 >>> (32 - elm$core$Array$shiftStep);
+var elm$core$Elm$JsArray$unsafeGet = _JsArray_unsafeGet;
+var elm$core$Array$fetchNewTail = F4(
+	function (shift, end, treeEnd, tree) {
+		fetchNewTail:
+		while (true) {
+			var pos = elm$core$Array$bitMask & (treeEnd >>> shift);
+			var _n0 = A2(elm$core$Elm$JsArray$unsafeGet, pos, tree);
+			if (!_n0.$) {
+				var sub = _n0.a;
+				var $temp$shift = shift - elm$core$Array$shiftStep,
+					$temp$end = end,
+					$temp$treeEnd = treeEnd,
+					$temp$tree = sub;
+				shift = $temp$shift;
+				end = $temp$end;
+				treeEnd = $temp$treeEnd;
+				tree = $temp$tree;
+				continue fetchNewTail;
+			} else {
+				var values = _n0.a;
+				return A3(elm$core$Elm$JsArray$slice, 0, elm$core$Array$bitMask & end, values);
+			}
+		}
+	});
+var elm$core$Array$hoistTree = F3(
+	function (oldShift, newShift, tree) {
+		hoistTree:
+		while (true) {
+			if ((_Utils_cmp(oldShift, newShift) < 1) || (!elm$core$Elm$JsArray$length(tree))) {
+				return tree;
+			} else {
+				var _n0 = A2(elm$core$Elm$JsArray$unsafeGet, 0, tree);
+				if (!_n0.$) {
+					var sub = _n0.a;
+					var $temp$oldShift = oldShift - elm$core$Array$shiftStep,
+						$temp$newShift = newShift,
+						$temp$tree = sub;
+					oldShift = $temp$oldShift;
+					newShift = $temp$newShift;
+					tree = $temp$tree;
+					continue hoistTree;
+				} else {
+					return tree;
+				}
+			}
+		}
+	});
+var elm$core$Elm$JsArray$unsafeSet = _JsArray_unsafeSet;
+var elm$core$Array$sliceTree = F3(
+	function (shift, endIdx, tree) {
+		var lastPos = elm$core$Array$bitMask & (endIdx >>> shift);
+		var _n0 = A2(elm$core$Elm$JsArray$unsafeGet, lastPos, tree);
+		if (!_n0.$) {
+			var sub = _n0.a;
+			var newSub = A3(elm$core$Array$sliceTree, shift - elm$core$Array$shiftStep, endIdx, sub);
+			return (!elm$core$Elm$JsArray$length(newSub)) ? A3(elm$core$Elm$JsArray$slice, 0, lastPos, tree) : A3(
+				elm$core$Elm$JsArray$unsafeSet,
+				lastPos,
+				elm$core$Array$SubTree(newSub),
+				A3(elm$core$Elm$JsArray$slice, 0, lastPos + 1, tree));
+		} else {
+			return A3(elm$core$Elm$JsArray$slice, 0, lastPos, tree);
+		}
+	});
+var elm$core$Array$sliceRight = F2(
+	function (end, array) {
+		var len = array.a;
+		var startShift = array.b;
+		var tree = array.c;
+		var tail = array.d;
+		if (_Utils_eq(end, len)) {
+			return array;
+		} else {
+			if (_Utils_cmp(
+				end,
+				elm$core$Array$tailIndex(len)) > -1) {
+				return A4(
+					elm$core$Array$Array_elm_builtin,
+					end,
+					startShift,
+					tree,
+					A3(elm$core$Elm$JsArray$slice, 0, elm$core$Array$bitMask & end, tail));
+			} else {
+				var endIdx = elm$core$Array$tailIndex(end);
+				var depth = elm$core$Basics$floor(
+					A2(
+						elm$core$Basics$logBase,
+						elm$core$Array$branchFactor,
+						A2(elm$core$Basics$max, 1, endIdx - 1)));
+				var newShift = A2(elm$core$Basics$max, 5, depth * elm$core$Array$shiftStep);
+				return A4(
+					elm$core$Array$Array_elm_builtin,
+					end,
+					newShift,
+					A3(
+						elm$core$Array$hoistTree,
+						startShift,
+						newShift,
+						A3(elm$core$Array$sliceTree, startShift, endIdx, tree)),
+					A4(elm$core$Array$fetchNewTail, startShift, end, endIdx, tree));
+			}
+		}
+	});
+var elm$core$Array$translateIndex = F2(
+	function (index, _n0) {
+		var len = _n0.a;
+		var posIndex = (index < 0) ? (len + index) : index;
+		return (posIndex < 0) ? 0 : ((_Utils_cmp(posIndex, len) > 0) ? len : posIndex);
+	});
+var elm$core$Array$slice = F3(
+	function (from, to, array) {
+		var correctTo = A2(elm$core$Array$translateIndex, to, array);
+		var correctFrom = A2(elm$core$Array$translateIndex, from, array);
+		return (_Utils_cmp(correctFrom, correctTo) > 0) ? elm$core$Array$empty : A2(
+			elm$core$Array$sliceLeft,
+			correctFrom,
+			A2(elm$core$Array$sliceRight, correctTo, array));
+	});
+var author$project$View$insertIntoArray = F3(
+	function (index, element, array) {
+		var right = A3(
+			elm$core$Array$slice,
+			index,
+			elm$core$Array$length(array),
+			array);
+		var left = A3(elm$core$Array$slice, 0, index, array);
+		return elm$core$Array$fromList(
+			_Utils_ap(
+				elm$core$Array$toList(left),
+				_Utils_ap(
+					_List_fromArray(
+						[element]),
+					elm$core$Array$toList(right))));
 	});
 var author$project$View$removeFromList = F2(
 	function (index, list) {
@@ -10144,11 +10375,6 @@ var author$project$View$viewPositiveIntInput = F2(
 				]),
 			_List_Nil);
 	});
-var elm$core$Bitwise$shiftLeftBy = _Bitwise_shiftLeftBy;
-var elm$core$Bitwise$shiftRightZfBy = _Bitwise_shiftRightZfBy;
-var elm$core$Array$tailIndex = function (len) {
-	return (len >>> 5) << 5;
-};
 var elm$core$Elm$JsArray$foldl = _JsArray_foldl;
 var elm$core$Elm$JsArray$indexedMap = _JsArray_indexedMap;
 var elm$core$Array$indexedMap = F2(
@@ -10187,16 +10413,8 @@ var elm$core$Array$indexedMap = F2(
 			true,
 			A3(elm$core$Elm$JsArray$foldl, helper, initialBuilder, tree));
 	});
-var elm$core$Array$length = function (_n0) {
-	var len = _n0.a;
-	return len;
-};
-var elm$core$Array$bitMask = 4294967295 >>> (32 - elm$core$Array$shiftStep);
-var elm$core$Basics$ge = _Utils_ge;
 var elm$core$Elm$JsArray$push = _JsArray_push;
 var elm$core$Elm$JsArray$singleton = _JsArray_singleton;
-var elm$core$Elm$JsArray$unsafeGet = _JsArray_unsafeGet;
-var elm$core$Elm$JsArray$unsafeSet = _JsArray_unsafeSet;
 var elm$core$Array$insertTailInTree = F4(
 	function (shift, index, tail, tree) {
 		var pos = elm$core$Array$bitMask & (index >>> shift);
@@ -10272,48 +10490,6 @@ var elm$core$Array$push = F2(
 			elm$core$Array$unsafeReplaceTail,
 			A2(elm$core$Elm$JsArray$push, a, tail),
 			array);
-	});
-var elm$core$Array$setHelp = F4(
-	function (shift, index, value, tree) {
-		var pos = elm$core$Array$bitMask & (index >>> shift);
-		var _n0 = A2(elm$core$Elm$JsArray$unsafeGet, pos, tree);
-		if (!_n0.$) {
-			var subTree = _n0.a;
-			var newSub = A4(elm$core$Array$setHelp, shift - elm$core$Array$shiftStep, index, value, subTree);
-			return A3(
-				elm$core$Elm$JsArray$unsafeSet,
-				pos,
-				elm$core$Array$SubTree(newSub),
-				tree);
-		} else {
-			var values = _n0.a;
-			var newLeaf = A3(elm$core$Elm$JsArray$unsafeSet, elm$core$Array$bitMask & index, value, values);
-			return A3(
-				elm$core$Elm$JsArray$unsafeSet,
-				pos,
-				elm$core$Array$Leaf(newLeaf),
-				tree);
-		}
-	});
-var elm$core$Array$set = F3(
-	function (index, value, array) {
-		var len = array.a;
-		var startShift = array.b;
-		var tree = array.c;
-		var tail = array.d;
-		return ((index < 0) || (_Utils_cmp(index, len) > -1)) ? array : ((_Utils_cmp(
-			index,
-			elm$core$Array$tailIndex(len)) > -1) ? A4(
-			elm$core$Array$Array_elm_builtin,
-			len,
-			startShift,
-			tree,
-			A3(elm$core$Elm$JsArray$unsafeSet, elm$core$Array$bitMask & index, value, tail)) : A4(
-			elm$core$Array$Array_elm_builtin,
-			len,
-			startShift,
-			A4(elm$core$Array$setHelp, startShift, index, value, tree),
-			tail));
 	});
 var elm$html$Html$Attributes$title = elm$html$Html$Attributes$stringProperty('title');
 var mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$defaultOptions = {u: true, v: false};
@@ -10606,7 +10782,7 @@ var author$project$View$viewProperties = F3(
 							if (!newInput.$) {
 								var newInputId = newInput.a;
 								return onChange(
-									A3(elm$core$Array$set, index, newInputId, connectedProps));
+									A3(author$project$View$insertIntoArray, index, newInputId, connectedProps));
 							} else {
 								return onChange(
 									A2(author$project$View$removeFromArray, index, connectedProps));

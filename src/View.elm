@@ -615,7 +615,7 @@ viewProperties nodeId dragMode props =
             else prop
 
           onChangePropertyAtIndex index newInput = case newInput of
-             Just newInputId -> onChange (Array.set index newInputId connectedProps)
+             Just newInputId -> onChange (insertIntoArray index newInputId connectedProps)
              Nothing -> onChange (removeFromArray index connectedProps)
 
           onChangeStubProperty newInput = case newInput of
@@ -718,10 +718,11 @@ removeFromList index list =
 removeFromArray index =
   Array.toList >> removeFromList index >> Array.fromList
 
-prependListIf: Bool -> a -> List a -> List a
-prependListIf condition element list =
-    if condition then element :: list else list
-
+insertIntoArray index element array =
+  let -- TODO simplify!
+    left = Array.slice 0 index array
+    right = Array.slice index (Array.length array) array
+  in Array.fromList ((Array.toList left) ++ [element] ++ (Array.toList right))
 
 classes : String -> List (Bool, String) -> Attribute Message
 classes base elements = base ++ " " ++
