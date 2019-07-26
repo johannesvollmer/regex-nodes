@@ -97,7 +97,8 @@ header h1 {
   font-size: 24px;
   font-weight: normal;
   display: inline;
-  margin-left: 16px;
+  margin-left: 8px;
+  margin-right: 8px;
 }
 header a {
   margin-left: 12px;
@@ -109,6 +110,7 @@ header a, header h1 {
 header img {
   display: inline-block;
   height: 100%;
+  transform: scale(0.9)
 }
 
 #example-options {

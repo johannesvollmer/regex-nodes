@@ -44,11 +44,11 @@ body {
 }
 
 header a {
-  color: #555;
+  color: #666;
   text-decoration: none;
 }
 header a:hover {
-  color: #666;
+  color: #888;
 }
 nav {
   background-color: #333;

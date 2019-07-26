@@ -11726,6 +11726,19 @@ var author$project$View$view = function (untrackedModel) {
 										elm$html$Html$a,
 										_List_fromArray(
 											[
+												elm$html$Html$Attributes$href('https://johannesvollmer.github.io/2019/announcing-regex-nodes/'),
+												elm$html$Html$Attributes$target('_blank'),
+												elm$html$Html$Attributes$rel('noopener noreferrer'),
+												elm$html$Html$Attributes$title('johannesvollmer.github.io/announcing-regex-nodes')
+											]),
+										_List_fromArray(
+											[
+												elm$html$Html$text(' About ')
+											])),
+										A2(
+										elm$html$Html$a,
+										_List_fromArray(
+											[
 												elm$html$Html$Attributes$href('https://johannesvollmer.github.io/2019/announcing-regex-nodes/#basic-editor-functionality'),
 												elm$html$Html$Attributes$target('_blank'),
 												elm$html$Html$Attributes$rel('noopener noreferrer'),
@@ -11733,7 +11746,7 @@ var author$project$View$view = function (untrackedModel) {
 											]),
 										_List_fromArray(
 											[
-												elm$html$Html$text('Help | About')
+												elm$html$Html$text(' Help ')
 											]))
 									])),
 								A2(
