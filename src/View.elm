@@ -135,6 +135,11 @@ view untrackedModel =
             , title "johannesvollmer.github.io/basic-editor-functionality"
             ]
             [ text " Help " ]
+          , a
+            [ href "https://github.com/johannesvollmer/regex-nodes", target "_blank", rel "noopener noreferrer"
+            , title "github.com/johannesvollmer/regex-nodes"
+            ]
+            [ text " Github " ]
           ]
 
         , div [ id "example-options" ]
