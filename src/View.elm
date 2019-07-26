@@ -126,10 +126,10 @@ view untrackedModel =
           [ img [ src "html/img/logo.svg" ] []
           , h1 [] [ text "Regex Nodes" ]
           , a
-            [ href "https://github.com/johannesvollmer/regex-nodes", target "_blank", rel "noopener noreferrer"
-            , title "github.com/regex-nodes"
+            [ href "https://johannesvollmer.github.io/2019/announcing-regex-nodes/#basic-editor-functionality", target "_blank", rel "noopener noreferrer"
+            , title "johannesvollmer.github.io/basic-editor-functionality"
             ]
-            [ text "by johannes vollmer" ]
+            [ text "Help | About" ]
           ]
 
         , div [ id "example-options" ]

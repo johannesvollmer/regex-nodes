@@ -69,6 +69,7 @@ BrowserStack loves Open Source, and Open Source loves BrowserStack.
 - [x] Build Scripts + Build to Github Pages
     - [x] Use optimized builds instead of debug builds for github pages
 - [ ] Use node width and property count when layouting parsed nodes
+- [ ] While in "Add Nodes", press enter to pick the first option
 - [x] Parse regex code in "Add Nodes"
     - [x] Charset `[abc]`
         - [x] Char ranges `[a-bc-d][^a-b]`
@@ -106,4 +107,5 @@ BrowserStack loves Open Source, and Open Source loves BrowserStack.
 - [ ] Node Groups!
 - [ ] Take care of Unicode in the output regex
 - [ ] Unicode literal node?
-- [ ] add support for mobile devices
+- [ ] Add support for mobile devices
+- [ ] Enable sharing node graphs by url?
