@@ -497,12 +497,13 @@ viewNodeContent dragMode selectedNode outputNode nodeId props nodeView =
         , title "Duplicate this Node"
         ]
         [ img [ src "html/img/copy.svg" ] [] ]
+      {- TODO
       , div
         [ mayStopPropagation "mousedown" autolayoutAndStopPropagation -- must be mousedown because click would be triggered after deselect on mouse down
         , class "autolayout button"
         , title "Automatically layout all inputs of this node"
         ]
-        [ img [ src "html/img/autolayout.svg" ] [] ]
+        [ img [ src "html/img/autolayout.svg" ] [] ] -}
       , div
         [ mayStopPropagation "mousedown" deleteAndStopPropagation -- must be mousedown because click would be triggered after deselect on mouse down
         , class "delete button"

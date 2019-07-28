@@ -17,7 +17,14 @@
     <div id="elm-node"></div>
 
     <script type="text/javascript">
-      app = Elm.Main.init({ node: document.getElementById("elm-node") })
+      app = Elm.Main.init({
+        node: document.getElementById("elm-node"),
+        flags: window.location.href
+      })
+
+      app.ports && app.ports.url && app.ports.url.subscribe(function(url) {
+        window.location = url
+      })
     </script>
   </body>
 </html>
