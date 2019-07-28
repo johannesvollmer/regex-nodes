@@ -107,8 +107,8 @@ view untrackedModel =
             ]
             [ text " About " ]
           , a
-            [ href "https://johannesvollmer.github.io/2019/announcing-regex-nodes/#basic-editor-functionality", target "_blank", rel "noopener noreferrer"
-            , title "johannesvollmer.github.io/basic-editor-functionality"
+            [ href "https://johannesvollmer.github.io/2019/announcing-regex-nodes/#functionality-reference", target "_blank", rel "noopener noreferrer"
+            , title "johannesvollmer.github.io/functionality-reference"
             ]
             [ text " Help " ]
           , a

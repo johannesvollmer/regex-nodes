@@ -12301,10 +12301,10 @@ var author$project$View$view = function (untrackedModel) {
 										elm$html$Html$a,
 										_List_fromArray(
 											[
-												elm$html$Html$Attributes$href('https://johannesvollmer.github.io/2019/announcing-regex-nodes/#basic-editor-functionality'),
+												elm$html$Html$Attributes$href('https://johannesvollmer.github.io/2019/announcing-regex-nodes/#functionality-reference'),
 												elm$html$Html$Attributes$target('_blank'),
 												elm$html$Html$Attributes$rel('noopener noreferrer'),
-												elm$html$Html$Attributes$title('johannesvollmer.github.io/basic-editor-functionality')
+												elm$html$Html$Attributes$title('johannesvollmer.github.io/functionality-reference')
 											]),
 										_List_fromArray(
 											[
