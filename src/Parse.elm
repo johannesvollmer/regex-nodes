@@ -58,7 +58,6 @@ addParsedRegexNode : Vec2 -> Nodes -> String -> ParseResult (NodeId, Nodes)
 addParsedRegexNode position nodes regex = parse regex
   |> Result.map (compile >> addCompiledElement position nodes)
 
-
 addCompiledElement : Vec2 -> Nodes -> CompiledElement -> (NodeId, Nodes)
 addCompiledElement position nodes parsed = insert position parsed nodes
 

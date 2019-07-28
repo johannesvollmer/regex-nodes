@@ -32,6 +32,12 @@ and automatic optimizations.
 - See effects of the regular expression live using a customizable example text
 - Coming Soon: Reuse common patterns to not spend time reinventing the regex wheel
 
+
+# How to use
+
+See [this blog post](https://johannesvollmer.github.io/2019/announcing-regex-nodes/).
+It explains how to handle the nodes and what the buttons do.
+
 # Build 
 
 With elm installed on your system, run 
@@ -69,6 +75,7 @@ BrowserStack loves Open Source, and Open Source loves BrowserStack.
 - [x] Build Scripts + Build to Github Pages
     - [x] Use optimized builds instead of debug builds for github pages
 - [ ] Use node width and property count when layouting parsed nodes
+      Or use iterative physics approach (force-directed layout)
 - [ ] While in "Add Nodes", press enter to pick the first option
 - [x] Parse regex code in "Add Nodes"
     - [x] Charset `[abc]`
@@ -109,3 +116,4 @@ BrowserStack loves Open Source, and Open Source loves BrowserStack.
 - [ ] Unicode literal node?
 - [ ] Add support for mobile devices
 - [ ] Enable sharing node graphs by url?
+- [ ] Reset view button when panned too far away

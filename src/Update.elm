@@ -19,6 +19,7 @@ type Message
   | UpdateExampleText ExampleTextMessage
   | DeleteNode NodeId
   | DuplicateNode NodeId
+  | AutoLayout NodeId
   | DismissCyclesError -- TODO remove monolithic structure
   | Deselect
   | Undo
@@ -109,6 +110,8 @@ update message model =
 
     DuplicateNode id -> advance <| duplicateNode coreModel id
     DeleteNode id -> advanceModel <| deleteNode id model
+
+    AutoLayout id -> advance <| { coreModel | nodes = autolayout id coreModel.nodes }
 
     SearchMessage searchMessage ->
       case searchMessage of
@@ -252,10 +255,11 @@ parseRegexNodes model regex =
       position = Vec2.inverseTransform (Vec2 1000 400) (viewTransform model.view)
       resultNodes = addParsedRegexNode position coreModel.nodes regex
 
-      -- select the generated result
+      -- select the generated result and autolayout
       resultHistory resultNodeId nodes =
-        { history | present = selectNode resultNodeId { coreModel | nodes = nodes } }
+        { history | present = selectNode resultNodeId { coreModel | nodes = autolayout resultNodeId nodes } }
 
+      -- clear the search
       resultModel (resultNodeId, nodes) =
         { model | history = resultHistory resultNodeId nodes, search = Nothing }
 

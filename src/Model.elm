@@ -1,6 +1,7 @@
 module Model exposing (..)
 
 import Array exposing (Array)
+import Dict
 import Vec2 exposing (Vec2)
 import IdMap exposing (IdMap)
 
@@ -586,6 +587,108 @@ updateFlagsMultiline { expression, flags } multiline = updateFlags expression { 
 positive = Basics.max 0
 minChar a b = if a < b then a else b
 maxChar a b = if a > b then a else b
+
+
+-- LAYOUT
+
+propertyHeight = 25
+
+nodeWidth node = case node of
+  SymbolNode symbol -> symbol |> symbolName |> mainTextWidth
+  CharSetNode chars -> mainTextWidth typeNames.charset + codeTextWidth chars + 3
+  NotInCharSetNode chars -> mainTextWidth typeNames.charset + codeTextWidth chars + 3
+  CharRangeNode _ _ -> mainTextWidth typeNames.charRange
+  NotInCharRangeNode _ _ -> mainTextWidth typeNames.notInCharRange
+  LiteralNode chars -> mainTextWidth typeNames.literal + codeTextWidth chars + 3
+  OptionalNode _ -> stringWidth 10
+  SetNode _ -> mainTextWidth typeNames.set
+  FlagsNode _ -> mainTextWidth typeNames.flags
+  IfFollowedByNode _ -> mainTextWidth typeNames.ifFollowedBy
+  ExactRepetitionNode _ -> mainTextWidth typeNames.exactRepetition
+  SequenceNode _ -> mainTextWidth typeNames.sequence
+  CaptureNode _ -> mainTextWidth typeNames.capture
+  IfNotFollowedByNode _ -> mainTextWidth typeNames.ifNotFollowedBy
+  AtLeastOneNode _ -> mainTextWidth typeNames.atLeastOne
+  AnyRepetitionNode _ -> mainTextWidth typeNames.anyRepetition
+  RangedRepetitionNode _ -> mainTextWidth typeNames.rangedRepetition
+  MinimumRepetitionNode _ -> mainTextWidth typeNames.minimumRepetition
+  MaximumRepetitionNode _ -> mainTextWidth typeNames.maximumRepetition
+
+
+
+-- Thanks, Html, for letting us hardcode those values <3
+codeTextWidth = String.length >> (*) 5 >> toFloat
+mainTextWidth text = text |> String.length |> toFloat |> stringWidth
+stringWidth length =  (Basics.max 5 length) * (if length < 14 then 13 else 9)
+
+
+
+-- AUTO LAYOUT
+
+type alias NodeBlock =
+  { position: Vec2
+  , size: Vec2
+  }
+
+type alias BlockProperty =
+  { id: NodeId
+  , property: Int
+  }
+
+type alias Connection =
+  { left: BlockProperty
+  , right: BlockProperty
+  }
+
+type alias NodeBlocks = Dict.Dict NodeId NodeBlock
+type alias Connections = List Connection
+
+type alias Graph =
+  { blocks: NodeBlocks
+  , connections: Connections
+  }
+
+autolayout: NodeId -> Nodes -> Nodes
+autolayout nodeId nodes =
+  let
+      graph = collectBlocks (Graph Dict.empty []) nodeId nodes
+
+  in nodes -- TODO
+
+collectBlocks: Graph -> NodeId -> Nodes -> Graph
+collectBlocks graph nodeId nodes = graph
+{-
+  let
+      properties = nodeProperties nodeView.node
+
+      newBlock: NodeView -> NodeBlock
+      newBlock nodeView = NodeBlock
+        nodeView.position
+        (Vec2 (nodeWidth nodeView.node) (List.length properties |> toFloat))
+
+      blocks = List.filter isConnection |> List.map collectBlocks properties
+      block = IdMap.get nodeId nodes |> Maybe.map newBlock
+
+  in
+    Graph
+      (Dict.insert nodeId block graph.blocks)
+      (() :: connections)
+
+-}
+
+
+
+
+-- PRIORITIES:
+-- 1. MOVE OVERLAPPING NODES APART
+-- 2. MAKE CONNECTIONS SMOOTH IN HORIZONTAL DIRECTION
+-- 3. MOVE ALL NODES CLOSE TO EACH OTHER
+
+iterateAutoLayout: Float -> Graph -> Graph
+iterateAutoLayout time graph = graph
+
+
+
 
 
 

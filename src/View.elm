@@ -28,36 +28,6 @@ type alias NodeView =
 
 
 
-propertyHeight = 25
-
-nodeWidth node = case node of
-  SymbolNode symbol -> symbol |> symbolName |> mainTextWidth
-  CharSetNode chars -> mainTextWidth typeNames.charset + codeTextWidth chars + 3
-  NotInCharSetNode chars -> mainTextWidth typeNames.charset + codeTextWidth chars + 3
-  CharRangeNode _ _ -> mainTextWidth typeNames.charRange
-  NotInCharRangeNode _ _ -> mainTextWidth typeNames.notInCharRange
-  LiteralNode chars -> mainTextWidth typeNames.literal + codeTextWidth chars + 3
-  OptionalNode _ -> stringWidth 10
-  SetNode _ -> mainTextWidth typeNames.set
-  FlagsNode _ -> mainTextWidth typeNames.flags
-  IfFollowedByNode _ -> mainTextWidth typeNames.ifFollowedBy
-  ExactRepetitionNode _ -> mainTextWidth typeNames.exactRepetition
-  SequenceNode _ -> mainTextWidth typeNames.sequence
-  CaptureNode _ -> mainTextWidth typeNames.capture
-  IfNotFollowedByNode _ -> mainTextWidth typeNames.ifNotFollowedBy
-  AtLeastOneNode _ -> mainTextWidth typeNames.atLeastOne
-  AnyRepetitionNode _ -> mainTextWidth typeNames.anyRepetition
-  RangedRepetitionNode _ -> mainTextWidth typeNames.rangedRepetition
-  MinimumRepetitionNode _ -> mainTextWidth typeNames.minimumRepetition
-  MaximumRepetitionNode _ -> mainTextWidth typeNames.maximumRepetition
-
-
-
--- Thanks, Html, for letting us hardcode those values.
-codeTextWidth = String.length >> (*) 5 >> toFloat
-mainTextWidth text = text |> String.length |> toFloat |> stringWidth
-stringWidth length =  (Basics.max 5 length) * (if length < 14 then 13 else 9)
-
 -- VIEW
 
 
@@ -484,6 +454,11 @@ viewNodeContent dragMode selectedNode outputNode nodeId props nodeView =
       then (DeleteNode nodeId, True)
       else (DoNothing, False) -- do not stop event propagation on non-primary mouse down
 
+    autolayoutAndStopPropagation event =
+      if event.button == Mouse.MainButton
+      then (AutoLayout nodeId, True)
+      else (DoNothing, False) -- do not stop event propagation on non-primary mouse down
+
     mayStopPropagation : String -> (Mouse.Event -> (Message, Bool)) -> Attribute Message
     mayStopPropagation tag handler = Html.Events.stopPropagationOn
       tag (Mouse.eventDecoder |> Json.Decode.map handler)
@@ -522,7 +497,12 @@ viewNodeContent dragMode selectedNode outputNode nodeId props nodeView =
         , title "Duplicate this Node"
         ]
         [ img [ src "html/img/copy.svg" ] [] ]
-
+      , div
+        [ mayStopPropagation "mousedown" autolayoutAndStopPropagation -- must be mousedown because click would be triggered after deselect on mouse down
+        , class "autolayout button"
+        , title "Automatically layout all inputs of this node"
+        ]
+        [ img [ src "html/img/autolayout.svg" ] [] ]
       , div
         [ mayStopPropagation "mousedown" deleteAndStopPropagation -- must be mousedown because click would be triggered after deselect on mouse down
         , class "delete button"
