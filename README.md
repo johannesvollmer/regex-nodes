@@ -117,3 +117,4 @@ BrowserStack loves Open Source, and Open Source loves BrowserStack.
 - [ ] Add support for mobile devices
 - [ ] Enable sharing node graphs by url?
 - [ ] Reset view button when panned too far away
+- [ ] Do not always update URI, but only when user wants to share?

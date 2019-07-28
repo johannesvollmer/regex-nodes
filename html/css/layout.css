@@ -93,18 +93,18 @@ header {
   padding: 8px;
   height: 42px;
 }
-header h1 {
+header > h1 {
   font-size: 24px;
   font-weight: normal;
   display: inline;
   margin-left: 8px;
   margin-right: 8px;
 }
-header a {
+header > a {
   margin-left: 12px;
   font-size: 18px;
 }
-header a, header h1 {
+header > a, header > h1 {
   transform: translate(0px, -10px);
 }
 header img {

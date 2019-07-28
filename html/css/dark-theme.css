@@ -43,11 +43,16 @@ body {
   color: #ddd;
 }
 
-header a {
+header > h1 > a {
+  color: inherit;
+  text-decoration: inherit;
+}
+
+header > a {
   color: #666;
   text-decoration: none;
 }
-header a:hover {
+header > a:hover {
   color: #888;
 }
 nav {

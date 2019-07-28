@@ -22,7 +22,7 @@ main = Browser.element
 init rawUrl =
   let
     expression = case String.split "?expression=" rawUrl of
-      _ :: [ query ] -> Just (Debug.log "found query" query)
+      _ :: [ query ] -> Just  query
       _ -> Nothing
 
     escapedExpression = expression |> Maybe.andThen Url.percentDecode
@@ -30,11 +30,9 @@ init rawUrl =
       |> Maybe.andThen (Base64.decode >> Result.toMaybe)
       |> Maybe.withDefault "/\\s(?:the|for)/g"
 
-    regex = Debug.log "final expression" escapedExpression
-
   in
     Model.initialValue |> Update.update -- cannot be done in Model due to circular imports
-      (Update.SearchMessage <| Update.FinishSearch <| Update.ParseRegex regex)
+      (Update.SearchMessage <| Update.FinishSearch <| Update.ParseRegex escapedExpression)
 
 update message model =
   let

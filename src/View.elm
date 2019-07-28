@@ -93,8 +93,14 @@ view untrackedModel =
     , div [ id "overlay" ]
       [ nav []
         [ header []
-          [ img [ src "html/img/logo.svg" ] []
-          , h1 [] [ text "Regex Nodes" ]
+          [ img [ src "html/img/logo.svg" ] [] -- TODO also link image to "reset application"
+          , h1 []
+            [ a
+              [ href "https://johannesvollmer.github.io/regex-nodes/"
+              , title "Restart Application"
+              ]
+              [ text "Regex Nodes" ]
+            ]
           , a
             [ href "https://johannesvollmer.github.io/2019/announcing-regex-nodes/", target "_blank", rel "noopener noreferrer"
             , title "johannesvollmer.github.io/announcing-regex-nodes"
