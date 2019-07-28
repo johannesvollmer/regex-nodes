@@ -1,6 +1,7 @@
 port module Main exposing (..)
 
 import Browser
+import Build
 import Model
 import Update
 import Url
@@ -9,6 +10,14 @@ import Url.Parser.Query
 import View
 
 port url : String -> Cmd msg
+
+
+main = Browser.element
+  { init = \flags -> (init flags, Cmd.none)
+  , update = \message model -> update message model
+  , subscriptions = always Sub.none
+  , view = View.view
+  }
 
 
 {-main1 = Browser.sandbox
@@ -22,29 +31,24 @@ port url : String -> Cmd msg
 
 init rawUrl =
   let
-    queryParser: Url.Parser.Parser (Maybe String -> a) a
-    queryParser = Debug.log "parser" (Url.Parser.Query.string "expression" |> Url.Parser.query)
+    expression = case String.split "?expression=" rawUrl of
+      _ :: [ query ] -> Just (Debug.log "found query" query)
+      _ -> Nothing
 
-    extractExpression: Url.Url -> Maybe String
-    extractExpression urrl = Debug.log "parsed query" (Url.Parser.parse queryParser urrl) |> unwrap
-
-    expression = Debug.log "parsed url" (Url.fromString (Debug.log "raw" rawUrl)) |> Maybe.andThen extractExpression
-    regex = Debug.log "final expression" expression |> Maybe.withDefault "/\\s(?:the|for)/g"
+    escapedExpression = expression |> Maybe.andThen Url.percentDecode -- TODO does this include ?expression=
+    regex = Debug.log "final expression" escapedExpression |> Maybe.withDefault "/\\s(?:the|for)/g"
 
   in
     Model.initialValue |> Update.update -- cannot be done in Model due to circular imports
       (Update.SearchMessage <| Update.FinishSearch <| Update.ParseRegex regex)
 
-
-main = Browser.element
-  { init = \flags -> passive (init flags)
-  , update = \message model -> passive (Update.update message model)
-  , subscriptions = always Sub.none
-  , view = View.view
-  }
+update message model =
+  let
+    newModel = Update.update message model
+    regex = model.history.present.cachedRegex
+      |> Maybe.map (Result.map Build.constructRegexLiteral)
 
 
-passive value = (value, Cmd.none)
-
-unwrap: Maybe (Maybe a) -> Maybe a
-unwrap = Maybe.withDefault Nothing
+  in case regex of
+    Just (Ok expression) -> (newModel, url ("?expression=" ++ expression))
+    _ -> (newModel, Cmd.none)

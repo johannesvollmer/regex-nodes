@@ -23,7 +23,7 @@
       })
 
       app.ports && app.ports.url && app.ports.url.subscribe(function(url) {
-        window.location = url
+        window.history.replaceState(url, window.location.title, url)
       })
     </script>
   </body>
