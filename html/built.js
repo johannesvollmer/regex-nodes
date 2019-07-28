@@ -8491,7 +8491,263 @@ var author$project$Update$update = F2(
 		}
 	});
 var elm$core$Debug$log = _Debug_log;
+var elm$core$Result$toMaybe = function (result) {
+	if (result.$ === 'Ok') {
+		var v = result.a;
+		return elm$core$Maybe$Just(v);
+	} else {
+		return elm$core$Maybe$Nothing;
+	}
+};
 var elm$url$Url$percentDecode = _Url_percentDecode;
+var elm$core$Basics$remainderBy = _Basics_remainderBy;
+var truqu$elm_base64$Base64$Decode$pad = function (input) {
+	var _n0 = elm$core$String$length(input) % 4;
+	switch (_n0) {
+		case 3:
+			return input + '=';
+		case 2:
+			return input + '==';
+		default:
+			return input;
+	}
+};
+var elm$core$String$foldl = _String_foldl;
+var elm$core$Bitwise$or = _Bitwise_or;
+var elm$core$Bitwise$shiftLeftBy = _Bitwise_shiftLeftBy;
+var truqu$elm_base64$Base64$Decode$charToInt = function (_char) {
+	switch (_char.valueOf()) {
+		case 'A':
+			return 0;
+		case 'B':
+			return 1;
+		case 'C':
+			return 2;
+		case 'D':
+			return 3;
+		case 'E':
+			return 4;
+		case 'F':
+			return 5;
+		case 'G':
+			return 6;
+		case 'H':
+			return 7;
+		case 'I':
+			return 8;
+		case 'J':
+			return 9;
+		case 'K':
+			return 10;
+		case 'L':
+			return 11;
+		case 'M':
+			return 12;
+		case 'N':
+			return 13;
+		case 'O':
+			return 14;
+		case 'P':
+			return 15;
+		case 'Q':
+			return 16;
+		case 'R':
+			return 17;
+		case 'S':
+			return 18;
+		case 'T':
+			return 19;
+		case 'U':
+			return 20;
+		case 'V':
+			return 21;
+		case 'W':
+			return 22;
+		case 'X':
+			return 23;
+		case 'Y':
+			return 24;
+		case 'Z':
+			return 25;
+		case 'a':
+			return 26;
+		case 'b':
+			return 27;
+		case 'c':
+			return 28;
+		case 'd':
+			return 29;
+		case 'e':
+			return 30;
+		case 'f':
+			return 31;
+		case 'g':
+			return 32;
+		case 'h':
+			return 33;
+		case 'i':
+			return 34;
+		case 'j':
+			return 35;
+		case 'k':
+			return 36;
+		case 'l':
+			return 37;
+		case 'm':
+			return 38;
+		case 'n':
+			return 39;
+		case 'o':
+			return 40;
+		case 'p':
+			return 41;
+		case 'q':
+			return 42;
+		case 'r':
+			return 43;
+		case 's':
+			return 44;
+		case 't':
+			return 45;
+		case 'u':
+			return 46;
+		case 'v':
+			return 47;
+		case 'w':
+			return 48;
+		case 'x':
+			return 49;
+		case 'y':
+			return 50;
+		case 'z':
+			return 51;
+		case '0':
+			return 52;
+		case '1':
+			return 53;
+		case '2':
+			return 54;
+		case '3':
+			return 55;
+		case '4':
+			return 56;
+		case '5':
+			return 57;
+		case '6':
+			return 58;
+		case '7':
+			return 59;
+		case '8':
+			return 60;
+		case '9':
+			return 61;
+		case '+':
+			return 62;
+		case '/':
+			return 63;
+		default:
+			return 0;
+	}
+};
+var elm$core$Bitwise$shiftRightZfBy = _Bitwise_shiftRightZfBy;
+var elm$core$Char$fromCode = _Char_fromCode;
+var truqu$elm_base64$Base64$Decode$intToString = A2(elm$core$Basics$composeR, elm$core$Char$fromCode, elm$core$String$fromChar);
+var truqu$elm_base64$Base64$Decode$add = F2(
+	function (_char, _n0) {
+		var curr = _n0.a;
+		var need = _n0.b;
+		var res = _n0.c;
+		var shiftAndAdd = function (_int) {
+			return (63 & _int) | (curr << 6);
+		};
+		return (!need) ? ((!(128 & _char)) ? _Utils_Tuple3(
+			0,
+			0,
+			_Utils_ap(
+				res,
+				truqu$elm_base64$Base64$Decode$intToString(_char))) : (((224 & _char) === 192) ? _Utils_Tuple3(31 & _char, 1, res) : (((240 & _char) === 224) ? _Utils_Tuple3(15 & _char, 2, res) : _Utils_Tuple3(7 & _char, 3, res)))) : ((need === 1) ? _Utils_Tuple3(
+			0,
+			0,
+			_Utils_ap(
+				res,
+				truqu$elm_base64$Base64$Decode$intToString(
+					shiftAndAdd(_char)))) : _Utils_Tuple3(
+			shiftAndAdd(_char),
+			need - 1,
+			res));
+	});
+var truqu$elm_base64$Base64$Decode$toUTF16 = F2(
+	function (_char, acc) {
+		return _Utils_Tuple3(
+			0,
+			0,
+			A2(
+				truqu$elm_base64$Base64$Decode$add,
+				255 & (_char >>> 0),
+				A2(
+					truqu$elm_base64$Base64$Decode$add,
+					255 & (_char >>> 8),
+					A2(truqu$elm_base64$Base64$Decode$add, 255 & (_char >>> 16), acc))));
+	});
+var truqu$elm_base64$Base64$Decode$chomp = F2(
+	function (char_, _n0) {
+		var curr = _n0.a;
+		var cnt = _n0.b;
+		var utf8ToUtf16 = _n0.c;
+		var _char = truqu$elm_base64$Base64$Decode$charToInt(char_);
+		if (cnt === 3) {
+			return A2(truqu$elm_base64$Base64$Decode$toUTF16, curr | _char, utf8ToUtf16);
+		} else {
+			return _Utils_Tuple3((_char << ((3 - cnt) * 6)) | curr, cnt + 1, utf8ToUtf16);
+		}
+	});
+var truqu$elm_base64$Base64$Decode$initial = _Utils_Tuple3(
+	0,
+	0,
+	_Utils_Tuple3(0, 0, ''));
+var elm$core$String$dropRight = F2(
+	function (n, string) {
+		return (n < 1) ? string : A3(elm$core$String$slice, 0, -n, string);
+	});
+var elm$core$String$endsWith = _String_endsWith;
+var truqu$elm_base64$Base64$Decode$stripNulls = F2(
+	function (input, output) {
+		return A2(elm$core$String$endsWith, '==', input) ? A2(elm$core$String$dropRight, 2, output) : (A2(elm$core$String$endsWith, '=', input) ? A2(elm$core$String$dropRight, 1, output) : output);
+	});
+var elm$regex$Regex$contains = _Regex_contains;
+var elm$regex$Regex$fromString = function (string) {
+	return A2(
+		elm$regex$Regex$fromStringWith,
+		{caseInsensitive: false, multiline: false},
+		string);
+};
+var truqu$elm_base64$Base64$Decode$validBase64Regex = A2(
+	elm$core$Maybe$withDefault,
+	elm$regex$Regex$never,
+	elm$regex$Regex$fromString('^([A-Za-z0-9\\/+]{4})*([A-Za-z0-9\\/+]{2}[A-Za-z0-9\\/+=]{2})?$'));
+var truqu$elm_base64$Base64$Decode$validate = function (input) {
+	return A2(elm$regex$Regex$contains, truqu$elm_base64$Base64$Decode$validBase64Regex, input) ? elm$core$Result$Ok(input) : elm$core$Result$Err('Invalid base64');
+};
+var truqu$elm_base64$Base64$Decode$wrapUp = function (_n0) {
+	var _n1 = _n0.c;
+	var need = _n1.b;
+	var res = _n1.c;
+	return (need > 0) ? elm$core$Result$Err('Invalid UTF-16') : elm$core$Result$Ok(res);
+};
+var truqu$elm_base64$Base64$Decode$validateAndDecode = function (input) {
+	return A2(
+		elm$core$Result$map,
+		truqu$elm_base64$Base64$Decode$stripNulls(input),
+		A2(
+			elm$core$Result$andThen,
+			A2(
+				elm$core$Basics$composeR,
+				A2(elm$core$String$foldl, truqu$elm_base64$Base64$Decode$chomp, truqu$elm_base64$Base64$Decode$initial),
+				truqu$elm_base64$Base64$Decode$wrapUp),
+			truqu$elm_base64$Base64$Decode$validate(input)));
+};
+var truqu$elm_base64$Base64$Decode$decode = A2(elm$core$Basics$composeR, truqu$elm_base64$Base64$Decode$pad, truqu$elm_base64$Base64$Decode$validateAndDecode);
+var truqu$elm_base64$Base64$decode = truqu$elm_base64$Base64$Decode$decode;
 var author$project$Main$init = function (rawUrl) {
 	var expression = function () {
 		var _n0 = A2(elm$core$String$split, '?expression=', rawUrl);
@@ -8504,11 +8760,14 @@ var author$project$Main$init = function (rawUrl) {
 			return elm$core$Maybe$Nothing;
 		}
 	}();
-	var escapedExpression = A2(elm$core$Maybe$andThen, elm$url$Url$percentDecode, expression);
-	var regex = A2(
+	var escapedExpression = A2(
 		elm$core$Maybe$withDefault,
 		'/\\s(?:the|for)/g',
-		A2(elm$core$Debug$log, 'final expression', escapedExpression));
+		A2(
+			elm$core$Maybe$andThen,
+			A2(elm$core$Basics$composeR, truqu$elm_base64$Base64$decode, elm$core$Result$toMaybe),
+			A2(elm$core$Maybe$andThen, elm$url$Url$percentDecode, expression)));
+	var regex = A2(elm$core$Debug$log, 'final expression', escapedExpression);
 	return A2(
 		author$project$Update$update,
 		author$project$Update$SearchMessage(
@@ -8546,7 +8805,6 @@ var elm$core$Array$initializeHelp = F5(
 			}
 		}
 	});
-var elm$core$Basics$remainderBy = _Basics_remainderBy;
 var elm$core$Array$initialize = F2(
 	function (len, fn) {
 		if (len <= 0) {
@@ -8712,22 +8970,226 @@ var elm$json$Json$Decode$errorToStringHelp = F2(
 	});
 var elm$json$Json$Encode$string = _Json_wrap;
 var author$project$Main$url = _Platform_outgoingPort('url', elm$json$Json$Encode$string);
-var elm$core$Platform$Cmd$batch = _Platform_batch;
-var elm$core$Platform$Cmd$none = elm$core$Platform$Cmd$batch(_List_Nil);
+var elm$url$Url$percentEncode = _Url_percentEncode;
+var elm$core$Basics$ge = _Utils_ge;
+var truqu$elm_base64$Base64$Encode$intToBase64 = function (i) {
+	switch (i) {
+		case 0:
+			return 'A';
+		case 1:
+			return 'B';
+		case 2:
+			return 'C';
+		case 3:
+			return 'D';
+		case 4:
+			return 'E';
+		case 5:
+			return 'F';
+		case 6:
+			return 'G';
+		case 7:
+			return 'H';
+		case 8:
+			return 'I';
+		case 9:
+			return 'J';
+		case 10:
+			return 'K';
+		case 11:
+			return 'L';
+		case 12:
+			return 'M';
+		case 13:
+			return 'N';
+		case 14:
+			return 'O';
+		case 15:
+			return 'P';
+		case 16:
+			return 'Q';
+		case 17:
+			return 'R';
+		case 18:
+			return 'S';
+		case 19:
+			return 'T';
+		case 20:
+			return 'U';
+		case 21:
+			return 'V';
+		case 22:
+			return 'W';
+		case 23:
+			return 'X';
+		case 24:
+			return 'Y';
+		case 25:
+			return 'Z';
+		case 26:
+			return 'a';
+		case 27:
+			return 'b';
+		case 28:
+			return 'c';
+		case 29:
+			return 'd';
+		case 30:
+			return 'e';
+		case 31:
+			return 'f';
+		case 32:
+			return 'g';
+		case 33:
+			return 'h';
+		case 34:
+			return 'i';
+		case 35:
+			return 'j';
+		case 36:
+			return 'k';
+		case 37:
+			return 'l';
+		case 38:
+			return 'm';
+		case 39:
+			return 'n';
+		case 40:
+			return 'o';
+		case 41:
+			return 'p';
+		case 42:
+			return 'q';
+		case 43:
+			return 'r';
+		case 44:
+			return 's';
+		case 45:
+			return 't';
+		case 46:
+			return 'u';
+		case 47:
+			return 'v';
+		case 48:
+			return 'w';
+		case 49:
+			return 'x';
+		case 50:
+			return 'y';
+		case 51:
+			return 'z';
+		case 52:
+			return '0';
+		case 53:
+			return '1';
+		case 54:
+			return '2';
+		case 55:
+			return '3';
+		case 56:
+			return '4';
+		case 57:
+			return '5';
+		case 58:
+			return '6';
+		case 59:
+			return '7';
+		case 60:
+			return '8';
+		case 61:
+			return '9';
+		case 62:
+			return '+';
+		default:
+			return '/';
+	}
+};
+var truqu$elm_base64$Base64$Encode$toBase64 = function (_int) {
+	return _Utils_ap(
+		truqu$elm_base64$Base64$Encode$intToBase64(63 & (_int >>> 18)),
+		_Utils_ap(
+			truqu$elm_base64$Base64$Encode$intToBase64(63 & (_int >>> 12)),
+			_Utils_ap(
+				truqu$elm_base64$Base64$Encode$intToBase64(63 & (_int >>> 6)),
+				truqu$elm_base64$Base64$Encode$intToBase64(63 & (_int >>> 0)))));
+};
+var truqu$elm_base64$Base64$Encode$add = F2(
+	function (_char, _n0) {
+		var res = _n0.a;
+		var count = _n0.b;
+		var acc = _n0.c;
+		var current = (acc << 8) | _char;
+		if (count === 2) {
+			return _Utils_Tuple3(
+				_Utils_ap(
+					res,
+					truqu$elm_base64$Base64$Encode$toBase64(current)),
+				0,
+				0);
+		} else {
+			return _Utils_Tuple3(res, count + 1, current);
+		}
+	});
+var truqu$elm_base64$Base64$Encode$chomp = F2(
+	function (char_, acc) {
+		var _char = elm$core$Char$toCode(char_);
+		return (_char < 128) ? A2(truqu$elm_base64$Base64$Encode$add, _char, acc) : ((_char < 2048) ? A2(
+			truqu$elm_base64$Base64$Encode$add,
+			128 | (63 & _char),
+			A2(truqu$elm_base64$Base64$Encode$add, 192 | (_char >>> 6), acc)) : (((_char < 55296) || ((_char >= 57344) && (_char <= 65535))) ? A2(
+			truqu$elm_base64$Base64$Encode$add,
+			128 | (63 & _char),
+			A2(
+				truqu$elm_base64$Base64$Encode$add,
+				128 | (63 & (_char >>> 6)),
+				A2(truqu$elm_base64$Base64$Encode$add, 224 | (_char >>> 12), acc))) : A2(
+			truqu$elm_base64$Base64$Encode$add,
+			128 | (63 & _char),
+			A2(
+				truqu$elm_base64$Base64$Encode$add,
+				128 | (63 & (_char >>> 6)),
+				A2(
+					truqu$elm_base64$Base64$Encode$add,
+					128 | (63 & (_char >>> 12)),
+					A2(truqu$elm_base64$Base64$Encode$add, 240 | (_char >>> 18), acc))))));
+	});
+var truqu$elm_base64$Base64$Encode$initial = _Utils_Tuple3('', 0, 0);
+var truqu$elm_base64$Base64$Encode$wrapUp = function (_n0) {
+	var res = _n0.a;
+	var cnt = _n0.b;
+	var acc = _n0.c;
+	switch (cnt) {
+		case 1:
+			return res + (truqu$elm_base64$Base64$Encode$intToBase64(63 & (acc >>> 2)) + (truqu$elm_base64$Base64$Encode$intToBase64(63 & (acc << 4)) + '=='));
+		case 2:
+			return res + (truqu$elm_base64$Base64$Encode$intToBase64(63 & (acc >>> 10)) + (truqu$elm_base64$Base64$Encode$intToBase64(63 & (acc >>> 4)) + (truqu$elm_base64$Base64$Encode$intToBase64(63 & (acc << 2)) + '=')));
+		default:
+			return res;
+	}
+};
+var truqu$elm_base64$Base64$Encode$encode = function (input) {
+	return truqu$elm_base64$Base64$Encode$wrapUp(
+		A3(elm$core$String$foldl, truqu$elm_base64$Base64$Encode$chomp, truqu$elm_base64$Base64$Encode$initial, input));
+};
+var truqu$elm_base64$Base64$encode = truqu$elm_base64$Base64$Encode$encode;
 var author$project$Main$update = F2(
 	function (message, model) {
+		var newModel = A2(author$project$Update$update, message, model);
+		var encode = A2(elm$core$Basics$composeR, truqu$elm_base64$Base64$encode, elm$url$Url$percentEncode);
 		var regex = A2(
 			elm$core$Maybe$map,
-			elm$core$Result$map(author$project$Build$constructRegexLiteral),
+			elm$core$Result$map(
+				A2(elm$core$Basics$composeR, author$project$Build$constructRegexLiteral, encode)),
 			model.history.present.cachedRegex);
-		var newModel = A2(author$project$Update$update, message, model);
 		if ((regex.$ === 'Just') && (regex.a.$ === 'Ok')) {
 			var expression = regex.a.a;
 			return _Utils_Tuple2(
 				newModel,
 				author$project$Main$url('?expression=' + expression));
 		} else {
-			return _Utils_Tuple2(newModel, elm$core$Platform$Cmd$none);
+			return _Utils_Tuple2(
+				newModel,
+				author$project$Main$url(''));
 		}
 	});
 var author$project$IdMap$toList = function (idMap) {
@@ -10097,12 +10559,9 @@ var elm$core$Array$appendHelpBuilder = F2(
 			tail: elm$core$Elm$JsArray$empty
 		} : {nodeList: builder.nodeList, nodeListSize: builder.nodeListSize, tail: appended});
 	});
-var elm$core$Bitwise$shiftLeftBy = _Bitwise_shiftLeftBy;
-var elm$core$Bitwise$shiftRightZfBy = _Bitwise_shiftRightZfBy;
 var elm$core$Array$tailIndex = function (len) {
 	return (len >>> 5) << 5;
 };
-var elm$core$Basics$ge = _Utils_ge;
 var elm$core$List$drop = F2(
 	function (n, list) {
 		drop:
@@ -11434,7 +11893,6 @@ var elm$core$List$filter = F2(
 var elm$core$String$toLower = _String_toLower;
 var elm$html$Html$code = _VirtualDom_node('code');
 var elm$html$Html$p = _VirtualDom_node('p');
-var elm$regex$Regex$contains = _Regex_contains;
 var author$project$View$viewSearch = function (query) {
 	var render = function (prototype) {
 		return A2(
@@ -12292,6 +12750,8 @@ var elm$url$Url$fromString = function (str) {
 		A2(elm$core$String$dropLeft, 8, str)) : elm$core$Maybe$Nothing);
 };
 var elm$browser$Browser$element = _Browser_element;
+var elm$core$Platform$Cmd$batch = _Platform_batch;
+var elm$core$Platform$Cmd$none = elm$core$Platform$Cmd$batch(_List_Nil);
 var elm$core$Platform$Sub$batch = _Platform_batch;
 var elm$core$Platform$Sub$none = elm$core$Platform$Sub$batch(_List_Nil);
 var author$project$Main$main = elm$browser$Browser$element(

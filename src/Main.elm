@@ -5,8 +5,7 @@ import Build
 import Model
 import Update
 import Url
-import Url.Parser exposing (Parser)
-import Url.Parser.Query
+import Base64
 import View
 
 port url : String -> Cmd msg
@@ -20,23 +19,18 @@ main = Browser.element
   }
 
 
-{-main1 = Browser.sandbox
-  { init = Model.initialValue |> Update.update -- cannot be done in Model due to circular imports
-                (Update.SearchMessage <| Update.FinishSearch <| Update.ParseRegex "/\\s(?:the|for)/g")
-
-  , update = Update.update
-  , view = View.view
-  }-}
-
-
 init rawUrl =
   let
     expression = case String.split "?expression=" rawUrl of
       _ :: [ query ] -> Just (Debug.log "found query" query)
       _ -> Nothing
 
-    escapedExpression = expression |> Maybe.andThen Url.percentDecode -- TODO does this include ?expression=
-    regex = Debug.log "final expression" escapedExpression |> Maybe.withDefault "/\\s(?:the|for)/g"
+    escapedExpression = expression |> Maybe.andThen Url.percentDecode
+      -- expression is base64 encoded because firefox will change backslashes to regular slashes
+      |> Maybe.andThen (Base64.decode >> Result.toMaybe)
+      |> Maybe.withDefault "/\\s(?:the|for)/g"
+
+    regex = Debug.log "final expression" escapedExpression
 
   in
     Model.initialValue |> Update.update -- cannot be done in Model due to circular imports
@@ -45,10 +39,13 @@ init rawUrl =
 update message model =
   let
     newModel = Update.update message model
-    regex = model.history.present.cachedRegex
-      |> Maybe.map (Result.map Build.constructRegexLiteral)
 
+    -- expression is base64 encoded because firefox will change backslashes to regular slashes
+    encode = Base64.encode >> Url.percentEncode
+
+    regex = model.history.present.cachedRegex
+      |> Maybe.map (Result.map (Build.constructRegexLiteral >> encode))
 
   in case regex of
     Just (Ok expression) -> (newModel, url ("?expression=" ++ expression))
-    _ -> (newModel, Cmd.none)
+    _ -> (newModel, url "")
