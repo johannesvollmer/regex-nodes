@@ -9171,7 +9171,7 @@ var author$project$Main$update = F2(
 			elm$core$Maybe$map,
 			elm$core$Result$map(
 				A2(elm$core$Basics$composeR, author$project$Build$constructRegexLiteral, encode)),
-			model.dp.dQ.c7);
+			newModel.dp.dQ.c7);
 		if ((!regex.$) && (!regex.a.$)) {
 			var expression = regex.a.a;
 			return _Utils_Tuple2(
@@ -9180,7 +9180,7 @@ var author$project$Main$update = F2(
 		} else {
 			return _Utils_Tuple2(
 				newModel,
-				author$project$Main$url(''));
+				author$project$Main$url('?'));
 		}
 	});
 var author$project$IdMap$toList = function (idMap) {

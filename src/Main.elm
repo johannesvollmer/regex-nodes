@@ -41,9 +41,9 @@ update message model =
     -- expression is base64 encoded because firefox will change backslashes to regular slashes
     encode = Base64.encode >> Url.percentEncode
 
-    regex = model.history.present.cachedRegex
+    regex = newModel.history.present.cachedRegex
       |> Maybe.map (Result.map (Build.constructRegexLiteral >> encode))
 
   in case regex of
     Just (Ok expression) -> (newModel, url ("?expression=" ++ expression))
-    _ -> (newModel, url "")
+    _ -> (newModel, url "?")
