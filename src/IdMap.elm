@@ -29,8 +29,11 @@ insert value idMap =
 remove : Id -> IdMap v -> IdMap v
 remove id idMap = { idMap | dict = idMap.dict |> Dict.remove id  }
 
-updateAll : (v -> v) -> IdMap v -> IdMap v
-updateAll mapper idMap = { idMap | dict = idMap.dict |> Dict.map (\_ v -> mapper v) }
+updateAllValues : (v -> v) -> IdMap v -> IdMap v
+updateAllValues mapper idMap = updateAll (\_ value -> mapper value) idMap
+
+updateAll : (Id -> v -> v) -> IdMap v -> IdMap v
+updateAll mapper idMap = { idMap | dict = idMap.dict |> Dict.map (\id v -> mapper id v) }
 
 get : Id -> IdMap v -> Maybe v
 get id idMap = idMap.dict |> Dict.get id

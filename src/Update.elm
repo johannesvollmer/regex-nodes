@@ -1,5 +1,6 @@
 module Update exposing (..)
 
+import AutoLayout
 import Model exposing (..)
 import Build exposing (buildRegex, compileRegex, cycles)
 import Vec2 exposing (Vec2)
@@ -111,7 +112,7 @@ update message model =
     DuplicateNode id -> advance <| duplicateNode coreModel id
     DeleteNode id -> advanceModel <| deleteNode id model
 
-    AutoLayout id -> advance <| { coreModel | nodes = autolayout id coreModel.nodes }
+    AutoLayout id -> advance <| { coreModel | nodes = AutoLayout.layout id coreModel.nodes }
 
     SearchMessage searchMessage ->
       case searchMessage of
@@ -208,7 +209,7 @@ deleteNode nodeId model =
       then Nothing else model.history.present.outputNode.id
 
     newNodeValues = model.history.present.nodes |> IdMap.remove nodeId
-      |> IdMap.updateAll (\view -> { view | node = onNodeDeleted nodeId view.node })
+      |> IdMap.updateAllValues (\view -> { view | node = onNodeDeleted nodeId view.node })
 
     newPresent present = updateCache
       { present
@@ -257,7 +258,7 @@ parseRegexNodes model regex =
 
       -- select the generated result and autolayout
       resultHistory resultNodeId nodes =
-        { history | present = selectNode resultNodeId { coreModel | nodes = autolayout resultNodeId nodes } }
+        { history | present = selectNode resultNodeId { coreModel | nodes = AutoLayout.layout resultNodeId nodes } }
 
       -- clear the search
       resultModel (resultNodeId, nodes) =

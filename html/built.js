@@ -600,11 +600,11 @@ function _Debug_crash_UNUSED(identifier, fact1, fact2, fact3, fact4)
 
 function _Debug_regionToString(region)
 {
-	if (region.bu.aO === region.a8.aO)
+	if (region.bx.aQ === region.ba.aQ)
 	{
-		return 'on line ' + region.bu.aO;
+		return 'on line ' + region.bx.aQ;
 	}
-	return 'on lines ' + region.bu.aO + ' through ' + region.a8.aO;
+	return 'on lines ' + region.bx.aQ + ' through ' + region.ba.aQ;
 }
 
 
@@ -1208,8 +1208,8 @@ var _Regex_never = /.^/;
 var _Regex_fromStringWith = F2(function(options, string)
 {
 	var flags = 'g';
-	if (options.bP) { flags += 'm'; }
-	if (options.bE) { flags += 'i'; }
+	if (options.bR) { flags += 'm'; }
+	if (options.bH) { flags += 'i'; }
 
 	try
 	{
@@ -2012,9 +2012,9 @@ var _Platform_worker = F4(function(impl, flagDecoder, debugMetadata, args)
 	return _Platform_initialize(
 		flagDecoder,
 		args,
-		impl.dt,
-		impl.d7,
-		impl.d0,
+		impl.dv,
+		impl.d6,
+		impl.d$,
 		function() { return function() {} }
 	);
 });
@@ -2814,7 +2814,7 @@ var _VirtualDom_mapEventTuple = F2(function(func, tuple)
 var _VirtualDom_mapEventRecord = F2(function(func, record)
 {
 	return {
-		bN: func(record.bN),
+		bP: func(record.bP),
 		v: record.v,
 		u: record.u
 	}
@@ -3084,7 +3084,7 @@ function _VirtualDom_makeCallback(eventNode, initialHandler)
 		// 3 = Custom
 
 		var value = result.a;
-		var message = !tag ? value : tag < 3 ? value.a : value.bN;
+		var message = !tag ? value : tag < 3 ? value.a : value.bP;
 		var stopPropagation = tag == 1 ? value.b : tag == 3 && value.v;
 		var currentEventNode = (
 			stopPropagation && event.stopPropagation(),
@@ -4038,11 +4038,11 @@ var _Browser_element = _Debugger_element || F4(function(impl, flagDecoder, debug
 	return _Platform_initialize(
 		flagDecoder,
 		args,
-		impl.dt,
-		impl.d7,
-		impl.d0,
+		impl.dv,
+		impl.d6,
+		impl.d$,
 		function(sendToApp, initialModel) {
-			var view = impl.ea;
+			var view = impl.d9;
 			/**/
 			var domNode = args['node'];
 			//*/
@@ -4074,12 +4074,12 @@ var _Browser_document = _Debugger_document || F4(function(impl, flagDecoder, deb
 	return _Platform_initialize(
 		flagDecoder,
 		args,
-		impl.dt,
-		impl.d7,
-		impl.d0,
+		impl.dv,
+		impl.d6,
+		impl.d$,
 		function(sendToApp, initialModel) {
-			var divertHrefToApp = impl.aX && impl.aX(sendToApp)
-			var view = impl.ea;
+			var divertHrefToApp = impl.aZ && impl.aZ(sendToApp)
+			var view = impl.d9;
 			var title = _VirtualDom_doc.title;
 			var bodyNode = _VirtualDom_doc.body;
 			var currNode = _VirtualDom_virtualize(bodyNode);
@@ -4087,12 +4087,12 @@ var _Browser_document = _Debugger_document || F4(function(impl, flagDecoder, deb
 			{
 				_VirtualDom_divertHrefToApp = divertHrefToApp;
 				var doc = view(model);
-				var nextNode = _VirtualDom_node('body')(_List_Nil)(doc.c6);
+				var nextNode = _VirtualDom_node('body')(_List_Nil)(doc.c8);
 				var patches = _VirtualDom_diff(currNode, nextNode);
 				bodyNode = _VirtualDom_applyPatches(bodyNode, currNode, patches, sendToApp);
 				currNode = nextNode;
 				_VirtualDom_divertHrefToApp = 0;
-				(title !== doc.d4) && (_VirtualDom_doc.title = title = doc.d4);
+				(title !== doc.d3) && (_VirtualDom_doc.title = title = doc.d3);
 			});
 		}
 	);
@@ -4148,12 +4148,12 @@ function _Browser_makeAnimator(model, draw)
 
 function _Browser_application(impl)
 {
-	var onUrlChange = impl.dH;
-	var onUrlRequest = impl.dI;
+	var onUrlChange = impl.dI;
+	var onUrlRequest = impl.dJ;
 	var key = function() { key.a(onUrlChange(_Browser_getUrl())); };
 
 	return _Browser_document({
-		aX: function(sendToApp)
+		aZ: function(sendToApp)
 		{
 			key.a = sendToApp;
 			_Browser_window.addEventListener('popstate', key);
@@ -4169,9 +4169,9 @@ function _Browser_application(impl)
 					var next = elm$url$Url$fromString(href).a;
 					sendToApp(onUrlRequest(
 						(next
-							&& curr.cL === next.cL
-							&& curr.ce === next.ce
-							&& curr.cH.a === next.cH.a
+							&& curr.cO === next.cO
+							&& curr.ch === next.ch
+							&& curr.cL.a === next.cL.a
 						)
 							? elm$browser$Browser$Internal(next)
 							: elm$browser$Browser$External(href)
@@ -4179,13 +4179,13 @@ function _Browser_application(impl)
 				}
 			});
 		},
-		dt: function(flags)
+		dv: function(flags)
 		{
-			return A3(impl.dt, flags, _Browser_getUrl(), key);
+			return A3(impl.dv, flags, _Browser_getUrl(), key);
 		},
-		ea: impl.ea,
-		d7: impl.d7,
-		d0: impl.d0
+		d9: impl.d9,
+		d6: impl.d6,
+		d$: impl.d$
 	});
 }
 
@@ -4251,17 +4251,17 @@ var _Browser_decodeEvent = F2(function(decoder, event)
 function _Browser_visibilityInfo()
 {
 	return (typeof _VirtualDom_doc.hidden !== 'undefined')
-		? { $7: 'hidden', c8: 'visibilitychange' }
+		? { dq: 'hidden', da: 'visibilitychange' }
 		:
 	(typeof _VirtualDom_doc.mozHidden !== 'undefined')
-		? { $7: 'mozHidden', c8: 'mozvisibilitychange' }
+		? { dq: 'mozHidden', da: 'mozvisibilitychange' }
 		:
 	(typeof _VirtualDom_doc.msHidden !== 'undefined')
-		? { $7: 'msHidden', c8: 'msvisibilitychange' }
+		? { dq: 'msHidden', da: 'msvisibilitychange' }
 		:
 	(typeof _VirtualDom_doc.webkitHidden !== 'undefined')
-		? { $7: 'webkitHidden', c8: 'webkitvisibilitychange' }
-		: { $7: 'hidden', c8: 'visibilitychange' };
+		? { dq: 'webkitHidden', da: 'webkitvisibilitychange' }
+		: { dq: 'hidden', da: 'visibilitychange' };
 }
 
 
@@ -4342,11 +4342,11 @@ var _Browser_call = F2(function(functionName, id)
 function _Browser_getViewport()
 {
 	return {
-		cQ: _Browser_getScene(),
-		c_: {
-			bB: _Browser_window.pageXOffset,
-			bC: _Browser_window.pageYOffset,
-			aD: _Browser_doc.documentElement.clientWidth,
+		cT: _Browser_getScene(),
+		c1: {
+			bE: _Browser_window.pageXOffset,
+			bF: _Browser_window.pageYOffset,
+			aF: _Browser_doc.documentElement.clientWidth,
 			aj: _Browser_doc.documentElement.clientHeight
 		}
 	};
@@ -4357,7 +4357,7 @@ function _Browser_getScene()
 	var body = _Browser_doc.body;
 	var elem = _Browser_doc.documentElement;
 	return {
-		aD: Math.max(body.scrollWidth, body.offsetWidth, elem.scrollWidth, elem.offsetWidth, elem.clientWidth),
+		aF: Math.max(body.scrollWidth, body.offsetWidth, elem.scrollWidth, elem.offsetWidth, elem.clientWidth),
 		aj: Math.max(body.scrollHeight, body.offsetHeight, elem.scrollHeight, elem.offsetHeight, elem.clientHeight)
 	};
 }
@@ -4381,14 +4381,14 @@ function _Browser_getViewportOf(id)
 	return _Browser_withNode(id, function(node)
 	{
 		return {
-			cQ: {
-				aD: node.scrollWidth,
+			cT: {
+				aF: node.scrollWidth,
 				aj: node.scrollHeight
 			},
-			c_: {
-				bB: node.scrollLeft,
-				bC: node.scrollTop,
-				aD: node.clientWidth,
+			c1: {
+				bE: node.scrollLeft,
+				bF: node.scrollTop,
+				aF: node.clientWidth,
 				aj: node.clientHeight
 			}
 		};
@@ -4419,17 +4419,17 @@ function _Browser_getElement(id)
 		var x = _Browser_window.pageXOffset;
 		var y = _Browser_window.pageYOffset;
 		return {
-			cQ: _Browser_getScene(),
-			c_: {
-				bB: x,
-				bC: y,
-				aD: _Browser_doc.documentElement.clientWidth,
+			cT: _Browser_getScene(),
+			c1: {
+				bE: x,
+				bF: y,
+				aF: _Browser_doc.documentElement.clientWidth,
 				aj: _Browser_doc.documentElement.clientHeight
 			},
-			dk: {
-				bB: x + rect.left,
-				bC: y + rect.top,
-				aD: rect.width,
+			dm: {
+				bE: x + rect.left,
+				bF: y + rect.top,
+				aF: rect.width,
 				aj: rect.height
 			}
 		};
@@ -4467,11 +4467,11 @@ function _Browser_load(url)
 }
 var author$project$Model$View = F2(
 	function (magnification, offset) {
-		return {co: magnification, cy: offset};
+		return {cs: magnification, cC: offset};
 	});
 var author$project$IdMap$IdMap = F2(
 	function (dict, nextId) {
-		return {k: dict, aS: nextId};
+		return {k: dict, aU: nextId};
 	});
 var elm$core$Dict$RBEmpty_elm_builtin = {$: -2};
 var elm$core$Dict$empty = elm$core$Dict$RBEmpty_elm_builtin;
@@ -4580,27 +4580,27 @@ var elm$core$String$repeat = F2(
 		return A3(elm$core$String$repeatHelp, n, chunk, '');
 	});
 var author$project$Model$initialHistoryValue = {
-	c7: elm$core$Maybe$Nothing,
-	bH: false,
-	ca: {
-		b1: elm$core$Maybe$Nothing,
-		bF: A2(elm$core$String$repeat, 12, 'Leverage agile frameworks to provide a robust synopsis for high level overviews. Iterative approaches to corporate strategy foster collaborative thinking to further the overall value proposition. Organically grow the holistic world view of disruptive innovation via workplace diversity and empowerment. Bring to the table win-win survival strategies to ensure proactive domination. At the end of the day, going forward, a new normal that has evolved from generation X is on the runway heading towards a streamlined cloud solution. User generated content in real-time will have multiple touchpoints for offshoring. Capitalize on low hanging fruit to identify a ballpark value added activity to beta test. Override the digital divide with additional clickthroughs from DevOps. Nanotechnology immersion along the information highway will close the loop on focusing solely on the bottom line.'),
-		cj: false,
-		cq: 4000
+	c9: elm$core$Maybe$Nothing,
+	bK: false,
+	cd: {
+		b3: elm$core$Maybe$Nothing,
+		de: A2(elm$core$String$repeat, 12, 'Leverage agile frameworks to provide a robust synopsis for high level overviews. Iterative approaches to corporate strategy foster collaborative thinking to further the overall value proposition. Organically grow the holistic world view of disruptive innovation via workplace diversity and empowerment. Bring to the table win-win survival strategies to ensure proactive domination. At the end of the day, going forward, a new normal that has evolved from generation X is on the runway heading towards a streamlined cloud solution. User generated content in real-time will have multiple touchpoints for offshoring. Capitalize on low hanging fruit to identify a ballpark value added activity to beta test. Override the digital divide with additional clickthroughs from DevOps. Nanotechnology immersion along the information highway will close the loop on focusing solely on the bottom line.'),
+		cn: false,
+		cu: 4000
 	},
-	cx: author$project$IdMap$empty,
-	cD: {bL: elm$core$Maybe$Nothing, cn: false},
-	cS: elm$core$Maybe$Nothing
+	cB: author$project$IdMap$empty,
+	cH: {ci: elm$core$Maybe$Nothing, cr: false},
+	cV: elm$core$Maybe$Nothing
 };
 var author$project$Vec2$Vec2 = F2(
 	function (x, y) {
-		return {bB: x, bC: y};
+		return {bE: x, bF: y};
 	});
 var author$project$Model$initialValue = {
-	b7: elm$core$Maybe$Nothing,
-	dp: {cd: _List_Nil, cE: _List_Nil, dQ: author$project$Model$initialHistoryValue},
-	cR: elm$core$Maybe$Nothing,
-	ea: A2(
+	ca: elm$core$Maybe$Nothing,
+	dr: {cg: _List_Nil, cI: _List_Nil, dR: author$project$Model$initialHistoryValue},
+	cU: elm$core$Maybe$Nothing,
+	d9: A2(
 		author$project$Model$View,
 		0,
 		A2(author$project$Vec2$Vec2, 0, 0))
@@ -4614,54 +4614,61 @@ var author$project$Update$ParseRegex = function (a) {
 var author$project$Update$SearchMessage = function (a) {
 	return {$: 0, a: a};
 };
+var author$project$Model$propertyHeight = 25;
+var elm$core$Basics$add = _Basics_add;
+var elm$core$Basics$mul = _Basics_mul;
+var author$project$AutoLayout$blockSelfHeight = function (block) {
+	return block.ax.bF + (2 * author$project$Model$propertyHeight);
+};
 var elm$core$Basics$apR = F2(
 	function (x, f) {
 		return f(x);
 	});
-var elm$core$Basics$True = 0;
-var elm$core$Dict$isEmpty = function (dict) {
-	if (dict.$ === -2) {
-		return true;
-	} else {
-		return false;
-	}
-};
-var author$project$IdMap$isEmpty = function (idMap) {
-	return elm$core$Dict$isEmpty(idMap.k);
-};
-var author$project$Model$CreateConnection = function (a) {
-	return {$: 3, a: a};
-};
-var author$project$Model$LiteralNode = function (a) {
-	return {$: 3, a: a};
-};
-var author$project$Model$MoveViewDrag = function (a) {
-	return {$: 1, a: a};
-};
-var author$project$Model$PrepareEditingConnection = function (a) {
-	return {$: 2, a: a};
-};
-var author$project$Model$Graph = F2(
-	function (blocks, connections) {
-		return {c5: blocks, db: connections};
+var elm$core$Basics$composeR = F3(
+	function (f, g, x) {
+		return g(
+			f(x));
 	});
-var author$project$Model$collectBlocks = F3(
-	function (graph, nodeId, nodes) {
-		return graph;
-	});
-var author$project$Model$autolayout = F2(
-	function (nodeId, nodes) {
-		var graph = A3(
-			author$project$Model$collectBlocks,
-			A2(author$project$Model$Graph, elm$core$Dict$empty, _List_Nil),
-			nodeId,
-			nodes);
-		return nodes;
-	});
-var author$project$Update$maxUndoSteps = 100;
-var elm$core$Basics$add = _Basics_add;
 var elm$core$Basics$gt = _Utils_gt;
-var elm$core$Basics$sub = _Basics_sub;
+var elm$core$Basics$max = F2(
+	function (x, y) {
+		return (_Utils_cmp(x, y) > 0) ? x : y;
+	});
+var elm$core$Basics$compare = _Utils_compare;
+var elm$core$Maybe$Just = function (a) {
+	return {$: 0, a: a};
+};
+var elm$core$Dict$get = F2(
+	function (targetKey, dict) {
+		get:
+		while (true) {
+			if (dict.$ === -2) {
+				return elm$core$Maybe$Nothing;
+			} else {
+				var key = dict.b;
+				var value = dict.c;
+				var left = dict.d;
+				var right = dict.e;
+				var _n1 = A2(elm$core$Basics$compare, targetKey, key);
+				switch (_n1) {
+					case 0:
+						var $temp$targetKey = targetKey,
+							$temp$dict = left;
+						targetKey = $temp$targetKey;
+						dict = $temp$dict;
+						continue get;
+					case 1:
+						return elm$core$Maybe$Just(value);
+					default:
+						var $temp$targetKey = targetKey,
+							$temp$dict = right;
+						targetKey = $temp$targetKey;
+						dict = $temp$dict;
+						continue get;
+				}
+			}
+		}
+	});
 var elm$core$List$foldl = F3(
 	function (func, acc, list) {
 		foldl:
@@ -4684,6 +4691,1373 @@ var elm$core$List$foldl = F3(
 var elm$core$List$reverse = function (list) {
 	return A3(elm$core$List$foldl, elm$core$List$cons, _List_Nil, list);
 };
+var elm$core$List$foldrHelper = F4(
+	function (fn, acc, ctr, ls) {
+		if (!ls.b) {
+			return acc;
+		} else {
+			var a = ls.a;
+			var r1 = ls.b;
+			if (!r1.b) {
+				return A2(fn, a, acc);
+			} else {
+				var b = r1.a;
+				var r2 = r1.b;
+				if (!r2.b) {
+					return A2(
+						fn,
+						a,
+						A2(fn, b, acc));
+				} else {
+					var c = r2.a;
+					var r3 = r2.b;
+					if (!r3.b) {
+						return A2(
+							fn,
+							a,
+							A2(
+								fn,
+								b,
+								A2(fn, c, acc)));
+					} else {
+						var d = r3.a;
+						var r4 = r3.b;
+						var res = (ctr > 500) ? A3(
+							elm$core$List$foldl,
+							fn,
+							acc,
+							elm$core$List$reverse(r4)) : A4(elm$core$List$foldrHelper, fn, acc, ctr + 1, r4);
+						return A2(
+							fn,
+							a,
+							A2(
+								fn,
+								b,
+								A2(
+									fn,
+									c,
+									A2(fn, d, res))));
+					}
+				}
+			}
+		}
+	});
+var elm$core$List$foldr = F3(
+	function (fn, acc, ls) {
+		return A4(elm$core$List$foldrHelper, fn, acc, 0, ls);
+	});
+var elm$core$List$map = F2(
+	function (f, xs) {
+		return A3(
+			elm$core$List$foldr,
+			F2(
+				function (x, acc) {
+					return A2(
+						elm$core$List$cons,
+						f(x),
+						acc);
+				}),
+			_List_Nil,
+			xs);
+	});
+var author$project$AutoLayout$blockChildrenHeight = F2(
+	function (blocks, block) {
+		return A3(
+			elm$core$List$foldr,
+			elm$core$Basics$add,
+			0,
+			A2(
+				elm$core$List$map,
+				A2(
+					elm$core$Basics$composeR,
+					function ($) {
+						return $.bI;
+					},
+					author$project$AutoLayout$treeHeight(blocks)),
+				block.bc));
+	});
+var author$project$AutoLayout$treeHeight = F2(
+	function (blocks, nodeId) {
+		var _n0 = A2(elm$core$Dict$get, nodeId, blocks);
+		if (!_n0.$) {
+			var block = _n0.a;
+			return A2(
+				elm$core$Basics$max,
+				author$project$AutoLayout$blockSelfHeight(block),
+				A2(author$project$AutoLayout$blockChildrenHeight, blocks, block));
+		} else {
+			return 0;
+		}
+	});
+var elm$core$Basics$sub = _Basics_sub;
+var elm$core$Basics$toFloat = _Basics_toFloat;
+var elm$core$Dict$Black = 1;
+var elm$core$Dict$RBNode_elm_builtin = F5(
+	function (a, b, c, d, e) {
+		return {$: -1, a: a, b: b, c: c, d: d, e: e};
+	});
+var elm$core$Dict$Red = 0;
+var elm$core$Dict$balance = F5(
+	function (color, key, value, left, right) {
+		if ((right.$ === -1) && (!right.a)) {
+			var _n1 = right.a;
+			var rK = right.b;
+			var rV = right.c;
+			var rLeft = right.d;
+			var rRight = right.e;
+			if ((left.$ === -1) && (!left.a)) {
+				var _n3 = left.a;
+				var lK = left.b;
+				var lV = left.c;
+				var lLeft = left.d;
+				var lRight = left.e;
+				return A5(
+					elm$core$Dict$RBNode_elm_builtin,
+					0,
+					key,
+					value,
+					A5(elm$core$Dict$RBNode_elm_builtin, 1, lK, lV, lLeft, lRight),
+					A5(elm$core$Dict$RBNode_elm_builtin, 1, rK, rV, rLeft, rRight));
+			} else {
+				return A5(
+					elm$core$Dict$RBNode_elm_builtin,
+					color,
+					rK,
+					rV,
+					A5(elm$core$Dict$RBNode_elm_builtin, 0, key, value, left, rLeft),
+					rRight);
+			}
+		} else {
+			if ((((left.$ === -1) && (!left.a)) && (left.d.$ === -1)) && (!left.d.a)) {
+				var _n5 = left.a;
+				var lK = left.b;
+				var lV = left.c;
+				var _n6 = left.d;
+				var _n7 = _n6.a;
+				var llK = _n6.b;
+				var llV = _n6.c;
+				var llLeft = _n6.d;
+				var llRight = _n6.e;
+				var lRight = left.e;
+				return A5(
+					elm$core$Dict$RBNode_elm_builtin,
+					0,
+					lK,
+					lV,
+					A5(elm$core$Dict$RBNode_elm_builtin, 1, llK, llV, llLeft, llRight),
+					A5(elm$core$Dict$RBNode_elm_builtin, 1, key, value, lRight, right));
+			} else {
+				return A5(elm$core$Dict$RBNode_elm_builtin, color, key, value, left, right);
+			}
+		}
+	});
+var elm$core$Dict$insertHelp = F3(
+	function (key, value, dict) {
+		if (dict.$ === -2) {
+			return A5(elm$core$Dict$RBNode_elm_builtin, 0, key, value, elm$core$Dict$RBEmpty_elm_builtin, elm$core$Dict$RBEmpty_elm_builtin);
+		} else {
+			var nColor = dict.a;
+			var nKey = dict.b;
+			var nValue = dict.c;
+			var nLeft = dict.d;
+			var nRight = dict.e;
+			var _n1 = A2(elm$core$Basics$compare, key, nKey);
+			switch (_n1) {
+				case 0:
+					return A5(
+						elm$core$Dict$balance,
+						nColor,
+						nKey,
+						nValue,
+						A3(elm$core$Dict$insertHelp, key, value, nLeft),
+						nRight);
+				case 1:
+					return A5(elm$core$Dict$RBNode_elm_builtin, nColor, nKey, value, nLeft, nRight);
+				default:
+					return A5(
+						elm$core$Dict$balance,
+						nColor,
+						nKey,
+						nValue,
+						nLeft,
+						A3(elm$core$Dict$insertHelp, key, value, nRight));
+			}
+		}
+	});
+var elm$core$Dict$insert = F3(
+	function (key, value, dict) {
+		var _n0 = A3(elm$core$Dict$insertHelp, key, value, dict);
+		if ((_n0.$ === -1) && (!_n0.a)) {
+			var _n1 = _n0.a;
+			var k = _n0.b;
+			var v = _n0.c;
+			var l = _n0.d;
+			var r = _n0.e;
+			return A5(elm$core$Dict$RBNode_elm_builtin, 1, k, v, l, r);
+		} else {
+			var x = _n0;
+			return x;
+		}
+	});
+var elm$core$List$length = function (xs) {
+	return A3(
+		elm$core$List$foldl,
+		F2(
+			function (_n0, i) {
+				return i + 1;
+			}),
+		0,
+		xs);
+};
+var author$project$AutoLayout$baseLayoutToHeight = F5(
+	function (nodeId, blocks, height, rightX, topY) {
+		var _n0 = A2(elm$core$Dict$get, nodeId, blocks);
+		if (_n0.$ === 1) {
+			return blocks;
+		} else {
+			var block = _n0.a;
+			var newBlock = _Utils_update(
+				block,
+				{
+					as: A2(author$project$Vec2$Vec2, rightX - block.ax.bE, (topY + (0.5 * height)) - (0.5 * block.ax.bF))
+				});
+			var childrenRightX = ((rightX - block.ax.bE) - author$project$Model$propertyHeight) - ((0.5 * author$project$Model$propertyHeight) * elm$core$List$length(block.bc));
+			var layoutSubBlock = F2(
+				function (input, _n2) {
+					var y = _n2.a;
+					var subblocks = _n2.b;
+					var subHeight = A2(author$project$AutoLayout$treeHeight, blocks, input);
+					return _Utils_Tuple2(
+						y + subHeight,
+						A5(author$project$AutoLayout$baseLayoutToHeight, input, subblocks, subHeight, childrenRightX, y));
+				});
+			var _n1 = A3(
+				elm$core$List$foldl,
+				layoutSubBlock,
+				_Utils_Tuple2(topY, blocks),
+				A2(
+					elm$core$List$map,
+					function ($) {
+						return $.bI;
+					},
+					block.bc));
+			var newBlocks = _n1.b;
+			return A3(elm$core$Dict$insert, nodeId, newBlock, newBlocks);
+		}
+	});
+var elm$core$Maybe$map = F2(
+	function (f, maybe) {
+		if (!maybe.$) {
+			var value = maybe.a;
+			return elm$core$Maybe$Just(
+				f(value));
+		} else {
+			return elm$core$Maybe$Nothing;
+		}
+	});
+var elm$core$Maybe$withDefault = F2(
+	function (_default, maybe) {
+		if (!maybe.$) {
+			var value = maybe.a;
+			return value;
+		} else {
+			return _default;
+		}
+	});
+var author$project$AutoLayout$baseLayout = F2(
+	function (nodeId, blocks) {
+		var totalHeight = A2(author$project$AutoLayout$treeHeight, blocks, nodeId);
+		var block = A2(elm$core$Dict$get, nodeId, blocks);
+		var size = A2(
+			elm$core$Maybe$withDefault,
+			A2(author$project$Vec2$Vec2, 0, 0),
+			A2(
+				elm$core$Maybe$map,
+				function ($) {
+					return $.ax;
+				},
+				block));
+		var _n0 = A2(
+			elm$core$Maybe$withDefault,
+			A2(author$project$Vec2$Vec2, 0, 0),
+			A2(
+				elm$core$Maybe$map,
+				function ($) {
+					return $.as;
+				},
+				block));
+		var x = _n0.bE;
+		var y = _n0.bF;
+		return A5(author$project$AutoLayout$baseLayoutToHeight, nodeId, blocks, totalHeight, x + size.bE, (y - (0.5 * totalHeight)) + (0.5 * size.bF));
+	});
+var author$project$AutoLayout$NodeBlock = F3(
+	function (position, size, inputs) {
+		return {bc: inputs, as: position, ax: size};
+	});
+var author$project$AutoLayout$flattenList = function (list) {
+	return A3(elm$core$List$foldr, elm$core$Basics$append, _List_Nil, list);
+};
+var author$project$IdMap$get = F2(
+	function (id, idMap) {
+		return A2(elm$core$Dict$get, id, idMap.k);
+	});
+var author$project$Model$AnyRepetitionNode = function (a) {
+	return {$: 13, a: a};
+};
+var author$project$Model$AtLeastOneNode = function (a) {
+	return {$: 12, a: a};
+};
+var author$project$Model$BoolProperty = F2(
+	function (a, b) {
+		return {$: 0, a: a, b: b};
+	});
+var author$project$Model$CaptureNode = function (a) {
+	return {$: 8, a: a};
+};
+var author$project$Model$CharProperty = F2(
+	function (a, b) {
+		return {$: 2, a: a, b: b};
+	});
+var author$project$Model$CharSetNode = function (a) {
+	return {$: 1, a: a};
+};
+var author$project$Model$CharsProperty = F2(
+	function (a, b) {
+		return {$: 1, a: a, b: b};
+	});
+var author$project$Model$ConnectingProperties = F3(
+	function (a, b, c) {
+		return {$: 5, a: a, b: b, c: c};
+	});
+var author$project$Model$ConnectingProperty = F2(
+	function (a, b) {
+		return {$: 4, a: a, b: b};
+	});
+var author$project$Model$ExactRepetitionNode = function (a) {
+	return {$: 17, a: a};
+};
+var author$project$Model$IfFollowedByNode = function (a) {
+	return {$: 9, a: a};
+};
+var author$project$Model$IfNotFollowedByNode = function (a) {
+	return {$: 10, a: a};
+};
+var author$project$Model$IntProperty = F2(
+	function (a, b) {
+		return {$: 3, a: a, b: b};
+	});
+var author$project$Model$LiteralNode = function (a) {
+	return {$: 3, a: a};
+};
+var author$project$Model$MaximumRepetitionNode = function (a) {
+	return {$: 16, a: a};
+};
+var author$project$Model$MinimumRepetitionNode = function (a) {
+	return {$: 15, a: a};
+};
+var author$project$Model$NotInCharSetNode = function (a) {
+	return {$: 2, a: a};
+};
+var author$project$Model$OptionalNode = function (a) {
+	return {$: 11, a: a};
+};
+var author$project$Model$Property = F4(
+	function (name, description, contents, connectOutput) {
+		return {dc: connectOutput, de: contents, b9: description, cx: name};
+	});
+var author$project$Model$RangedRepetitionNode = function (a) {
+	return {$: 14, a: a};
+};
+var author$project$Model$SequenceNode = function (a) {
+	return {$: 7, a: a};
+};
+var author$project$Model$SetNode = function (a) {
+	return {$: 6, a: a};
+};
+var author$project$Model$TitleProperty = {$: 6};
+var author$project$Model$symbolDescriptions = {a5: 'Matches any char, including linebreaks and whitespace', a8: 'Match any numerical char, from `0` to `9`, excluding punctuation', ba: 'The end of line if Multiline Matches are enabled, or the end of the text otherwise', be: 'Matches the linebreak, or newline, char `\\n`', bg: 'Match any char but numerical ones, matching punctuation', bh: 'Matches anything but the linebreak char `\\n`', bi: 'Match any char that is not invisible, for example neither space nor linebreaks', bj: 'Match any char, but not alphabetical ones and not the underscore char `_`', bk: 'Matches anywhere but not where a word char has a whitespace neighbour', bl: 'Matches nothing ever, really', bx: 'The start of line if Multiline Matches are enabled, or the start of the text otherwise', by: 'Matches the tab char `\\t`', bB: 'Match any invisible char, such as the space between words and linebreaks', bC: 'Match any alphabetical chars, and the underscore char `_`', bD: 'Matches where a word char has a whitespace neighbour'};
+var author$project$Model$symbolProperty = F2(
+	function (properties, symbol) {
+		switch (symbol) {
+			case 0:
+				return properties.bB;
+			case 1:
+				return properties.bi;
+			case 2:
+				return properties.a8;
+			case 3:
+				return properties.bg;
+			case 4:
+				return properties.bC;
+			case 5:
+				return properties.bj;
+			case 6:
+				return properties.bD;
+			case 7:
+				return properties.bk;
+			case 8:
+				return properties.be;
+			case 9:
+				return properties.bh;
+			case 10:
+				return properties.by;
+			case 11:
+				return properties.bl;
+			case 12:
+				return properties.a5;
+			case 13:
+				return properties.bx;
+			default:
+				return properties.ba;
+		}
+	});
+var author$project$Model$symbolDescription = author$project$Model$symbolProperty(author$project$Model$symbolDescriptions);
+var author$project$Model$symbolNames = {a5: 'Anything', a8: 'Digit Char', ba: 'End of Text', be: 'Linebreak Char', bg: 'Non Digit Char', bh: 'Non Linebreak Char', bi: 'Non Whitespace Char', bj: 'Non Word Char', bk: 'Non Word Boundary', bl: 'Nothing', bx: 'Start of Text', by: 'Tab Char', bB: 'Whitespace Char', bC: 'Word Char', bD: 'Word Boundary'};
+var author$project$Model$symbolName = author$project$Model$symbolProperty(author$project$Model$symbolNames);
+var author$project$Model$typeDescriptions = {V: 'Allow this expression to occur multiple times or not at all', W: 'Allow this expression to occur multiple times', _: 'Capture this expression for later use, like replacing', aK: 'Matches any char between the lower and upper range bound', ab: 'Matches, where any char of the set is matched', aL: 'Match where an expression is repeated exactly n times', ae: 'Configure how the whole regex operates', ak: 'Match this expression only if the successor is also matched, without matching the successor itself', al: 'Match this expression only if the successor is not matched, without matching the successor itself', aR: 'Matches where that exact sequence of chars is found', aS: 'Match where an expression is repeated no more than n times', aT: 'Match where an expression is repeated at least n times', aV: 'Matches any char outside of the range', bm: 'Matches where not a single char of the set is matched', aW: 'Allow omitting this expression and match anyways', aX: 'Only match if the expression is repeated in range', au: 'Matches, where all members in the exact order are matched one after another', av: 'Matches, where at least one of the options matches'};
+var author$project$Model$typeNames = {V: 'Any Repetition', W: 'At Least One', _: 'Capture', aK: 'Any of Char Range', ab: 'Any of Chars', aL: 'Exact Repetition', ae: 'Configuration', ak: 'If Followed By', al: 'If Not Followed By', aR: 'Literal', aS: 'Maximum Repetition', aT: 'Minimum Repetition', aV: 'None of Char Range', bm: 'None of Chars', aW: 'Optional', aX: 'Ranged Repetition', au: 'Sequence', av: 'Any Of'};
+var author$project$Model$CharRangeNode = F2(
+	function (a, b) {
+		return {$: 4, a: a, b: b};
+	});
+var author$project$Model$maxChar = F2(
+	function (a, b) {
+		return (_Utils_cmp(a, b) > 0) ? a : b;
+	});
+var elm$core$Basics$lt = _Utils_lt;
+var author$project$Model$minChar = F2(
+	function (a, b) {
+		return (_Utils_cmp(a, b) < 0) ? a : b;
+	});
+var author$project$Model$updateCharRangeFirst = F2(
+	function (end, start) {
+		return A2(
+			author$project$Model$CharRangeNode,
+			A2(author$project$Model$minChar, start, end),
+			A2(author$project$Model$maxChar, start, end));
+	});
+var author$project$Model$updateCharRangeLast = F2(
+	function (start, end) {
+		return A2(
+			author$project$Model$CharRangeNode,
+			A2(author$project$Model$minChar, end, start),
+			A2(author$project$Model$maxChar, start, end));
+	});
+var author$project$Model$updateExpression = F2(
+	function (node, expression) {
+		return _Utils_update(
+			node,
+			{p: expression});
+	});
+var author$project$Model$FlagsNode = function (a) {
+	return {$: 18, a: a};
+};
+var author$project$Model$updateFlagsExpression = F2(
+	function (flags, newInput) {
+		return author$project$Model$FlagsNode(
+			_Utils_update(
+				flags,
+				{p: newInput}));
+	});
+var author$project$Model$updateFlags = F2(
+	function (expression, newFlags) {
+		return author$project$Model$FlagsNode(
+			{p: expression, ae: newFlags});
+	});
+var author$project$Model$updateFlagsInsensitivity = F2(
+	function (_n0, caseInsensitive) {
+		var expression = _n0.p;
+		var flags = _n0.ae;
+		return A2(
+			author$project$Model$updateFlags,
+			expression,
+			_Utils_update(
+				flags,
+				{bH: caseInsensitive}));
+	});
+var author$project$Model$updateFlagsMultiline = F2(
+	function (_n0, multiline) {
+		var expression = _n0.p;
+		var flags = _n0.ae;
+		return A2(
+			author$project$Model$updateFlags,
+			expression,
+			_Utils_update(
+				flags,
+				{bR: multiline}));
+	});
+var author$project$Model$updateFlagsMultiple = F2(
+	function (_n0, multiple) {
+		var expression = _n0.p;
+		var flags = _n0.ae;
+		return A2(
+			author$project$Model$updateFlags,
+			expression,
+			_Utils_update(
+				flags,
+				{dD: multiple}));
+	});
+var author$project$Model$updateMinimal = F2(
+	function (node, minimal) {
+		return _Utils_update(
+			node,
+			{ap: minimal});
+	});
+var author$project$Model$updateNotInCharRangeFirst = F2(
+	function (end, start) {
+		return A2(
+			author$project$Model$CharRangeNode,
+			A2(author$project$Model$minChar, start, end),
+			A2(author$project$Model$maxChar, start, end));
+	});
+var author$project$Model$updateNotInCharRangeLast = F2(
+	function (start, end) {
+		return A2(
+			author$project$Model$CharRangeNode,
+			A2(author$project$Model$minChar, end, start),
+			A2(author$project$Model$maxChar, start, end));
+	});
+var author$project$Model$positive = elm$core$Basics$max(0);
+var author$project$Model$updatePositiveCount = F2(
+	function (node, count) {
+		return _Utils_update(
+			node,
+			{
+				bJ: author$project$Model$positive(count)
+			});
+	});
+var elm$core$Basics$min = F2(
+	function (x, y) {
+		return (_Utils_cmp(x, y) < 0) ? x : y;
+	});
+var author$project$Model$updateRangedRepetitionMaximum = F2(
+	function (repetition, count) {
+		return author$project$Model$RangedRepetitionNode(
+			_Utils_update(
+				repetition,
+				{
+					dz: author$project$Model$positive(count),
+					dB: A2(
+						elm$core$Basics$min,
+						author$project$Model$positive(count),
+						repetition.dB)
+				}));
+	});
+var author$project$Model$updateRangedRepetitionMinimum = F2(
+	function (repetition, count) {
+		return author$project$Model$RangedRepetitionNode(
+			_Utils_update(
+				repetition,
+				{
+					dz: A2(
+						elm$core$Basics$max,
+						author$project$Model$positive(count),
+						repetition.dz),
+					dB: author$project$Model$positive(count)
+				}));
+	});
+var author$project$Model$updateSuccessor = F2(
+	function (node, successor) {
+		return _Utils_update(
+			node,
+			{cY: successor});
+	});
+var elm$core$Basics$True = 0;
+var elm$core$Basics$composeL = F3(
+	function (g, f, x) {
+		return g(
+			f(x));
+	});
+var elm$core$String$cons = _String_cons;
+var elm$core$String$fromChar = function (_char) {
+	return A2(elm$core$String$cons, _char, '');
+};
+var elm$core$String$fromInt = _String_fromNumber;
+var elm$core$String$join = F2(
+	function (sep, chunks) {
+		return A2(
+			_String_join,
+			sep,
+			_List_toArray(chunks));
+	});
+var elm$core$String$foldr = _String_foldr;
+var elm$core$String$toList = function (string) {
+	return A3(elm$core$String$foldr, elm$core$List$cons, _List_Nil, string);
+};
+var author$project$Model$nodeProperties = function (node) {
+	switch (node.$) {
+		case 0:
+			var symbol = node.a;
+			return _List_fromArray(
+				[
+					A4(
+					author$project$Model$Property,
+					author$project$Model$symbolName(symbol),
+					author$project$Model$symbolDescription(symbol),
+					author$project$Model$TitleProperty,
+					true)
+				]);
+		case 1:
+			var chars = node.a;
+			return _List_fromArray(
+				[
+					A4(
+					author$project$Model$Property,
+					author$project$Model$typeNames.ab,
+					'Matches ' + A2(
+						elm$core$String$join,
+						', ',
+						A2(
+							elm$core$List$map,
+							elm$core$String$fromChar,
+							elm$core$String$toList(chars))),
+					A2(author$project$Model$CharsProperty, chars, author$project$Model$CharSetNode),
+					true)
+				]);
+		case 2:
+			var chars = node.a;
+			return _List_fromArray(
+				[
+					A4(
+					author$project$Model$Property,
+					author$project$Model$typeNames.bm,
+					'Matches any char but ' + A2(
+						elm$core$String$join,
+						', ',
+						A2(
+							elm$core$List$map,
+							elm$core$String$fromChar,
+							elm$core$String$toList(chars))),
+					A2(author$project$Model$CharsProperty, chars, author$project$Model$NotInCharSetNode),
+					true)
+				]);
+		case 3:
+			var literal = node.a;
+			return _List_fromArray(
+				[
+					A4(
+					author$project$Model$Property,
+					author$project$Model$typeNames.aR,
+					'Matches exactly `' + (literal + '` and nothing else'),
+					A2(author$project$Model$CharsProperty, literal, author$project$Model$LiteralNode),
+					true)
+				]);
+		case 8:
+			var captured = node.a;
+			return _List_fromArray(
+				[
+					A4(
+					author$project$Model$Property,
+					author$project$Model$typeNames._,
+					author$project$Model$typeDescriptions._,
+					A2(author$project$Model$ConnectingProperty, captured, author$project$Model$CaptureNode),
+					true)
+				]);
+		case 4:
+			var start = node.a;
+			var end = node.b;
+			return _List_fromArray(
+				[
+					A4(
+					author$project$Model$Property,
+					author$project$Model$typeNames.aK,
+					'Match any char whose integer value is equal to or between ' + (elm$core$String$fromChar(start) + (' and ' + elm$core$String$fromChar(end))),
+					author$project$Model$TitleProperty,
+					true),
+					A4(
+					author$project$Model$Property,
+					'First Char',
+					'The lower range bound char, will match itself',
+					A2(
+						author$project$Model$CharProperty,
+						start,
+						author$project$Model$updateCharRangeFirst(end)),
+					false),
+					A4(
+					author$project$Model$Property,
+					'Last Char',
+					'The upper range bound char, will match itself',
+					A2(
+						author$project$Model$CharProperty,
+						end,
+						author$project$Model$updateCharRangeLast(start)),
+					false)
+				]);
+		case 5:
+			var start = node.a;
+			var end = node.b;
+			return _List_fromArray(
+				[
+					A4(
+					author$project$Model$Property,
+					author$project$Model$typeNames.aV,
+					'Match any char whose integer value is neither equal to nor between ' + (elm$core$String$fromChar(start) + (' and ' + elm$core$String$fromChar(end))),
+					author$project$Model$TitleProperty,
+					true),
+					A4(
+					author$project$Model$Property,
+					'First Char',
+					'The lower range bound char, will not match itself',
+					A2(
+						author$project$Model$CharProperty,
+						start,
+						author$project$Model$updateNotInCharRangeFirst(end)),
+					false),
+					A4(
+					author$project$Model$Property,
+					'Last Char',
+					'The upper range bound char, will not match itself ',
+					A2(
+						author$project$Model$CharProperty,
+						end,
+						author$project$Model$updateNotInCharRangeLast(start)),
+					false)
+				]);
+		case 6:
+			var options = node.a;
+			return _List_fromArray(
+				[
+					A4(author$project$Model$Property, author$project$Model$typeNames.av, author$project$Model$typeDescriptions.av, author$project$Model$TitleProperty, true),
+					A4(
+					author$project$Model$Property,
+					'Option',
+					'Match if this or any other option is matched',
+					A3(author$project$Model$ConnectingProperties, false, options, author$project$Model$SetNode),
+					false)
+				]);
+		case 7:
+			var members = node.a;
+			return _List_fromArray(
+				[
+					A4(author$project$Model$Property, author$project$Model$typeNames.au, author$project$Model$typeDescriptions.au, author$project$Model$TitleProperty, true),
+					A4(
+					author$project$Model$Property,
+					'Member',
+					'A member of the sequence',
+					A3(author$project$Model$ConnectingProperties, true, members, author$project$Model$SequenceNode),
+					false)
+				]);
+		case 18:
+			var flagsNode = node.a;
+			return _List_fromArray(
+				[
+					A4(
+					author$project$Model$Property,
+					author$project$Model$typeNames.ae,
+					author$project$Model$typeDescriptions.ae,
+					A2(
+						author$project$Model$ConnectingProperty,
+						flagsNode.p,
+						author$project$Model$updateFlagsExpression(flagsNode)),
+					false),
+					A4(
+					author$project$Model$Property,
+					'Multiple Matches',
+					'Do not stop after the first match',
+					A2(
+						author$project$Model$BoolProperty,
+						flagsNode.ae.dD,
+						author$project$Model$updateFlagsMultiple(flagsNode)),
+					false),
+					A4(
+					author$project$Model$Property,
+					'Case Insensitive',
+					'Match as if everything had the same case',
+					A2(
+						author$project$Model$BoolProperty,
+						flagsNode.ae.bH,
+						author$project$Model$updateFlagsInsensitivity(flagsNode)),
+					false),
+					A4(
+					author$project$Model$Property,
+					'Multiline Matches',
+					'Allow every matches to be found across multiple lines',
+					A2(
+						author$project$Model$BoolProperty,
+						flagsNode.ae.bR,
+						author$project$Model$updateFlagsMultiline(flagsNode)),
+					false)
+				]);
+		case 9:
+			var followed = node.a;
+			return _List_fromArray(
+				[
+					A4(
+					author$project$Model$Property,
+					author$project$Model$typeNames.ak,
+					author$project$Model$typeDescriptions.ak,
+					A2(
+						author$project$Model$ConnectingProperty,
+						followed.p,
+						A2(
+							elm$core$Basics$composeL,
+							author$project$Model$IfFollowedByNode,
+							author$project$Model$updateExpression(followed))),
+					true),
+					A4(
+					author$project$Model$Property,
+					'Successor',
+					'What needs to follow the expression',
+					A2(
+						author$project$Model$ConnectingProperty,
+						followed.cY,
+						A2(
+							elm$core$Basics$composeL,
+							author$project$Model$IfFollowedByNode,
+							author$project$Model$updateSuccessor(followed))),
+					false)
+				]);
+		case 10:
+			var followed = node.a;
+			return _List_fromArray(
+				[
+					A4(
+					author$project$Model$Property,
+					author$project$Model$typeNames.al,
+					author$project$Model$typeDescriptions.al,
+					A2(
+						author$project$Model$ConnectingProperty,
+						followed.p,
+						A2(
+							elm$core$Basics$composeL,
+							author$project$Model$IfNotFollowedByNode,
+							author$project$Model$updateExpression(followed))),
+					true),
+					A4(
+					author$project$Model$Property,
+					'Successor',
+					'What must not follow the expression',
+					A2(
+						author$project$Model$ConnectingProperty,
+						followed.cY,
+						A2(
+							elm$core$Basics$composeL,
+							author$project$Model$IfNotFollowedByNode,
+							author$project$Model$updateSuccessor(followed))),
+					false)
+				]);
+		case 11:
+			var option = node.a;
+			return _List_fromArray(
+				[
+					A4(
+					author$project$Model$Property,
+					author$project$Model$typeNames.aW,
+					author$project$Model$typeDescriptions.aW,
+					A2(
+						author$project$Model$ConnectingProperty,
+						option.p,
+						A2(
+							elm$core$Basics$composeL,
+							author$project$Model$OptionalNode,
+							author$project$Model$updateExpression(option))),
+					true),
+					A4(
+					author$project$Model$Property,
+					'Prefer None',
+					'Prefer not to match',
+					A2(
+						author$project$Model$BoolProperty,
+						option.ap,
+						A2(
+							elm$core$Basics$composeL,
+							author$project$Model$OptionalNode,
+							author$project$Model$updateMinimal(option))),
+					false)
+				]);
+		case 12:
+			var counted = node.a;
+			return _List_fromArray(
+				[
+					A4(
+					author$project$Model$Property,
+					author$project$Model$typeNames.W,
+					author$project$Model$typeDescriptions.W,
+					A2(
+						author$project$Model$ConnectingProperty,
+						counted.p,
+						A2(
+							elm$core$Basics$composeL,
+							author$project$Model$AtLeastOneNode,
+							author$project$Model$updateExpression(counted))),
+					true),
+					A4(
+					author$project$Model$Property,
+					'Minimize Count',
+					'Match as few occurences as possible',
+					A2(
+						author$project$Model$BoolProperty,
+						counted.ap,
+						A2(
+							elm$core$Basics$composeL,
+							author$project$Model$AtLeastOneNode,
+							author$project$Model$updateMinimal(counted))),
+					false)
+				]);
+		case 13:
+			var counted = node.a;
+			return _List_fromArray(
+				[
+					A4(
+					author$project$Model$Property,
+					author$project$Model$typeNames.V,
+					author$project$Model$typeDescriptions.V,
+					A2(
+						author$project$Model$ConnectingProperty,
+						counted.p,
+						A2(
+							elm$core$Basics$composeL,
+							author$project$Model$AnyRepetitionNode,
+							author$project$Model$updateExpression(counted))),
+					true),
+					A4(
+					author$project$Model$Property,
+					'Minimize Count',
+					'Match as few occurences as possible',
+					A2(
+						author$project$Model$BoolProperty,
+						counted.ap,
+						A2(
+							elm$core$Basics$composeL,
+							author$project$Model$AnyRepetitionNode,
+							author$project$Model$updateMinimal(counted))),
+					false)
+				]);
+		case 17:
+			var repetition = node.a;
+			return _List_fromArray(
+				[
+					A4(
+					author$project$Model$Property,
+					author$project$Model$typeNames.aL,
+					'Match only if this expression is repeated exactly ' + (elm$core$String$fromInt(repetition.bJ) + ' times'),
+					A2(
+						author$project$Model$ConnectingProperty,
+						repetition.p,
+						A2(
+							elm$core$Basics$composeL,
+							author$project$Model$ExactRepetitionNode,
+							author$project$Model$updateExpression(repetition))),
+					true),
+					A4(
+					author$project$Model$Property,
+					'Count',
+					'How often the expression is required',
+					A2(
+						author$project$Model$IntProperty,
+						repetition.bJ,
+						A2(
+							elm$core$Basics$composeL,
+							author$project$Model$ExactRepetitionNode,
+							author$project$Model$updatePositiveCount(repetition))),
+					false)
+				]);
+		case 14:
+			var counted = node.a;
+			return _List_fromArray(
+				[
+					A4(
+					author$project$Model$Property,
+					author$project$Model$typeNames.aX,
+					'Match only if the expression is repeated no less than ' + (elm$core$String$fromInt(counted.dB) + (' and no more than ' + (elm$core$String$fromInt(counted.dz) + ' times'))),
+					A2(
+						author$project$Model$ConnectingProperty,
+						counted.p,
+						A2(
+							elm$core$Basics$composeL,
+							author$project$Model$RangedRepetitionNode,
+							author$project$Model$updateExpression(counted))),
+					true),
+					A4(
+					author$project$Model$Property,
+					'Minimum',
+					'Match only if the expression is repeated no less than ' + (elm$core$String$fromInt(counted.dB) + ' times'),
+					A2(
+						author$project$Model$IntProperty,
+						counted.dB,
+						author$project$Model$updateRangedRepetitionMinimum(counted)),
+					false),
+					A4(
+					author$project$Model$Property,
+					'Maximum',
+					'Match only if the expression is repeated no more than ' + (elm$core$String$fromInt(counted.dz) + ' times'),
+					A2(
+						author$project$Model$IntProperty,
+						counted.dz,
+						author$project$Model$updateRangedRepetitionMaximum(counted)),
+					false),
+					A4(
+					author$project$Model$Property,
+					'Minimize Count',
+					'Match as few occurences as possible',
+					A2(
+						author$project$Model$BoolProperty,
+						counted.ap,
+						A2(
+							elm$core$Basics$composeL,
+							author$project$Model$RangedRepetitionNode,
+							author$project$Model$updateMinimal(counted))),
+					false)
+				]);
+		case 15:
+			var counted = node.a;
+			return _List_fromArray(
+				[
+					A4(
+					author$project$Model$Property,
+					author$project$Model$typeNames.aT,
+					'Match only if the expression is repeated no less than ' + (elm$core$String$fromInt(counted.bJ) + ' times'),
+					A2(
+						author$project$Model$ConnectingProperty,
+						counted.p,
+						A2(
+							elm$core$Basics$composeL,
+							author$project$Model$MinimumRepetitionNode,
+							author$project$Model$updateExpression(counted))),
+					true),
+					A4(
+					author$project$Model$Property,
+					'Count',
+					'Minimum number of repetitions',
+					A2(
+						author$project$Model$IntProperty,
+						counted.bJ,
+						A2(
+							elm$core$Basics$composeL,
+							author$project$Model$MinimumRepetitionNode,
+							author$project$Model$updatePositiveCount(counted))),
+					false),
+					A4(
+					author$project$Model$Property,
+					'Minimize Count',
+					'Match as few occurences as possible',
+					A2(
+						author$project$Model$BoolProperty,
+						counted.ap,
+						A2(
+							elm$core$Basics$composeL,
+							author$project$Model$MinimumRepetitionNode,
+							author$project$Model$updateMinimal(counted))),
+					false)
+				]);
+		default:
+			var counted = node.a;
+			return _List_fromArray(
+				[
+					A4(
+					author$project$Model$Property,
+					author$project$Model$typeNames.aS,
+					'Match only if the expression is repeated no more than ' + (elm$core$String$fromInt(counted.bJ) + ' times'),
+					A2(
+						author$project$Model$ConnectingProperty,
+						counted.p,
+						A2(
+							elm$core$Basics$composeL,
+							author$project$Model$MaximumRepetitionNode,
+							author$project$Model$updateExpression(counted))),
+					true),
+					A4(
+					author$project$Model$Property,
+					'Count',
+					'Maximum number of repetitions',
+					A2(
+						author$project$Model$IntProperty,
+						counted.bJ,
+						A2(
+							elm$core$Basics$composeL,
+							author$project$Model$MaximumRepetitionNode,
+							author$project$Model$updatePositiveCount(counted))),
+					false),
+					A4(
+					author$project$Model$Property,
+					'Minimize Count',
+					'Match as few occurences as possible',
+					A2(
+						author$project$Model$BoolProperty,
+						counted.ap,
+						A2(
+							elm$core$Basics$composeL,
+							author$project$Model$MaximumRepetitionNode,
+							author$project$Model$updateMinimal(counted))),
+					false)
+				]);
+	}
+};
+var elm$core$String$length = _String_length;
+var author$project$Model$codeTextWidth = A2(
+	elm$core$Basics$composeR,
+	elm$core$String$length,
+	A2(
+		elm$core$Basics$composeR,
+		elm$core$Basics$mul(5),
+		elm$core$Basics$toFloat));
+var author$project$Model$stringWidth = function (length) {
+	return A2(elm$core$Basics$max, 5, length) * ((length < 14) ? 13 : 9);
+};
+var author$project$Model$mainTextWidth = function (text) {
+	return author$project$Model$stringWidth(
+		elm$core$String$length(text));
+};
+var author$project$Model$nodeWidth = function (node) {
+	switch (node.$) {
+		case 0:
+			var symbol = node.a;
+			return author$project$Model$mainTextWidth(
+				author$project$Model$symbolName(symbol));
+		case 1:
+			var chars = node.a;
+			return (author$project$Model$mainTextWidth(author$project$Model$typeNames.ab) + author$project$Model$codeTextWidth(chars)) + 3;
+		case 2:
+			var chars = node.a;
+			return (author$project$Model$mainTextWidth(author$project$Model$typeNames.ab) + author$project$Model$codeTextWidth(chars)) + 3;
+		case 4:
+			return author$project$Model$mainTextWidth(author$project$Model$typeNames.aK);
+		case 5:
+			return author$project$Model$mainTextWidth(author$project$Model$typeNames.aV);
+		case 3:
+			var chars = node.a;
+			return (author$project$Model$mainTextWidth(author$project$Model$typeNames.aR) + author$project$Model$codeTextWidth(chars)) + 3;
+		case 11:
+			return author$project$Model$stringWidth(10);
+		case 6:
+			return author$project$Model$mainTextWidth(author$project$Model$typeNames.av);
+		case 18:
+			return author$project$Model$mainTextWidth(author$project$Model$typeNames.ae);
+		case 9:
+			return author$project$Model$mainTextWidth(author$project$Model$typeNames.ak);
+		case 17:
+			return author$project$Model$mainTextWidth(author$project$Model$typeNames.aL);
+		case 7:
+			return author$project$Model$mainTextWidth(author$project$Model$typeNames.au);
+		case 8:
+			return author$project$Model$mainTextWidth(author$project$Model$typeNames._);
+		case 10:
+			return author$project$Model$mainTextWidth(author$project$Model$typeNames.al);
+		case 12:
+			return author$project$Model$mainTextWidth(author$project$Model$typeNames.W);
+		case 13:
+			return author$project$Model$mainTextWidth(author$project$Model$typeNames.V);
+		case 14:
+			return author$project$Model$mainTextWidth(author$project$Model$typeNames.aX);
+		case 15:
+			return author$project$Model$mainTextWidth(author$project$Model$typeNames.aT);
+		default:
+			return author$project$Model$mainTextWidth(author$project$Model$typeNames.aS);
+	}
+};
+var elm$core$Basics$identity = function (x) {
+	return x;
+};
+var elm$core$Dict$foldl = F3(
+	function (func, acc, dict) {
+		foldl:
+		while (true) {
+			if (dict.$ === -2) {
+				return acc;
+			} else {
+				var key = dict.b;
+				var value = dict.c;
+				var left = dict.d;
+				var right = dict.e;
+				var $temp$func = func,
+					$temp$acc = A3(
+					func,
+					key,
+					value,
+					A3(elm$core$Dict$foldl, func, acc, left)),
+					$temp$dict = right;
+				func = $temp$func;
+				acc = $temp$acc;
+				dict = $temp$dict;
+				continue foldl;
+			}
+		}
+	});
+var elm$core$Dict$union = F2(
+	function (t1, t2) {
+		return A3(elm$core$Dict$foldl, elm$core$Dict$insert, t2, t1);
+	});
+var elm$core$List$maybeCons = F3(
+	function (f, mx, xs) {
+		var _n0 = f(mx);
+		if (!_n0.$) {
+			var x = _n0.a;
+			return A2(elm$core$List$cons, x, xs);
+		} else {
+			return xs;
+		}
+	});
+var elm$core$List$filterMap = F2(
+	function (f, xs) {
+		return A3(
+			elm$core$List$foldr,
+			elm$core$List$maybeCons(f),
+			_List_Nil,
+			xs);
+	});
+var elm$core$List$map2 = _List_map2;
+var elm$core$List$rangeHelp = F3(
+	function (lo, hi, list) {
+		rangeHelp:
+		while (true) {
+			if (_Utils_cmp(lo, hi) < 1) {
+				var $temp$lo = lo,
+					$temp$hi = hi - 1,
+					$temp$list = A2(elm$core$List$cons, hi, list);
+				lo = $temp$lo;
+				hi = $temp$hi;
+				list = $temp$list;
+				continue rangeHelp;
+			} else {
+				return list;
+			}
+		}
+	});
+var elm$core$List$range = F2(
+	function (lo, hi) {
+		return A3(elm$core$List$rangeHelp, lo, hi, _List_Nil);
+	});
+var elm$core$List$indexedMap = F2(
+	function (f, xs) {
+		return A3(
+			elm$core$List$map2,
+			f,
+			A2(
+				elm$core$List$range,
+				0,
+				elm$core$List$length(xs) - 1),
+			xs);
+	});
+var author$project$AutoLayout$buildBlockGraph = F2(
+	function (nodeId, nodes) {
+		var _n0 = A2(author$project$IdMap$get, nodeId, nodes);
+		if (_n0.$ === 1) {
+			return elm$core$Dict$empty;
+		} else {
+			var nodeView = _n0.a;
+			var properties = author$project$Model$nodeProperties(nodeView.cz);
+			var size = A2(
+				author$project$Vec2$Vec2,
+				author$project$Model$nodeWidth(nodeView.cz),
+				author$project$Model$propertyHeight * elm$core$List$length(properties));
+			var positionedBlock = A2(author$project$AutoLayout$NodeBlock, nodeView.as, size);
+			var getInputs = function (property) {
+				var _n1 = property.de;
+				switch (_n1.$) {
+					case 5:
+						var props = _n1.b;
+						return A2(
+							elm$core$List$map,
+							elm$core$Maybe$Just,
+							elm$core$Array$toList(props));
+					case 4:
+						var prop = _n1.a;
+						return _List_fromArray(
+							[prop]);
+					default:
+						return _List_fromArray(
+							[elm$core$Maybe$Nothing]);
+				}
+			};
+			var inputs = author$project$AutoLayout$flattenList(
+				A2(elm$core$List$map, getInputs, properties));
+			var indexedInputs = A2(
+				elm$core$List$indexedMap,
+				F2(
+					function (index, input) {
+						return A2(
+							elm$core$Maybe$map,
+							function (i) {
+								return {bI: i, dU: index};
+							},
+							input);
+					}),
+				inputs);
+			var filteredRawInputs = A2(elm$core$List$filterMap, elm$core$Basics$identity, inputs);
+			var filteredInputs = A2(elm$core$List$filterMap, elm$core$Basics$identity, indexedInputs);
+			var blocksOfInput = F2(
+				function (input, blocks) {
+					return A2(
+						elm$core$Dict$union,
+						blocks,
+						A2(author$project$AutoLayout$buildBlockGraph, input, nodes));
+				});
+			var inputBlocks = A3(elm$core$List$foldr, blocksOfInput, elm$core$Dict$empty, filteredRawInputs);
+			var block = positionedBlock(filteredInputs);
+			return A3(elm$core$Dict$insert, nodeId, block, inputBlocks);
+		}
+	});
+var elm$core$Dict$map = F2(
+	function (func, dict) {
+		if (dict.$ === -2) {
+			return elm$core$Dict$RBEmpty_elm_builtin;
+		} else {
+			var color = dict.a;
+			var key = dict.b;
+			var value = dict.c;
+			var left = dict.d;
+			var right = dict.e;
+			return A5(
+				elm$core$Dict$RBNode_elm_builtin,
+				color,
+				key,
+				A2(func, key, value),
+				A2(elm$core$Dict$map, func, left),
+				A2(elm$core$Dict$map, func, right));
+		}
+	});
+var author$project$IdMap$updateAll = F2(
+	function (mapper, idMap) {
+		return _Utils_update(
+			idMap,
+			{
+				k: A2(
+					elm$core$Dict$map,
+					F2(
+						function (id, v) {
+							return A2(mapper, id, v);
+						}),
+					idMap.k)
+			});
+	});
+var author$project$AutoLayout$layout = F2(
+	function (nodeId, nodes) {
+		var current = A2(author$project$AutoLayout$buildBlockGraph, nodeId, nodes);
+		var updatedBlocks = A2(author$project$AutoLayout$baseLayout, nodeId, current);
+		var updateNode = F2(
+			function (id, nodeView) {
+				var _n0 = A2(elm$core$Dict$get, id, updatedBlocks);
+				if (_n0.$ === 1) {
+					return nodeView;
+				} else {
+					var simulatedBlock = _n0.a;
+					return _Utils_update(
+						nodeView,
+						{as: simulatedBlock.as});
+				}
+			});
+		return A2(author$project$IdMap$updateAll, updateNode, nodes);
+	});
+var elm$core$Dict$isEmpty = function (dict) {
+	if (dict.$ === -2) {
+		return true;
+	} else {
+		return false;
+	}
+};
+var author$project$IdMap$isEmpty = function (idMap) {
+	return elm$core$Dict$isEmpty(idMap.k);
+};
+var author$project$Model$CreateConnection = function (a) {
+	return {$: 3, a: a};
+};
+var author$project$Model$MoveViewDrag = function (a) {
+	return {$: 1, a: a};
+};
+var author$project$Model$PrepareEditingConnection = function (a) {
+	return {$: 2, a: a};
+};
+var author$project$Update$maxUndoSteps = 100;
 var elm$core$List$takeReverse = F3(
 	function (n, list, kept) {
 		takeReverse:
@@ -4813,74 +6187,13 @@ var elm$core$List$take = F2(
 var author$project$Update$advanceHistory = F2(
 	function (history, model) {
 		return {
-			cd: _List_Nil,
-			cE: A2(
+			cg: _List_Nil,
+			cI: A2(
 				elm$core$List$take,
 				author$project$Update$maxUndoSteps,
-				A2(elm$core$List$cons, history.dQ, history.cE)),
-			dQ: model
+				A2(elm$core$List$cons, history.dR, history.cI)),
+			dR: model
 		};
-	});
-var elm$core$Dict$Black = 1;
-var elm$core$Dict$RBNode_elm_builtin = F5(
-	function (a, b, c, d, e) {
-		return {$: -1, a: a, b: b, c: c, d: d, e: e};
-	});
-var elm$core$Basics$lt = _Utils_lt;
-var elm$core$Dict$Red = 0;
-var elm$core$Dict$balance = F5(
-	function (color, key, value, left, right) {
-		if ((right.$ === -1) && (!right.a)) {
-			var _n1 = right.a;
-			var rK = right.b;
-			var rV = right.c;
-			var rLeft = right.d;
-			var rRight = right.e;
-			if ((left.$ === -1) && (!left.a)) {
-				var _n3 = left.a;
-				var lK = left.b;
-				var lV = left.c;
-				var lLeft = left.d;
-				var lRight = left.e;
-				return A5(
-					elm$core$Dict$RBNode_elm_builtin,
-					0,
-					key,
-					value,
-					A5(elm$core$Dict$RBNode_elm_builtin, 1, lK, lV, lLeft, lRight),
-					A5(elm$core$Dict$RBNode_elm_builtin, 1, rK, rV, rLeft, rRight));
-			} else {
-				return A5(
-					elm$core$Dict$RBNode_elm_builtin,
-					color,
-					rK,
-					rV,
-					A5(elm$core$Dict$RBNode_elm_builtin, 0, key, value, left, rLeft),
-					rRight);
-			}
-		} else {
-			if ((((left.$ === -1) && (!left.a)) && (left.d.$ === -1)) && (!left.d.a)) {
-				var _n5 = left.a;
-				var lK = left.b;
-				var lV = left.c;
-				var _n6 = left.d;
-				var _n7 = _n6.a;
-				var llK = _n6.b;
-				var llV = _n6.c;
-				var llLeft = _n6.d;
-				var llRight = _n6.e;
-				var lRight = left.e;
-				return A5(
-					elm$core$Dict$RBNode_elm_builtin,
-					0,
-					lK,
-					lV,
-					A5(elm$core$Dict$RBNode_elm_builtin, 1, llK, llV, llLeft, llRight),
-					A5(elm$core$Dict$RBNode_elm_builtin, 1, key, value, lRight, right));
-			} else {
-				return A5(elm$core$Dict$RBNode_elm_builtin, color, key, value, left, right);
-			}
-		}
 	});
 var elm$core$Dict$getMin = function (dict) {
 	getMin:
@@ -5252,81 +6565,16 @@ var author$project$IdMap$remove = F2(
 				k: A2(elm$core$Dict$remove, id, idMap.k)
 			});
 	});
-var elm$core$Dict$map = F2(
-	function (func, dict) {
-		if (dict.$ === -2) {
-			return elm$core$Dict$RBEmpty_elm_builtin;
-		} else {
-			var color = dict.a;
-			var key = dict.b;
-			var value = dict.c;
-			var left = dict.d;
-			var right = dict.e;
-			return A5(
-				elm$core$Dict$RBNode_elm_builtin,
-				color,
-				key,
-				A2(func, key, value),
-				A2(elm$core$Dict$map, func, left),
-				A2(elm$core$Dict$map, func, right));
-		}
-	});
-var author$project$IdMap$updateAll = F2(
+var author$project$IdMap$updateAllValues = F2(
 	function (mapper, idMap) {
-		return _Utils_update(
-			idMap,
-			{
-				k: A2(
-					elm$core$Dict$map,
-					F2(
-						function (_n0, v) {
-							return mapper(v);
-						}),
-					idMap.k)
-			});
+		return A2(
+			author$project$IdMap$updateAll,
+			F2(
+				function (_n0, value) {
+					return mapper(value);
+				}),
+			idMap);
 	});
-var author$project$Model$AnyRepetitionNode = function (a) {
-	return {$: 13, a: a};
-};
-var author$project$Model$AtLeastOneNode = function (a) {
-	return {$: 12, a: a};
-};
-var author$project$Model$CaptureNode = function (a) {
-	return {$: 8, a: a};
-};
-var author$project$Model$ExactRepetitionNode = function (a) {
-	return {$: 17, a: a};
-};
-var author$project$Model$FlagsNode = function (a) {
-	return {$: 18, a: a};
-};
-var author$project$Model$IfFollowedByNode = function (a) {
-	return {$: 9, a: a};
-};
-var author$project$Model$IfNotFollowedByNode = function (a) {
-	return {$: 10, a: a};
-};
-var author$project$Model$MaximumRepetitionNode = function (a) {
-	return {$: 16, a: a};
-};
-var author$project$Model$MinimumRepetitionNode = function (a) {
-	return {$: 15, a: a};
-};
-var author$project$Model$OptionalNode = function (a) {
-	return {$: 11, a: a};
-};
-var author$project$Model$RangedRepetitionNode = function (a) {
-	return {$: 14, a: a};
-};
-var author$project$Model$SequenceNode = function (a) {
-	return {$: 7, a: a};
-};
-var author$project$Model$SetNode = function (a) {
-	return {$: 6, a: a};
-};
-var elm$core$Maybe$Just = function (a) {
-	return {$: 0, a: a};
-};
 var author$project$Model$ifNotDeleted = F2(
 	function (deleted, node) {
 		return _Utils_eq(
@@ -5352,7 +6600,6 @@ var elm$core$Basics$logBase = F2(
 	function (base, number) {
 		return _Basics_log(number) / _Basics_log(base);
 	});
-var elm$core$Basics$toFloat = _Basics_toFloat;
 var elm$core$Array$shiftStep = elm$core$Basics$ceiling(
 	A2(elm$core$Basics$logBase, 2, elm$core$Array$branchFactor));
 var elm$core$Elm$JsArray$empty = _JsArray_empty;
@@ -5407,11 +6654,6 @@ var elm$core$Array$treeFromBuilder = F2(
 		}
 	});
 var elm$core$Basics$floor = _Basics_floor;
-var elm$core$Basics$max = F2(
-	function (x, y) {
-		return (_Utils_cmp(x, y) > 0) ? x : y;
-	});
-var elm$core$Basics$mul = _Basics_mul;
 var elm$core$Elm$JsArray$length = _JsArray_length;
 var elm$core$Array$builderToArray = F2(
 	function (reverseNodeList, builder) {
@@ -5644,61 +6886,6 @@ var author$project$Build$escapeChar = F2(
 			['\\', _char]) : _List_fromArray(
 			[_char]);
 	});
-var elm$core$List$foldrHelper = F4(
-	function (fn, acc, ctr, ls) {
-		if (!ls.b) {
-			return acc;
-		} else {
-			var a = ls.a;
-			var r1 = ls.b;
-			if (!r1.b) {
-				return A2(fn, a, acc);
-			} else {
-				var b = r1.a;
-				var r2 = r1.b;
-				if (!r2.b) {
-					return A2(
-						fn,
-						a,
-						A2(fn, b, acc));
-				} else {
-					var c = r2.a;
-					var r3 = r2.b;
-					if (!r3.b) {
-						return A2(
-							fn,
-							a,
-							A2(
-								fn,
-								b,
-								A2(fn, c, acc)));
-					} else {
-						var d = r3.a;
-						var r4 = r3.b;
-						var res = (ctr > 500) ? A3(
-							elm$core$List$foldl,
-							fn,
-							acc,
-							elm$core$List$reverse(r4)) : A4(elm$core$List$foldrHelper, fn, acc, ctr + 1, r4);
-						return A2(
-							fn,
-							a,
-							A2(
-								fn,
-								b,
-								A2(
-									fn,
-									c,
-									A2(fn, d, res))));
-					}
-				}
-			}
-		}
-	});
-var elm$core$List$foldr = F3(
-	function (fn, acc, ls) {
-		return A4(elm$core$List$foldrHelper, fn, acc, 0, ls);
-	});
 var elm$core$List$append = F2(
 	function (xs, ys) {
 		if (!ys.b) {
@@ -5710,30 +6897,12 @@ var elm$core$List$append = F2(
 var elm$core$List$concat = function (lists) {
 	return A3(elm$core$List$foldr, elm$core$List$append, _List_Nil, lists);
 };
-var elm$core$List$map = F2(
-	function (f, xs) {
-		return A3(
-			elm$core$List$foldr,
-			F2(
-				function (x, acc) {
-					return A2(
-						elm$core$List$cons,
-						f(x),
-						acc);
-				}),
-			_List_Nil,
-			xs);
-	});
 var elm$core$List$concatMap = F2(
 	function (f, list) {
 		return elm$core$List$concat(
 			A2(elm$core$List$map, f, list));
 	});
 var elm$core$String$fromList = _String_fromList;
-var elm$core$String$foldr = _String_foldr;
-var elm$core$String$toList = function (string) {
-	return A3(elm$core$String$foldr, elm$core$List$cons, _List_Nil, string);
-};
 var author$project$Build$escapeChars = F2(
 	function (pattern, chars) {
 		return elm$core$String$fromList(
@@ -5744,10 +6913,6 @@ var author$project$Build$escapeChars = F2(
 				elm$core$String$toList(chars)));
 	});
 var author$project$Build$escapeCharset = author$project$Build$escapeChars('[^-.\\]');
-var elm$core$String$cons = _String_cons;
-var elm$core$String$fromChar = function (_char) {
-	return A2(elm$core$String$cons, _char, '');
-};
 var author$project$Build$charRange = F2(
 	function (start, end) {
 		return '[' + (author$project$Build$escapeCharset(
@@ -5758,7 +6923,6 @@ var author$project$Build$charset = function (chars) {
 	return '[' + (author$project$Build$escapeCharset(chars) + ']');
 };
 var author$project$Build$cycles = 'Nodes have cycles';
-var elm$core$String$fromInt = _String_fromNumber;
 var author$project$Build$exactRepetition = F2(
 	function (count, expression) {
 		return expression + ('{' + (elm$core$String$fromInt(count) + '}'));
@@ -5822,7 +6986,6 @@ var author$project$Build$parenthesesForPrecedence = F3(
 	function (ownPrecedence, childPrecedence, child) {
 		return ((_Utils_cmp(ownPrecedence, childPrecedence) > 0) && (childPrecedence < 5)) ? ('(?:' + (child + ')')) : child;
 	});
-var elm$core$String$length = _String_length;
 var author$project$Build$precedence = function (node) {
 	switch (node.$) {
 		case 18:
@@ -5881,13 +7044,6 @@ var elm$core$List$isEmpty = function (xs) {
 		return false;
 	}
 };
-var elm$core$String$join = F2(
-	function (sep, chunks) {
-		return A2(
-			_String_join,
-			sep,
-			_List_toArray(chunks));
-	});
 var elm$core$String$concat = function (strings) {
 	return A2(elm$core$String$join, '', strings);
 };
@@ -5896,50 +7052,6 @@ var author$project$Build$sequence = function (members) {
 };
 var author$project$Build$set = function (options) {
 	return (!elm$core$List$isEmpty(options)) ? A2(elm$core$String$join, '|', options) : '(nothing)';
-};
-var elm$core$Basics$compare = _Utils_compare;
-var elm$core$Dict$get = F2(
-	function (targetKey, dict) {
-		get:
-		while (true) {
-			if (dict.$ === -2) {
-				return elm$core$Maybe$Nothing;
-			} else {
-				var key = dict.b;
-				var value = dict.c;
-				var left = dict.d;
-				var right = dict.e;
-				var _n1 = A2(elm$core$Basics$compare, targetKey, key);
-				switch (_n1) {
-					case 0:
-						var $temp$targetKey = targetKey,
-							$temp$dict = left;
-						targetKey = $temp$targetKey;
-						dict = $temp$dict;
-						continue get;
-					case 1:
-						return elm$core$Maybe$Just(value);
-					default:
-						var $temp$targetKey = targetKey,
-							$temp$dict = right;
-						targetKey = $temp$targetKey;
-						dict = $temp$dict;
-						continue get;
-				}
-			}
-		}
-	});
-var author$project$IdMap$get = F2(
-	function (id, idMap) {
-		return A2(elm$core$Dict$get, id, idMap.k);
-	});
-var elm$core$Basics$composeR = F3(
-	function (f, g, x) {
-		return g(
-			f(x));
-	});
-var elm$core$Basics$identity = function (x) {
-	return x;
 };
 var elm$core$Result$andThen = F2(
 	function (callback, result) {
@@ -6019,7 +7131,7 @@ var author$project$Build$buildExpression = F5(
 					A2(
 						elm$core$Basics$composeR,
 						function ($) {
-							return $.cv;
+							return $.cz;
 						},
 						build),
 					nodeResult);
@@ -6150,11 +7262,11 @@ var author$project$Build$buildNodeExpression = F3(
 					return A3(build, false, cost, expression);
 				case 10:
 					var expression = node.a.p;
-					var successor = node.a.cV;
+					var successor = node.a.cY;
 					return A5(buildTwoChildren, author$project$Build$ifNotFollowedBy, false, successor, true, expression);
 				case 9:
 					var expression = node.a.p;
-					var successor = node.a.cV;
+					var successor = node.a.cY;
 					return A5(buildTwoChildren, author$project$Build$ifFollowedBy, false, successor, true, expression);
 				case 11:
 					var expression = node.a.p;
@@ -6182,7 +7294,7 @@ var author$project$Build$buildNodeExpression = F3(
 						expression);
 				case 17:
 					var expression = node.a.p;
-					var count = node.a.bG;
+					var count = node.a.bJ;
 					return A3(
 						buildSingleChild,
 						true,
@@ -6190,8 +7302,8 @@ var author$project$Build$buildNodeExpression = F3(
 						expression);
 				case 14:
 					var expression = node.a.p;
-					var minimum = node.a.dA;
-					var maximum = node.a.dy;
+					var minimum = node.a.dB;
+					var maximum = node.a.dz;
 					var minimal = node.a.ap;
 					return A3(
 						buildSingleChild,
@@ -6200,7 +7312,7 @@ var author$project$Build$buildNodeExpression = F3(
 						expression);
 				case 15:
 					var expression = node.a.p;
-					var count = node.a.bG;
+					var count = node.a.bJ;
 					var minimal = node.a.ap;
 					return A3(
 						buildSingleChild,
@@ -6209,7 +7321,7 @@ var author$project$Build$buildNodeExpression = F3(
 						expression);
 				default:
 					var expression = node.a.p;
-					var count = node.a.bG;
+					var count = node.a.bJ;
 					var minimal = node.a.ap;
 					return A3(
 						buildSingleChild,
@@ -6219,11 +7331,6 @@ var author$project$Build$buildNodeExpression = F3(
 			}
 		}();
 		return string;
-	});
-var elm$core$Basics$composeL = F3(
-	function (g, f, x) {
-		return g(
-			f(x));
 	});
 var elm$core$Dict$sizeHelp = F2(
 	function (n, dict) {
@@ -6257,19 +7364,9 @@ var author$project$Model$RegexBuild = F2(
 	});
 var author$project$Model$RegexFlags = F3(
 	function (multiple, caseInsensitive, multiline) {
-		return {bE: caseInsensitive, bP: multiline, dC: multiple};
+		return {bH: caseInsensitive, bR: multiline, dD: multiple};
 	});
 var author$project$Model$defaultFlags = A3(author$project$Model$RegexFlags, true, false, true);
-var elm$core$Maybe$map = F2(
-	function (f, maybe) {
-		if (!maybe.$) {
-			var value = maybe.a;
-			return elm$core$Maybe$Just(
-				f(value));
-		} else {
-			return elm$core$Maybe$Nothing;
-		}
-	});
 var author$project$Build$buildRegex = F2(
 	function (nodes, id) {
 		var nodeView = A2(author$project$IdMap$get, id, nodes);
@@ -6277,7 +7374,7 @@ var author$project$Build$buildRegex = F2(
 			var _n1 = A2(
 				elm$core$Maybe$map,
 				function ($) {
-					return $.cv;
+					return $.cz;
 				},
 				nodeView);
 			if ((!_n1.$) && (_n1.a.$ === 18)) {
@@ -6303,37 +7400,18 @@ var author$project$Build$buildRegex = F2(
 			},
 			expression);
 	});
-var elm$core$Maybe$withDefault = F2(
-	function (_default, maybe) {
-		if (!maybe.$) {
-			var value = maybe.a;
-			return value;
-		} else {
-			return _default;
-		}
-	});
 var elm$regex$Regex$Match = F4(
 	function (match, index, number, submatches) {
-		return {cg: index, cp: match, dF: number, d$: submatches};
+		return {ck: index, ct: match, dG: number, d_: submatches};
 	});
 var elm$regex$Regex$fromStringWith = _Regex_fromStringWith;
 var elm$regex$Regex$never = _Regex_never;
 var author$project$Build$compileRegex = function (build) {
-	var options = {bE: build.ae.bE, bP: build.ae.bP};
+	var options = {bH: build.ae.bH, bR: build.ae.bR};
 	return A2(
 		elm$core$Maybe$withDefault,
 		elm$regex$Regex$never,
 		A2(elm$regex$Regex$fromStringWith, options, build.p));
-};
-var elm$core$List$length = function (xs) {
-	return A3(
-		elm$core$List$foldl,
-		F2(
-			function (_n0, i) {
-				return i + 1;
-			}),
-		0,
-		xs);
 };
 var elm$core$String$split = F2(
 	function (sep, string) {
@@ -6392,15 +7470,15 @@ var author$project$Update$extractMatches = F4(
 			function (match, _n1) {
 				var textStartIndex = _n1.a;
 				var extractedMatches = _n1.b;
-				var textBeforeMatch = A3(elm$core$String$slice, textStartIndex, match.cg, text);
-				var indexAfterMatch = match.cg + elm$core$String$length(match.cp);
+				var textBeforeMatch = A3(elm$core$String$slice, textStartIndex, match.ck, text);
+				var indexAfterMatch = match.ck + elm$core$String$length(match.ct);
 				return _Utils_Tuple2(
 					indexAfterMatch,
 					_Utils_ap(
 						extractedMatches,
 						_List_fromArray(
 							[
-								_Utils_Tuple2(textBeforeMatch, match.cp)
+								_Utils_Tuple2(textBeforeMatch, match.ct)
 							])));
 			});
 		var extract = function (rawMatches) {
@@ -6452,16 +7530,16 @@ var author$project$Update$updateCache = F2(
 	function (model, fallback) {
 		var regex = A2(
 			elm$core$Maybe$map,
-			author$project$Build$buildRegex(model.cx),
-			model.cD.bL);
-		var example = model.ca;
+			author$project$Build$buildRegex(model.cB),
+			model.cH.ci);
+		var example = model.cd;
 		if (_Utils_eq(
 			regex,
 			elm$core$Maybe$Just(
 				elm$core$Result$Err(author$project$Build$cycles)))) {
 			return _Utils_update(
 				fallback,
-				{bH: true});
+				{bK: true});
 		} else {
 			var multiple = A2(
 				elm$core$Maybe$withDefault,
@@ -6477,7 +7555,7 @@ var author$project$Update$updateCache = F2(
 									return $.ae;
 								},
 								function ($) {
-									return $.dC;
+									return $.dD;
 								})),
 						elm$core$Result$withDefault(false)),
 					regex));
@@ -6494,125 +7572,77 @@ var author$project$Update$updateCache = F2(
 			var newExample = _Utils_update(
 				example,
 				{
-					b1: A2(
+					b3: A2(
 						elm$core$Maybe$map,
-						A3(author$project$Update$extractMatches, multiple, example.cq, example.bF),
+						A3(author$project$Update$extractMatches, multiple, example.cu, example.de),
 						compiled)
 				});
 			return _Utils_update(
 				model,
-				{c7: regex, bH: false, ca: newExample});
+				{c9: regex, bK: false, cd: newExample});
 		}
 	});
 var author$project$Update$updatePresent = F2(
 	function (model, presentUpdater) {
-		var history = model.dp;
+		var history = model.dr;
 		return _Utils_update(
 			model,
 			{
-				dp: _Utils_update(
+				dr: _Utils_update(
 					history,
 					{
-						dQ: presentUpdater(history.dQ)
+						dR: presentUpdater(history.dR)
 					})
 			});
 	});
 var author$project$Update$deleteNode = F2(
 	function (nodeId, model) {
 		var output = _Utils_eq(
-			model.dp.dQ.cD.bL,
-			elm$core$Maybe$Just(nodeId)) ? elm$core$Maybe$Nothing : model.dp.dQ.cD.bL;
+			model.dr.dR.cH.ci,
+			elm$core$Maybe$Just(nodeId)) ? elm$core$Maybe$Nothing : model.dr.dR.cH.ci;
 		var newNodeValues = A2(
-			author$project$IdMap$updateAll,
+			author$project$IdMap$updateAllValues,
 			function (view) {
 				return _Utils_update(
 					view,
 					{
-						cv: A2(author$project$Model$onNodeDeleted, nodeId, view.cv)
+						cz: A2(author$project$Model$onNodeDeleted, nodeId, view.cz)
 					});
 			},
-			A2(author$project$IdMap$remove, nodeId, model.dp.dQ.cx));
+			A2(author$project$IdMap$remove, nodeId, model.dr.dR.cB));
 		var newPresent = function (present) {
 			return A2(
 				author$project$Update$updateCache,
 				_Utils_update(
 					present,
 					{
-						cx: newNodeValues,
-						cD: {bL: output, cn: present.cD.cn}
+						cB: newNodeValues,
+						cH: {ci: output, cr: present.cH.cr}
 					}),
 				present);
 		};
 		var newModel = A2(author$project$Update$updatePresent, model, newPresent);
 		return _Utils_update(
 			newModel,
-			{b7: elm$core$Maybe$Nothing});
-	});
-var elm$core$Dict$insertHelp = F3(
-	function (key, value, dict) {
-		if (dict.$ === -2) {
-			return A5(elm$core$Dict$RBNode_elm_builtin, 0, key, value, elm$core$Dict$RBEmpty_elm_builtin, elm$core$Dict$RBEmpty_elm_builtin);
-		} else {
-			var nColor = dict.a;
-			var nKey = dict.b;
-			var nValue = dict.c;
-			var nLeft = dict.d;
-			var nRight = dict.e;
-			var _n1 = A2(elm$core$Basics$compare, key, nKey);
-			switch (_n1) {
-				case 0:
-					return A5(
-						elm$core$Dict$balance,
-						nColor,
-						nKey,
-						nValue,
-						A3(elm$core$Dict$insertHelp, key, value, nLeft),
-						nRight);
-				case 1:
-					return A5(elm$core$Dict$RBNode_elm_builtin, nColor, nKey, value, nLeft, nRight);
-				default:
-					return A5(
-						elm$core$Dict$balance,
-						nColor,
-						nKey,
-						nValue,
-						nLeft,
-						A3(elm$core$Dict$insertHelp, key, value, nRight));
-			}
-		}
-	});
-var elm$core$Dict$insert = F3(
-	function (key, value, dict) {
-		var _n0 = A3(elm$core$Dict$insertHelp, key, value, dict);
-		if ((_n0.$ === -1) && (!_n0.a)) {
-			var _n1 = _n0.a;
-			var k = _n0.b;
-			var v = _n0.c;
-			var l = _n0.d;
-			var r = _n0.e;
-			return A5(elm$core$Dict$RBNode_elm_builtin, 1, k, v, l, r);
-		} else {
-			var x = _n0;
-			return x;
-		}
+			{ca: elm$core$Maybe$Nothing});
 	});
 var author$project$IdMap$insertAnonymous = F2(
 	function (value, idMap) {
 		return {
-			k: A3(elm$core$Dict$insert, idMap.aS, value, idMap.k),
-			aS: idMap.aS + 1
+			k: A3(elm$core$Dict$insert, idMap.aU, value, idMap.k),
+			aU: idMap.aU + 1
 		};
 	});
 var author$project$Vec2$add = F2(
 	function (a, b) {
-		return A2(author$project$Vec2$Vec2, a.bB + b.bB, a.bC + b.bC);
+		return A2(author$project$Vec2$Vec2, a.bE + b.bE, a.bF + b.bF);
 	});
 var elm$core$Basics$negate = function (n) {
 	return -n;
 };
 var author$project$Update$duplicateNode = F2(
 	function (model, nodeId) {
-		var nodes = model.cx;
+		var nodes = model.cB;
 		var node = A2(author$project$IdMap$get, nodeId, nodes);
 		if (node.$ === 1) {
 			return model;
@@ -6620,77 +7650,77 @@ var author$project$Update$duplicateNode = F2(
 			var original = node.a;
 			var position = A2(
 				author$project$Vec2$add,
-				original.cI,
+				original.as,
 				A2(author$project$Vec2$Vec2, 0, -28));
 			var clone = _Utils_update(
 				original,
-				{cI: position});
+				{as: position});
 			return _Utils_update(
 				model,
 				{
-					cx: A2(author$project$IdMap$insertAnonymous, clone, nodes)
+					cB: A2(author$project$IdMap$insertAnonymous, clone, nodes)
 				});
 		}
 	});
 var author$project$Update$enableEditingExampleText = F2(
 	function (enabled, model) {
-		var old = model.ca;
+		var old = model.cd;
 		return _Utils_update(
 			model,
 			{
-				ca: _Utils_update(
+				cd: _Utils_update(
 					old,
-					{cj: enabled})
+					{cn: enabled})
 			});
 	});
 var author$project$Model$NodeView = F2(
 	function (position, node) {
-		return {cv: node, cI: position};
+		return {cz: node, as: position};
 	});
 var elm$core$Basics$pow = _Basics_pow;
 var author$project$Model$viewTransform = function (_n0) {
-	var magnification = _n0.co;
-	var offset = _n0.cy;
+	var magnification = _n0.cs;
+	var offset = _n0.cC;
 	return {
 		dW: A2(elm$core$Basics$pow, 2, magnification * 0.4),
-		d6: offset
+		d5: offset
 	};
 };
 var author$project$Vec2$scale = F2(
 	function (s, v) {
-		return A2(author$project$Vec2$Vec2, v.bB * s, v.bC * s);
+		return A2(author$project$Vec2$Vec2, v.bE * s, v.bF * s);
 	});
 var author$project$Vec2$sub = F2(
 	function (a, b) {
-		return A2(author$project$Vec2$Vec2, a.bB - b.bB, a.bC - b.bC);
+		return A2(author$project$Vec2$Vec2, a.bE - b.bE, a.bF - b.bF);
 	});
 var author$project$Vec2$inverseTransform = F2(
 	function (value, transformation) {
 		return A2(
 			author$project$Vec2$scale,
 			1 / transformation.dW,
-			A2(author$project$Vec2$sub, value, transformation.d6));
+			A2(author$project$Vec2$sub, value, transformation.d5));
 	});
 var author$project$Update$insertNode = F2(
 	function (node, model) {
 		var position = A2(
 			author$project$Vec2$inverseTransform,
 			A2(author$project$Vec2$Vec2, 800, 400),
-			author$project$Model$viewTransform(model.ea));
+			author$project$Model$viewTransform(model.d9));
 		var newPresent = function (present) {
 			return _Utils_update(
 				present,
 				{
-					cx: A2(
+					cB: A2(
 						author$project$IdMap$insertAnonymous,
 						A2(author$project$Model$NodeView, position, node),
-						present.cx)
+						present.cB)
 				});
 		};
 		var newModel = A2(author$project$Update$updatePresent, model, newPresent);
 		return _Utils_update(
 			newModel,
-			{cR: elm$core$Maybe$Nothing});
+			{cU: elm$core$Maybe$Nothing});
 	});
 var author$project$Model$MoveNodeDrag = function (a) {
 	return {$: 0, a: a};
@@ -6725,7 +7755,7 @@ var author$project$Update$moveNode = F4(
 			return _Utils_update(
 				nodeView,
 				{
-					cI: A2(author$project$Vec2$add, nodeView.cI, viewMovement)
+					as: A2(author$project$Vec2$add, nodeView.as, viewMovement)
 				});
 		};
 		return A3(author$project$IdMap$update, nodeId, updateNodePosition, nodes);
@@ -6737,39 +7767,39 @@ var author$project$Update$moveNodeInModel = F4(
 			return _Utils_update(
 				present,
 				{
-					cx: A4(author$project$Update$moveNode, model.ea, present.cx, node, delta)
+					cB: A4(author$project$Update$moveNode, model.d9, present.cB, node, delta)
 				});
 		};
 		var newModel = A2(author$project$Update$updatePresent, model, newPresent);
 		return _Utils_update(
 			newModel,
 			{
-				b7: elm$core$Maybe$Just(
+				ca: elm$core$Maybe$Just(
 					author$project$Model$MoveNodeDrag(
-						{q: newMouse, cv: node}))
+						{q: newMouse, cz: node}))
 			});
 	});
 var author$project$Update$moveViewInModel = F3(
 	function (newMouse, mouse, model) {
-		var view = model.ea;
+		var view = model.d9;
 		var delta = A2(author$project$Vec2$sub, newMouse, mouse);
 		return _Utils_update(
 			model,
 			{
-				b7: elm$core$Maybe$Just(
+				ca: elm$core$Maybe$Just(
 					author$project$Model$MoveViewDrag(
 						{q: newMouse})),
-				ea: _Utils_update(
+				d9: _Utils_update(
 					view,
 					{
-						cy: A2(author$project$Vec2$add, view.cy, delta)
+						cC: A2(author$project$Vec2$add, view.cC, delta)
 					})
 			});
 	});
 var author$project$IdMap$insert = F2(
 	function (value, idMap) {
 		return _Utils_Tuple2(
-			idMap.aS,
+			idMap.aU,
 			A2(author$project$IdMap$insertAnonymous, value, idMap));
 	});
 var elm$core$Tuple$mapFirst = F2(
@@ -6799,103 +7829,42 @@ var author$project$IdMap$insertListWith = F2(
 			_Utils_Tuple2(_List_Nil, idMap),
 			values);
 	});
-var author$project$Model$CharRangeNode = F2(
-	function (a, b) {
-		return {$: 4, a: a, b: b};
-	});
-var author$project$Model$CharSetNode = function (a) {
-	return {$: 1, a: a};
-};
 var author$project$Model$NotInCharRangeNode = F2(
 	function (a, b) {
 		return {$: 5, a: a, b: b};
 	});
-var author$project$Model$NotInCharSetNode = function (a) {
-	return {$: 2, a: a};
-};
 var author$project$Model$SymbolNode = function (a) {
 	return {$: 0, a: a};
 };
-var elm$core$Basics$idiv = _Basics_idiv;
-var elm$core$List$map2 = _List_map2;
-var elm$core$List$rangeHelp = F3(
-	function (lo, hi, list) {
-		rangeHelp:
-		while (true) {
-			if (_Utils_cmp(lo, hi) < 1) {
-				var $temp$lo = lo,
-					$temp$hi = hi - 1,
-					$temp$list = A2(elm$core$List$cons, hi, list);
-				lo = $temp$lo;
-				hi = $temp$hi;
-				list = $temp$list;
-				continue rangeHelp;
-			} else {
-				return list;
-			}
-		}
-	});
-var elm$core$List$range = F2(
-	function (lo, hi) {
-		return A3(elm$core$List$rangeHelp, lo, hi, _List_Nil);
-	});
-var elm$core$List$indexedMap = F2(
-	function (f, xs) {
-		return A3(
-			elm$core$List$map2,
-			f,
-			A2(
-				elm$core$List$range,
-				0,
-				elm$core$List$length(xs) - 1),
-			xs);
-	});
 var author$project$Parse$insert = F3(
 	function (position, element, nodes) {
+		var node = author$project$Model$NodeView(position);
+		var add = author$project$Parse$insert(position);
 		switch (element.$) {
 			case 0:
 				var members = element.a;
-				var insertChild = F2(
-					function (index, child) {
-						return A2(
-							author$project$Parse$insert,
-							A2(
-								author$project$Vec2$add,
-								position,
-								A2(
-									author$project$Vec2$Vec2,
-									-200,
-									75 * (index - ((elm$core$List$length(members) / 2) | 0)))),
-							child);
-					});
 				var _n1 = A2(
 					author$project$IdMap$insertListWith,
-					A2(elm$core$List$indexedMap, insertChild, members),
+					A2(elm$core$List$map, add, members),
 					nodes);
 				var children = _n1.a;
 				var newNodes = _n1.b;
-				var node = A2(
-					author$project$Model$NodeView,
-					position,
+				var nodeValue = node(
 					author$project$Model$SequenceNode(
 						elm$core$Array$fromList(children)));
-				return A2(author$project$IdMap$insert, node, newNodes);
+				return A2(author$project$IdMap$insert, nodeValue, newNodes);
 			case 3:
 				var sequence = element.a;
 				return A2(
 					author$project$IdMap$insert,
-					A2(
-						author$project$Model$NodeView,
-						position,
+					node(
 						author$project$Model$LiteralNode(sequence)),
 					nodes);
 			case 1:
 				var symbol = element.a;
 				return A2(
 					author$project$IdMap$insert,
-					A2(
-						author$project$Model$NodeView,
-						position,
+					node(
 						author$project$Model$SymbolNode(symbol)),
 					nodes);
 			case 2:
@@ -6905,9 +7874,7 @@ var author$project$Parse$insert = F3(
 				var b = _n2.b;
 				return A2(
 					author$project$IdMap$insert,
-					A2(
-						author$project$Model$NodeView,
-						position,
+					node(
 						A2(
 							inverted ? author$project$Model$NotInCharRangeNode : author$project$Model$CharRangeNode,
 							a,
@@ -6915,175 +7882,99 @@ var author$project$Parse$insert = F3(
 					nodes);
 			case 6:
 				var child = element.a;
-				var _n3 = A3(
-					author$project$Parse$insert,
-					A2(
-						author$project$Vec2$add,
-						position,
-						A2(author$project$Vec2$Vec2, -200, 0)),
-					child,
-					nodes);
+				var _n3 = A2(add, child, nodes);
 				var childId = _n3.a;
 				var nodesWithChild = _n3.b;
 				return A2(
 					author$project$IdMap$insert,
-					A2(
-						author$project$Model$NodeView,
-						position,
+					node(
 						author$project$Model$CaptureNode(
 							elm$core$Maybe$Just(childId))),
 					nodesWithChild);
 			case 4:
-				var inverted = element.a.aM;
-				var contents = element.a.bF;
+				var inverted = element.a.aO;
+				var contents = element.a.de;
 				return A2(
 					author$project$IdMap$insert,
-					A2(
-						author$project$Model$NodeView,
-						position,
+					node(
 						inverted ? author$project$Model$NotInCharSetNode(contents) : author$project$Model$CharSetNode(contents)),
 					nodes);
 			case 5:
 				var options = element.a;
-				var insertChild = F2(
-					function (index, child) {
-						return A2(
-							author$project$Parse$insert,
-							A2(
-								author$project$Vec2$add,
-								position,
-								A2(
-									author$project$Vec2$Vec2,
-									-200,
-									75 * (index - ((elm$core$List$length(options) / 2) | 0)))),
-							child);
-					});
 				var _n4 = A2(
 					author$project$IdMap$insertListWith,
-					A2(elm$core$List$indexedMap, insertChild, options),
+					A2(elm$core$List$map, add, options),
 					nodes);
 				var children = _n4.a;
 				var newNodes = _n4.b;
-				var node = A2(
-					author$project$Model$NodeView,
-					position,
+				var nodeValue = node(
 					author$project$Model$SetNode(
 						elm$core$Array$fromList(children)));
-				return A2(author$project$IdMap$insert, node, newNodes);
+				return A2(author$project$IdMap$insert, nodeValue, newNodes);
 			case 7:
 				var expression = element.a.p;
-				var successor = element.a.cV;
-				var _n5 = A3(
-					author$project$Parse$insert,
-					A2(
-						author$project$Vec2$add,
-						position,
-						A2(author$project$Vec2$Vec2, -200, 0)),
-					expression,
-					nodes);
+				var successor = element.a.cY;
+				var _n5 = A2(add, expression, nodes);
 				var expressionId = _n5.a;
 				var nodesWithExpression = _n5.b;
-				var _n6 = A3(
-					author$project$Parse$insert,
-					A2(
-						author$project$Vec2$add,
-						position,
-						A2(author$project$Vec2$Vec2, -200, 75)),
-					successor,
-					nodesWithExpression);
+				var _n6 = A2(add, successor, nodesWithExpression);
 				var successorId = _n6.a;
 				var nodesWithChildren = _n6.b;
 				return A2(
 					author$project$IdMap$insert,
-					A2(
-						author$project$Model$NodeView,
-						position,
+					node(
 						author$project$Model$IfFollowedByNode(
 							{
 								p: elm$core$Maybe$Just(expressionId),
-								cV: elm$core$Maybe$Just(successorId)
+								cY: elm$core$Maybe$Just(successorId)
 							})),
 					nodesWithChildren);
 			case 8:
 				var expression = element.a.p;
-				var successor = element.a.cV;
-				var _n7 = A3(
-					author$project$Parse$insert,
-					A2(
-						author$project$Vec2$add,
-						position,
-						A2(author$project$Vec2$Vec2, -200, 0)),
-					expression,
-					nodes);
+				var successor = element.a.cY;
+				var _n7 = A2(add, expression, nodes);
 				var expressionId = _n7.a;
 				var nodesWithExpression = _n7.b;
-				var _n8 = A3(
-					author$project$Parse$insert,
-					A2(
-						author$project$Vec2$add,
-						position,
-						A2(author$project$Vec2$Vec2, -200, 75)),
-					successor,
-					nodesWithExpression);
+				var _n8 = A2(add, successor, nodesWithExpression);
 				var successorId = _n8.a;
 				var nodesWithChildren = _n8.b;
 				return A2(
 					author$project$IdMap$insert,
-					A2(
-						author$project$Model$NodeView,
-						position,
+					node(
 						author$project$Model$IfNotFollowedByNode(
 							{
 								p: elm$core$Maybe$Just(expressionId),
-								cV: elm$core$Maybe$Just(successorId)
+								cY: elm$core$Maybe$Just(successorId)
 							})),
 					nodesWithChildren);
 			case 9:
 				var expression = element.a.p;
-				var minimum = element.a.dA;
-				var maximum = element.a.dy;
+				var minimum = element.a.dB;
+				var maximum = element.a.dz;
 				var minimal = element.a.ap;
-				var _n9 = A3(
-					author$project$Parse$insert,
-					A2(
-						author$project$Vec2$add,
-						position,
-						A2(author$project$Vec2$Vec2, -200, 0)),
-					expression,
-					nodes);
+				var _n9 = A2(add, expression, nodes);
 				var expressionId = _n9.a;
 				var nodesWithChild = _n9.b;
 				return A2(
 					author$project$IdMap$insert,
-					A2(
-						author$project$Model$NodeView,
-						position,
+					node(
 						author$project$Model$RangedRepetitionNode(
 							{
 								p: elm$core$Maybe$Just(expressionId),
-								dy: maximum,
+								dz: maximum,
 								ap: minimal,
-								dA: minimum
+								dB: minimum
 							})),
 					nodesWithChild);
 			case 10:
 				var expression = element.a.p;
 				var minimal = element.a.ap;
-				var _n10 = A3(
-					author$project$Parse$insert,
-					A2(
-						author$project$Vec2$add,
-						position,
-						A2(author$project$Vec2$Vec2, -200, 0)),
-					expression,
-					nodes);
+				var _n10 = A2(add, expression, nodes);
 				var expressionId = _n10.a;
 				var nodesWithChild = _n10.b;
 				return A2(
 					author$project$IdMap$insert,
-					A2(
-						author$project$Model$NodeView,
-						position,
+					node(
 						author$project$Model$OptionalNode(
 							{
 								p: elm$core$Maybe$Just(expressionId),
@@ -7093,21 +7984,12 @@ var author$project$Parse$insert = F3(
 			case 11:
 				var expression = element.a.p;
 				var minimal = element.a.ap;
-				var _n11 = A3(
-					author$project$Parse$insert,
-					A2(
-						author$project$Vec2$add,
-						position,
-						A2(author$project$Vec2$Vec2, -200, 0)),
-					expression,
-					nodes);
+				var _n11 = A2(add, expression, nodes);
 				var expressionId = _n11.a;
 				var nodesWithChild = _n11.b;
 				return A2(
 					author$project$IdMap$insert,
-					A2(
-						author$project$Model$NodeView,
-						position,
+					node(
 						author$project$Model$AtLeastOneNode(
 							{
 								p: elm$core$Maybe$Just(expressionId),
@@ -7117,21 +7999,12 @@ var author$project$Parse$insert = F3(
 			case 12:
 				var expression = element.a.p;
 				var minimal = element.a.ap;
-				var _n12 = A3(
-					author$project$Parse$insert,
-					A2(
-						author$project$Vec2$add,
-						position,
-						A2(author$project$Vec2$Vec2, -200, 0)),
-					expression,
-					nodes);
+				var _n12 = A2(add, expression, nodes);
 				var expressionId = _n12.a;
 				var nodesWithChild = _n12.b;
 				return A2(
 					author$project$IdMap$insert,
-					A2(
-						author$project$Model$NodeView,
-						position,
+					node(
 						author$project$Model$AnyRepetitionNode(
 							{
 								p: elm$core$Maybe$Just(expressionId),
@@ -7141,21 +8014,12 @@ var author$project$Parse$insert = F3(
 			default:
 				var expression = element.a.p;
 				var flags = element.a.ae;
-				var _n13 = A3(
-					author$project$Parse$insert,
-					A2(
-						author$project$Vec2$add,
-						position,
-						A2(author$project$Vec2$Vec2, -200, 0)),
-					expression,
-					nodes);
+				var _n13 = A2(add, expression, nodes);
 				var expressionId = _n13.a;
 				var nodesWithChild = _n13.b;
 				return A2(
 					author$project$IdMap$insert,
-					A2(
-						author$project$Model$NodeView,
-						position,
+					node(
 						author$project$Model$FlagsNode(
 							{
 								p: elm$core$Maybe$Just(expressionId),
@@ -7262,8 +8126,8 @@ var author$project$Parse$compileCharsetOption = F2(
 		}
 	});
 var author$project$Parse$compileCharset = function (_n0) {
-	var inverted = _n0.aM;
-	var contents = _n0.bF;
+	var inverted = _n0.aO;
+	var contents = _n0.de;
 	var _n1 = A3(
 		elm$core$List$foldr,
 		author$project$Parse$compileCharsetOption,
@@ -7289,7 +8153,7 @@ var author$project$Parse$compileCharset = function (_n0) {
 				if (!_n1.c.b) {
 					var chars = _n1.a;
 					return author$project$Parse$CompiledCharset(
-						{bF: chars, aM: inverted});
+						{de: chars, aO: inverted});
 				} else {
 					if (_n1.a === '') {
 						if (!_n1.c.b.b) {
@@ -7312,7 +8176,7 @@ var author$project$Parse$compileCharset = function (_n0) {
 			A2(
 				elm$core$List$cons,
 				author$project$Parse$CompiledCharset(
-					{bF: chars, aM: inverted}),
+					{de: chars, aO: inverted}),
 				_Utils_ap(
 					A2(elm$core$List$map, author$project$Parse$CompiledSymbol, symbols),
 					A2(
@@ -7361,31 +8225,31 @@ var author$project$Parse$compile = function (element) {
 				return author$project$Parse$compileCharset(set);
 			case 5:
 				var expression = element.a.p;
-				var successor = element.a.cV;
+				var successor = element.a.cY;
 				return author$project$Parse$CompiledIfFollowedBy(
 					{
 						p: author$project$Parse$compile(expression),
-						cV: author$project$Parse$compile(successor)
+						cY: author$project$Parse$compile(successor)
 					});
 			case 6:
 				var expression = element.a.p;
-				var successor = element.a.cV;
+				var successor = element.a.cY;
 				return author$project$Parse$CompiledIfNotFollowedBy(
 					{
 						p: author$project$Parse$compile(expression),
-						cV: author$project$Parse$compile(successor)
+						cY: author$project$Parse$compile(successor)
 					});
 			case 7:
 				var expression = element.a.p;
-				var minimum = element.a.dA;
-				var maximum = element.a.dy;
+				var minimum = element.a.dB;
+				var maximum = element.a.dz;
 				var minimal = element.a.ap;
 				return author$project$Parse$CompiledRangedRepetition(
 					{
 						p: author$project$Parse$compile(expression),
-						dy: maximum,
+						dz: maximum,
 						ap: minimal,
-						dA: minimum
+						dB: minimum
 					});
 			case 10:
 				var expression = element.a.p;
@@ -7743,7 +8607,7 @@ var author$project$Parse$parseCharset = function (text) {
 			var remaining = _n1.b;
 			return _Utils_Tuple2(
 				author$project$Parse$ParsedCharset(
-					{bF: options, aM: inverted}),
+					{de: options, aO: inverted}),
 				remaining);
 		});
 	return A3(elm$core$Result$map2, charsetFromResults, inversion, contents);
@@ -7904,14 +8768,14 @@ var author$project$Parse$parseLookAhead = function (text) {
 			author$project$Parse$parseParentheses,
 			function (s) {
 				return author$project$Parse$ParsedIfFollowedBy(
-					{p: content, cV: s});
+					{p: content, cY: s});
 			},
 			'(?=',
 			rest) : (A2(elm$core$String$startsWith, '(?!', rest) ? A3(
 			author$project$Parse$parseParentheses,
 			function (s) {
 				return author$project$Parse$ParsedIfNotFollowedBy(
-					{p: content, cV: s});
+					{p: content, cY: s});
 			},
 			'(?!',
 			rest) : elm$core$Result$Ok(
@@ -8037,38 +8901,38 @@ var author$project$Update$selectNode = F2(
 		var safeModel = _Utils_update(
 			model,
 			{
-				cS: elm$core$Maybe$Just(node)
+				cV: elm$core$Maybe$Just(node)
 			});
 		var possiblyInvalidModel = _Utils_update(
 			safeModel,
 			{
-				cD: ((!model.cD.cn) || _Utils_eq(model.cD.bL, elm$core$Maybe$Nothing)) ? {
-					bL: elm$core$Maybe$Just(node),
-					cn: model.cD.cn
-				} : model.cD
+				cH: ((!model.cH.cr) || _Utils_eq(model.cH.ci, elm$core$Maybe$Nothing)) ? {
+					ci: elm$core$Maybe$Just(node),
+					cr: model.cH.cr
+				} : model.cH
 			});
-		return (!_Utils_eq(model.cD.bL, possiblyInvalidModel.cD.bL)) ? A2(author$project$Update$updateCache, possiblyInvalidModel, safeModel) : possiblyInvalidModel;
+		return (!_Utils_eq(model.cH.ci, possiblyInvalidModel.cH.ci)) ? A2(author$project$Update$updateCache, possiblyInvalidModel, safeModel) : possiblyInvalidModel;
 	});
 var author$project$Update$parseRegexNodes = F2(
 	function (model, regex) {
 		var position = A2(
 			author$project$Vec2$inverseTransform,
 			A2(author$project$Vec2$Vec2, 1000, 400),
-			author$project$Model$viewTransform(model.ea));
-		var history = model.dp;
-		var coreModel = history.dQ;
+			author$project$Model$viewTransform(model.d9));
+		var history = model.dr;
+		var coreModel = history.dR;
 		var resultHistory = F2(
 			function (resultNodeId, nodes) {
 				return _Utils_update(
 					history,
 					{
-						dQ: A2(
+						dR: A2(
 							author$project$Update$selectNode,
 							resultNodeId,
 							_Utils_update(
 								coreModel,
 								{
-									cx: A2(author$project$Model$autolayout, resultNodeId, nodes)
+									cB: A2(author$project$AutoLayout$layout, resultNodeId, nodes)
 								}))
 					});
 			});
@@ -8078,11 +8942,11 @@ var author$project$Update$parseRegexNodes = F2(
 			return _Utils_update(
 				model,
 				{
-					dp: A2(resultHistory, resultNodeId, nodes),
-					cR: elm$core$Maybe$Nothing
+					dr: A2(resultHistory, resultNodeId, nodes),
+					cU: elm$core$Maybe$Nothing
 				});
 		};
-		var resultNodes = A3(author$project$Parse$addParsedRegexNode, position, coreModel.cx, regex);
+		var resultNodes = A3(author$project$Parse$addParsedRegexNode, position, coreModel.cB, regex);
 		return A2(
 			elm$core$Result$withDefault,
 			model,
@@ -8099,7 +8963,7 @@ var author$project$Update$updateNode = F3(
 			function (nodeView) {
 				return _Utils_update(
 					nodeView,
-					{cv: newNode});
+					{cz: newNode});
 			},
 			nodes);
 	});
@@ -8111,7 +8975,7 @@ var author$project$Update$realizeConnection = F4(
 				_Utils_update(
 					present,
 					{
-						cx: A3(author$project$Update$updateNode, present.cx, nodeId, newNode)
+						cB: A3(author$project$Update$updateNode, present.cB, nodeId, newNode)
 					}),
 				present);
 		};
@@ -8119,29 +8983,29 @@ var author$project$Update$realizeConnection = F4(
 		var newDragMode = author$project$Model$RetainPrototypedConnection(
 			{
 				q: mouse,
-				cv: nodeId,
-				dS: A2(
+				cz: nodeId,
+				dT: A2(
 					elm$core$Maybe$map,
 					function ($) {
-						return $.cv;
+						return $.cz;
 					},
-					A2(author$project$IdMap$get, nodeId, model.dp.dQ.cx))
+					A2(author$project$IdMap$get, nodeId, model.dr.dR.cB))
 			});
 		return _Utils_update(
 			newModel,
 			{
-				b7: elm$core$Maybe$Just(newDragMode)
+				ca: elm$core$Maybe$Just(newDragMode)
 			});
 	});
 var author$project$Update$redo = function (history) {
-	var _n0 = history.cd;
+	var _n0 = history.cg;
 	if (_n0.b) {
 		var next = _n0.a;
 		var newer = _n0.b;
 		return {
-			cd: newer,
-			cE: A2(elm$core$List$cons, history.dQ, history.cE),
-			dQ: next
+			cg: newer,
+			cI: A2(elm$core$List$cons, history.dR, history.cI),
+			dR: next
 		};
 	} else {
 		return history;
@@ -8155,7 +9019,7 @@ var author$project$Update$startEditingConnection = F5(
 				_Utils_update(
 					present,
 					{
-						cx: A3(author$project$Update$updateNode, present.cx, nodeId, node)
+						cB: A3(author$project$Update$updateNode, present.cB, nodeId, node)
 					}),
 				present);
 		};
@@ -8164,9 +9028,9 @@ var author$project$Update$startEditingConnection = F5(
 			return _Utils_update(
 				newModel,
 				{
-					b7: elm$core$Maybe$Just(
+					ca: elm$core$Maybe$Just(
 						author$project$Model$CreateConnection(
-							{bR: mouse, ax: oldSupplier}))
+							{bT: mouse, az: oldSupplier}))
 				});
 		};
 		return A2(
@@ -8176,18 +9040,18 @@ var author$project$Update$startEditingConnection = F5(
 	});
 var author$project$Update$startNodeMove = F3(
 	function (mouse, node, model) {
-		var history = model.dp;
-		var present = history.dQ;
+		var history = model.dr;
+		var present = history.dR;
 		return _Utils_update(
 			model,
 			{
-				b7: elm$core$Maybe$Just(
+				ca: elm$core$Maybe$Just(
 					author$project$Model$MoveNodeDrag(
-						{q: mouse, cv: node})),
-				dp: _Utils_update(
+						{q: mouse, cz: node})),
+				dr: _Utils_update(
 					history,
 					{
-						dQ: A2(author$project$Update$selectNode, node, present)
+						dR: A2(author$project$Update$selectNode, node, present)
 					})
 			});
 	});
@@ -8198,14 +9062,14 @@ var author$project$Update$stopEditingExampleText = function (model) {
 		author$project$Update$enableEditingExampleText(false));
 };
 var author$project$Update$undo = function (history) {
-	var _n0 = history.cE;
+	var _n0 = history.cI;
 	if (_n0.b) {
 		var last = _n0.a;
 		var older = _n0.b;
 		return {
-			cd: A2(elm$core$List$cons, history.dQ, history.cd),
-			cE: older,
-			dQ: last
+			cg: A2(elm$core$List$cons, history.dR, history.cg),
+			cI: older,
+			dR: last
 		};
 	} else {
 		return history;
@@ -8214,31 +9078,31 @@ var author$project$Update$undo = function (history) {
 var author$project$Update$updateView = F3(
 	function (amount, focus, oldView) {
 		var oldTransform = author$project$Model$viewTransform(oldView);
-		var magnification = oldView.co + amount;
+		var magnification = oldView.cs + amount;
 		var transform = author$project$Model$viewTransform(
-			{co: magnification, cy: oldView.cy});
+			{cs: magnification, cC: oldView.cC});
 		var deltaScale = transform.dW / oldTransform.dW;
 		var newView = ((transform.dW < 0.1) || (transform.dW > 16)) ? oldView : {
-			co: magnification,
-			cy: {bB: ((oldView.cy.bB - focus.bB) * deltaScale) + focus.bB, bC: ((oldView.cy.bC - focus.bC) * deltaScale) + focus.bC}
+			cs: magnification,
+			cC: {bE: ((oldView.cC.bE - focus.bE) * deltaScale) + focus.bE, bF: ((oldView.cC.bF - focus.bF) * deltaScale) + focus.bF}
 		};
 		return newView;
 	});
 var author$project$Update$update = F2(
 	function (message, model) {
-		var coreModel = model.dp.dQ;
+		var coreModel = model.dr.dR;
 		var advanceModel = function (newModel) {
 			return _Utils_update(
 				newModel,
 				{
-					dp: A2(author$project$Update$advanceHistory, model.dp, newModel.dp.dQ)
+					dr: A2(author$project$Update$advanceHistory, model.dr, newModel.dr.dR)
 				});
 		};
 		var advance = function (newPresent) {
 			return _Utils_update(
 				model,
 				{
-					dp: A2(author$project$Update$advanceHistory, model.dp, newPresent)
+					dr: A2(author$project$Update$advanceHistory, model.dr, newPresent)
 				});
 		};
 		switch (message.$) {
@@ -8248,31 +9112,31 @@ var author$project$Update$update = F2(
 				return _Utils_update(
 					model,
 					{
-						dp: author$project$Update$undo(model.dp)
+						dr: author$project$Update$undo(model.dr)
 					});
 			case 12:
 				return _Utils_update(
 					model,
 					{
-						dp: author$project$Update$redo(model.dp)
+						dr: author$project$Update$redo(model.dr)
 					});
 			case 9:
 				return advance(
 					_Utils_update(
 						coreModel,
-						{bH: false}));
+						{bK: false}));
 			case 10:
-				return coreModel.cD.cn ? advance(
+				return coreModel.cH.cr ? advance(
 					_Utils_update(
 						coreModel,
-						{cS: elm$core$Maybe$Nothing})) : advance(
+						{cV: elm$core$Maybe$Nothing})) : advance(
 					A2(
 						author$project$Update$updateCache,
 						_Utils_update(
 							coreModel,
 							{
-								cD: {bL: elm$core$Maybe$Nothing, cn: false},
-								cS: elm$core$Maybe$Nothing
+								cH: {ci: elm$core$Maybe$Nothing, cr: false},
+								cV: elm$core$Maybe$Nothing
 							}),
 						coreModel));
 			case 5:
@@ -8288,38 +9152,38 @@ var author$project$Update$update = F2(
 							A2(author$project$Update$enableEditingExampleText, enabled, coreModel));
 					case 0:
 						var text = textMessage.a;
-						var old = coreModel.ca;
+						var old = coreModel.cd;
 						return advance(
 							_Utils_update(
 								coreModel,
 								{
-									ca: _Utils_update(
+									cd: _Utils_update(
 										old,
-										{bF: text})
+										{de: text})
 								}));
 					default:
 						var limit = textMessage.a;
-						var old = coreModel.ca;
+						var old = coreModel.cd;
 						return advance(
 							_Utils_update(
 								coreModel,
 								{
-									ca: _Utils_update(
+									cd: _Utils_update(
 										old,
-										{cq: limit})
+										{cu: limit})
 								}));
 				}
 			case 4:
 				var viewMessage = message.a;
-				if (coreModel.ca.cj || author$project$IdMap$isEmpty(coreModel.cx)) {
+				if (coreModel.cd.cn || author$project$IdMap$isEmpty(coreModel.cB)) {
 					return model;
 				} else {
-					var amount = viewMessage.c2;
-					var focus = viewMessage.dn;
+					var amount = viewMessage.c5;
+					var focus = viewMessage.dp;
 					return _Utils_update(
 						model,
 						{
-							ea: A3(author$project$Update$updateView, amount, focus, model.ea)
+							d9: A3(author$project$Update$updateView, amount, focus, model.d9)
 						});
 				}
 			case 1:
@@ -8328,7 +9192,7 @@ var author$project$Update$update = F2(
 					_Utils_update(
 						coreModel,
 						{
-							cD: {bL: coreModel.cD.bL, cn: locked}
+							cH: {ci: coreModel.cH.ci, cr: locked}
 						}));
 			case 3:
 				var id = message.a;
@@ -8339,7 +9203,7 @@ var author$project$Update$update = F2(
 						_Utils_update(
 							coreModel,
 							{
-								cx: A3(author$project$Update$updateNode, coreModel.cx, id, value)
+								cB: A3(author$project$Update$updateNode, coreModel.cB, id, value)
 							}),
 						coreModel));
 			case 7:
@@ -8356,7 +9220,7 @@ var author$project$Update$update = F2(
 					_Utils_update(
 						coreModel,
 						{
-							cx: A2(author$project$Model$autolayout, id, coreModel.cx)
+							cB: A2(author$project$AutoLayout$layout, id, coreModel.cB)
 						}));
 			case 0:
 				var searchMessage = message.a;
@@ -8365,7 +9229,7 @@ var author$project$Update$update = F2(
 					return _Utils_update(
 						model,
 						{
-							cR: elm$core$Maybe$Just(query)
+							cU: elm$core$Maybe$Just(query)
 						});
 				} else {
 					var result = searchMessage.a;
@@ -8373,7 +9237,7 @@ var author$project$Update$update = F2(
 						case 3:
 							return _Utils_update(
 								model,
-								{cR: elm$core$Maybe$Nothing});
+								{cU: elm$core$Maybe$Nothing});
 						case 2:
 							var text = result.a;
 							return advanceModel(
@@ -8401,7 +9265,7 @@ var author$project$Update$update = F2(
 				var modeMessage = message.a;
 				switch (modeMessage.$) {
 					case 0:
-						var node = modeMessage.a.cv;
+						var node = modeMessage.a.cz;
 						var mouse = modeMessage.a.q;
 						return advanceModel(
 							A3(author$project$Update$startNodeMove, mouse, node, model));
@@ -8410,58 +9274,58 @@ var author$project$Update$update = F2(
 						return _Utils_update(
 							model,
 							{
-								b7: elm$core$Maybe$Just(
+								ca: elm$core$Maybe$Just(
 									author$project$Model$MoveViewDrag(drag))
 							});
 					case 3:
-						var nodeId = modeMessage.a.cw;
-						var node = modeMessage.a.cv;
-						var supplier = modeMessage.a.ax;
+						var nodeId = modeMessage.a.cA;
+						var node = modeMessage.a.cz;
+						var supplier = modeMessage.a.az;
 						var mouse = modeMessage.a.q;
 						return advanceModel(
 							A5(author$project$Update$startEditingConnection, nodeId, node, supplier, mouse, model));
 					case 4:
-						var supplier = modeMessage.a.ax;
+						var supplier = modeMessage.a.az;
 						var mouse = modeMessage.a.q;
 						return _Utils_update(
 							model,
 							{
-								b7: elm$core$Maybe$Just(
+								ca: elm$core$Maybe$Just(
 									author$project$Model$CreateConnection(
-										{bR: mouse, ax: supplier}))
+										{bT: mouse, az: supplier}))
 							});
 					case 2:
-						var node = modeMessage.a.cv;
+						var node = modeMessage.a.cz;
 						var mouse = modeMessage.a.q;
 						return _Utils_update(
 							model,
 							{
-								b7: elm$core$Maybe$Just(
+								ca: elm$core$Maybe$Just(
 									author$project$Model$PrepareEditingConnection(
-										{q: mouse, cv: node}))
+										{q: mouse, cz: node}))
 							});
 					case 7:
-						var newMouse = modeMessage.a.dD;
-						var _n6 = model.b7;
+						var newMouse = modeMessage.a.dE;
+						var _n6 = model.ca;
 						_n6$3:
 						while (true) {
 							if (!_n6.$) {
 								switch (_n6.a.$) {
 									case 0:
-										var node = _n6.a.a.cv;
+										var node = _n6.a.a.cz;
 										var mouse = _n6.a.a.q;
 										return A4(author$project$Update$moveNodeInModel, newMouse, mouse, node, model);
 									case 1:
 										var mouse = _n6.a.a.q;
 										return A3(author$project$Update$moveViewInModel, newMouse, mouse, model);
 									case 3:
-										var supplier = _n6.a.a.ax;
+										var supplier = _n6.a.a.az;
 										return _Utils_update(
 											model,
 											{
-												b7: elm$core$Maybe$Just(
+												ca: elm$core$Maybe$Just(
 													author$project$Model$CreateConnection(
-														{bR: newMouse, ax: supplier}))
+														{bT: newMouse, az: supplier}))
 											});
 									default:
 										break _n6$3;
@@ -8472,15 +9336,15 @@ var author$project$Update$update = F2(
 						}
 						return model;
 					case 5:
-						var nodeId = modeMessage.a.cw;
-						var newNode = modeMessage.a.dE;
+						var nodeId = modeMessage.a.cA;
+						var newNode = modeMessage.a.dF;
 						var mouse = modeMessage.a.q;
 						return advanceModel(
 							A4(author$project$Update$realizeConnection, model, nodeId, newNode, mouse));
 					default:
 						return _Utils_update(
 							model,
-							{b7: elm$core$Maybe$Nothing});
+							{ca: elm$core$Maybe$Nothing});
 				}
 		}
 	});
@@ -8711,7 +9575,7 @@ var elm$regex$Regex$contains = _Regex_contains;
 var elm$regex$Regex$fromString = function (string) {
 	return A2(
 		elm$regex$Regex$fromStringWith,
-		{bE: false, bP: false},
+		{bH: false, bR: false},
 		string);
 };
 var truqu$elm_base64$Base64$Decode$validBase64Regex = A2(
@@ -8767,8 +9631,9 @@ var author$project$Main$init = function (rawUrl) {
 		author$project$Model$initialValue);
 };
 var author$project$Build$constructRegexLiteral = function (regex) {
-	return '/' + (regex.p + ('/' + ((regex.ae.dC ? 'g' : '') + ((regex.ae.bE ? 'i' : '') + (regex.ae.bP ? 'm' : '')))));
+	return '/' + (regex.p + ('/' + ((regex.ae.dD ? 'g' : '') + ((regex.ae.bH ? 'i' : '') + (regex.ae.bR ? 'm' : '')))));
 };
+var elm$core$Basics$idiv = _Basics_idiv;
 var elm$core$Elm$JsArray$initialize = _JsArray_initialize;
 var elm$core$Array$initializeHelp = F5(
 	function (fn, fromIndex, len, nodeList, tail) {
@@ -9171,7 +10036,7 @@ var author$project$Main$update = F2(
 			elm$core$Maybe$map,
 			elm$core$Result$map(
 				A2(elm$core$Basics$composeR, author$project$Build$constructRegexLiteral, encode)),
-			newModel.dp.dQ.c7);
+			newModel.dr.dR.c9);
 		if ((!regex.$) && (!regex.a.$)) {
 			var expression = regex.a.a;
 			return _Utils_Tuple2(
@@ -9224,24 +10089,6 @@ var elm$core$Tuple$second = function (_n0) {
 var author$project$Vec2$fromTuple = function (value) {
 	return A2(author$project$Vec2$Vec2, value.a, value.b);
 };
-var elm$core$List$maybeCons = F3(
-	function (f, mx, xs) {
-		var _n0 = f(mx);
-		if (!_n0.$) {
-			var x = _n0.a;
-			return A2(elm$core$List$cons, x, xs);
-		} else {
-			return xs;
-		}
-	});
-var elm$core$List$filterMap = F2(
-	function (f, xs) {
-		return A3(
-			elm$core$List$foldr,
-			elm$core$List$maybeCons(f),
-			_List_Nil,
-			xs);
-	});
 var elm$json$Json$Decode$map = _Json_map1;
 var elm$json$Json$Decode$map2 = _Json_map2;
 var elm$json$Json$Decode$succeed = _Json_succeed;
@@ -9294,7 +10141,7 @@ var elm$html$Html$Events$custom = F2(
 var elm$json$Json$Decode$map6 = _Json_map6;
 var mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$Event = F6(
 	function (keys, button, clientPos, offsetPos, pagePos, screenPos) {
-		return {Z: button, n: clientPos, dw: keys, dG: offsetPos, dK: pagePos, dX: screenPos};
+		return {Z: button, n: clientPos, dy: keys, dH: offsetPos, dL: pagePos, dX: screenPos};
 	});
 var elm$json$Json$Decode$field = _Json_decodeField;
 var elm$json$Json$Decode$int = _Json_decodeInt;
@@ -9337,7 +10184,7 @@ var elm$json$Json$Decode$bool = _Json_decodeBool;
 var elm$json$Json$Decode$map3 = _Json_map3;
 var mpizenberg$elm_pointer_events$Internal$Decode$Keys = F3(
 	function (alt, ctrl, shift) {
-		return {c1: alt, dd: ctrl, av: shift};
+		return {c4: alt, df: ctrl, aw: shift};
 	});
 var mpizenberg$elm_pointer_events$Internal$Decode$keys = A4(
 	elm$json$Json$Decode$map3,
@@ -9379,7 +10226,7 @@ var mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$onWithOptions = F3(
 				elm$json$Json$Decode$map,
 				function (ev) {
 					return {
-						bN: tag(ev),
+						bP: tag(ev),
 						u: options.u,
 						v: options.v
 					};
@@ -9442,7 +10289,7 @@ var elm$core$String$fromFloat = _String_fromNumber;
 var author$project$View$magnifyAndOffset = F2(
 	function (unit, transformView) {
 		var transform = author$project$Model$viewTransform(transformView);
-		return 'translate(' + (elm$core$String$fromFloat(transform.d6.bB) + (unit + (',' + (elm$core$String$fromFloat(transform.d6.bC) + (unit + (') ' + ('scale(' + (elm$core$String$fromFloat(transform.dW) + ')'))))))));
+		return 'translate(' + (elm$core$String$fromFloat(transform.d5.bE) + (unit + (',' + (elm$core$String$fromFloat(transform.d5.bF) + (unit + (') ' + ('scale(' + (elm$core$String$fromFloat(transform.dW) + ')'))))))));
 	});
 var elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
 var elm$html$Html$Attributes$style = elm$virtual_dom$VirtualDom$style;
@@ -9473,109 +10320,10 @@ var author$project$View$unwrapResult = function (result) {
 		return a;
 	}
 };
-var author$project$Model$codeTextWidth = A2(
-	elm$core$Basics$composeR,
-	elm$core$String$length,
-	A2(
-		elm$core$Basics$composeR,
-		elm$core$Basics$mul(5),
-		elm$core$Basics$toFloat));
-var author$project$Model$stringWidth = function (length) {
-	return A2(elm$core$Basics$max, 5, length) * ((length < 14) ? 13 : 9);
-};
-var author$project$Model$mainTextWidth = function (text) {
-	return author$project$Model$stringWidth(
-		elm$core$String$length(text));
-};
-var author$project$Model$symbolNames = {a3: 'Anything', a6: 'Digit Char', a8: 'End of Text', bb: 'Linebreak Char', bd: 'Non Digit Char', be: 'Non Linebreak Char', bf: 'Non Whitespace Char', bg: 'Non Word Char', bh: 'Non Word Boundary', bi: 'Nothing', bu: 'Start of Text', bv: 'Tab Char', by: 'Whitespace Char', bz: 'Word Char', bA: 'Word Boundary'};
-var author$project$Model$symbolProperty = F2(
-	function (properties, symbol) {
-		switch (symbol) {
-			case 0:
-				return properties.by;
-			case 1:
-				return properties.bf;
-			case 2:
-				return properties.a6;
-			case 3:
-				return properties.bd;
-			case 4:
-				return properties.bz;
-			case 5:
-				return properties.bg;
-			case 6:
-				return properties.bA;
-			case 7:
-				return properties.bh;
-			case 8:
-				return properties.bb;
-			case 9:
-				return properties.be;
-			case 10:
-				return properties.bv;
-			case 11:
-				return properties.bi;
-			case 12:
-				return properties.a3;
-			case 13:
-				return properties.bu;
-			default:
-				return properties.a8;
-		}
-	});
-var author$project$Model$symbolName = author$project$Model$symbolProperty(author$project$Model$symbolNames);
-var author$project$Model$typeNames = {V: 'Any Repetition', W: 'At Least One', _: 'Capture', aI: 'Any of Char Range', ab: 'Any of Chars', aJ: 'Exact Repetition', ae: 'Configuration', ak: 'If Followed By', al: 'If Not Followed By', aP: 'Literal', aQ: 'Maximum Repetition', aR: 'Minimum Repetition', aT: 'None of Char Range', bj: 'None of Chars', aU: 'Optional', aV: 'Ranged Repetition', at: 'Sequence', au: 'Any Of'};
-var author$project$Model$nodeWidth = function (node) {
-	switch (node.$) {
-		case 0:
-			var symbol = node.a;
-			return author$project$Model$mainTextWidth(
-				author$project$Model$symbolName(symbol));
-		case 1:
-			var chars = node.a;
-			return (author$project$Model$mainTextWidth(author$project$Model$typeNames.ab) + author$project$Model$codeTextWidth(chars)) + 3;
-		case 2:
-			var chars = node.a;
-			return (author$project$Model$mainTextWidth(author$project$Model$typeNames.ab) + author$project$Model$codeTextWidth(chars)) + 3;
-		case 4:
-			return author$project$Model$mainTextWidth(author$project$Model$typeNames.aI);
-		case 5:
-			return author$project$Model$mainTextWidth(author$project$Model$typeNames.aT);
-		case 3:
-			var chars = node.a;
-			return (author$project$Model$mainTextWidth(author$project$Model$typeNames.aP) + author$project$Model$codeTextWidth(chars)) + 3;
-		case 11:
-			return author$project$Model$stringWidth(10);
-		case 6:
-			return author$project$Model$mainTextWidth(author$project$Model$typeNames.au);
-		case 18:
-			return author$project$Model$mainTextWidth(author$project$Model$typeNames.ae);
-		case 9:
-			return author$project$Model$mainTextWidth(author$project$Model$typeNames.ak);
-		case 17:
-			return author$project$Model$mainTextWidth(author$project$Model$typeNames.aJ);
-		case 7:
-			return author$project$Model$mainTextWidth(author$project$Model$typeNames.at);
-		case 8:
-			return author$project$Model$mainTextWidth(author$project$Model$typeNames._);
-		case 10:
-			return author$project$Model$mainTextWidth(author$project$Model$typeNames.al);
-		case 12:
-			return author$project$Model$mainTextWidth(author$project$Model$typeNames.W);
-		case 13:
-			return author$project$Model$mainTextWidth(author$project$Model$typeNames.V);
-		case 14:
-			return author$project$Model$mainTextWidth(author$project$Model$typeNames.aV);
-		case 15:
-			return author$project$Model$mainTextWidth(author$project$Model$typeNames.aR);
-		default:
-			return author$project$Model$mainTextWidth(author$project$Model$typeNames.aQ);
-	}
-};
 var author$project$View$svgConnectionPath = F4(
 	function (from, fromTangent, toTangent, to) {
 		var vec2ToString = function (vec) {
-			return elm$core$String$fromFloat(vec.bB) + (',' + (elm$core$String$fromFloat(vec.bC) + ' '));
+			return elm$core$String$fromFloat(vec.bE) + (',' + (elm$core$String$fromFloat(vec.bF) + ' '));
 		};
 		var path = 'M' + (vec2ToString(from) + ('C' + (vec2ToString(fromTangent) + (vec2ToString(toTangent) + vec2ToString(to)))));
 		return elm$svg$Svg$Attributes$d(path);
@@ -9585,13 +10333,13 @@ var elm$core$Basics$abs = function (n) {
 };
 var author$project$View$bezierSvgConnectionpath = F2(
 	function (from, to) {
-		var tangentX2 = to.bB + (elm$core$Basics$abs(to.bB - from.bB) * 0.4);
-		var tangentX1 = from.bB - (elm$core$Basics$abs(to.bB - from.bB) * 0.4);
+		var tangentX2 = to.bE + (elm$core$Basics$abs(to.bE - from.bE) * 0.4);
+		var tangentX1 = from.bE - (elm$core$Basics$abs(to.bE - from.bE) * 0.4);
 		return A4(
 			author$project$View$svgConnectionPath,
 			from,
-			A2(author$project$Vec2$Vec2, tangentX1, from.bC),
-			A2(author$project$Vec2$Vec2, tangentX2, to.bC),
+			A2(author$project$Vec2$Vec2, tangentX1, from.bF),
+			A2(author$project$Vec2$Vec2, tangentX2, to.bF),
 			to);
 	});
 var elm$svg$Svg$Attributes$class = _VirtualDom_attribute('class');
@@ -9611,12 +10359,12 @@ var author$project$View$viewConnectDrag = F4(
 			A2(
 				elm$core$Maybe$map,
 				function ($) {
-					return $.cI;
+					return $.as;
 				},
 				node));
 		var nodeAnchor = A2(
 			author$project$Vec2$Vec2,
-			nodePosition.bB + A2(
+			nodePosition.bE + A2(
 				elm$core$Maybe$withDefault,
 				0,
 				A2(
@@ -9624,11 +10372,11 @@ var author$project$View$viewConnectDrag = F4(
 					A2(
 						elm$core$Basics$composeR,
 						function ($) {
-							return $.cv;
+							return $.cz;
 						},
 						author$project$Model$nodeWidth),
 					node)),
-			nodePosition.bC + (0.5 * 25.0));
+			nodePosition.bF + (0.5 * 25.0));
 		return A2(
 			elm$svg$Svg$path,
 			_List_fromArray(
@@ -9699,7 +10447,7 @@ var elm$html$Html$Events$onInput = function (tagger) {
 			A2(elm$json$Json$Decode$map, tagger, elm$html$Html$Events$targetValue)));
 };
 var author$project$View$viewExampleText = function (example) {
-	if (example.cj) {
+	if (example.cn) {
 		return A2(
 			elm$html$Html$textarea,
 			_List_fromArray(
@@ -9710,16 +10458,16 @@ var author$project$View$viewExampleText = function (example) {
 				]),
 			_List_fromArray(
 				[
-					elm$html$Html$text(example.bF)
+					elm$html$Html$text(example.de)
 				]));
 	} else {
 		var texts = A2(
 			elm$core$Maybe$withDefault,
 			_List_fromArray(
 				[
-					elm$html$Html$text(example.bF)
+					elm$html$Html$text(example.de)
 				]),
-			A2(elm$core$Maybe$map, author$project$View$viewExampleTexts, example.b1));
+			A2(elm$core$Maybe$map, author$project$View$viewExampleTexts, example.b3));
 		return A2(
 			elm$html$Html$div,
 			_List_fromArray(
@@ -9729,680 +10477,10 @@ var author$project$View$viewExampleText = function (example) {
 			texts);
 	}
 };
-var author$project$Model$BoolProperty = F2(
-	function (a, b) {
-		return {$: 0, a: a, b: b};
-	});
-var author$project$Model$CharProperty = F2(
-	function (a, b) {
-		return {$: 2, a: a, b: b};
-	});
-var author$project$Model$CharsProperty = F2(
-	function (a, b) {
-		return {$: 1, a: a, b: b};
-	});
-var author$project$Model$ConnectingProperties = F3(
-	function (a, b, c) {
-		return {$: 5, a: a, b: b, c: c};
-	});
-var author$project$Model$ConnectingProperty = F2(
-	function (a, b) {
-		return {$: 4, a: a, b: b};
-	});
-var author$project$Model$IntProperty = F2(
-	function (a, b) {
-		return {$: 3, a: a, b: b};
-	});
-var author$project$Model$Property = F4(
-	function (name, description, contents, connectOutput) {
-		return {da: connectOutput, bF: contents, b6: description, ct: name};
-	});
-var author$project$Model$TitleProperty = {$: 6};
-var author$project$Model$symbolDescriptions = {a3: 'Matches any char, including linebreaks and whitespace', a6: 'Match any numerical char, from `0` to `9`, excluding punctuation', a8: 'The end of line if Multiline Matches are enabled, or the end of the text otherwise', bb: 'Matches the linebreak, or newline, char `\\n`', bd: 'Match any char but numerical ones, matching punctuation', be: 'Matches anything but the linebreak char `\\n`', bf: 'Match any char that is not invisible, for example neither space nor linebreaks', bg: 'Match any char, but not alphabetical ones and not the underscore char `_`', bh: 'Matches anywhere but not where a word char has a whitespace neighbour', bi: 'Matches nothing ever, really', bu: 'The start of line if Multiline Matches are enabled, or the start of the text otherwise', bv: 'Matches the tab char `\\t`', by: 'Match any invisible char, such as the space between words and linebreaks', bz: 'Match any alphabetical chars, and the underscore char `_`', bA: 'Matches where a word char has a whitespace neighbour'};
-var author$project$Model$symbolDescription = author$project$Model$symbolProperty(author$project$Model$symbolDescriptions);
-var author$project$Model$typeDescriptions = {V: 'Allow this expression to occur multiple times or not at all', W: 'Allow this expression to occur multiple times', _: 'Capture this expression for later use, like replacing', aI: 'Matches any char between the lower and upper range bound', ab: 'Matches, where any char of the set is matched', aJ: 'Match where an expression is repeated exactly n times', ae: 'Configure how the whole regex operates', ak: 'Match this expression only if the successor is also matched, without matching the successor itself', al: 'Match this expression only if the successor is not matched, without matching the successor itself', aP: 'Matches where that exact sequence of chars is found', aQ: 'Match where an expression is repeated no more than n times', aR: 'Match where an expression is repeated at least n times', aT: 'Matches any char outside of the range', bj: 'Matches where not a single char of the set is matched', aU: 'Allow omitting this expression and match anyways', aV: 'Only match if the expression is repeated in range', at: 'Matches, where all members in the exact order are matched one after another', au: 'Matches, where at least one of the options matches'};
-var author$project$Model$maxChar = F2(
-	function (a, b) {
-		return (_Utils_cmp(a, b) > 0) ? a : b;
-	});
-var author$project$Model$minChar = F2(
-	function (a, b) {
-		return (_Utils_cmp(a, b) < 0) ? a : b;
-	});
-var author$project$Model$updateCharRangeFirst = F2(
-	function (end, start) {
-		return A2(
-			author$project$Model$CharRangeNode,
-			A2(author$project$Model$minChar, start, end),
-			A2(author$project$Model$maxChar, start, end));
-	});
-var author$project$Model$updateCharRangeLast = F2(
-	function (start, end) {
-		return A2(
-			author$project$Model$CharRangeNode,
-			A2(author$project$Model$minChar, end, start),
-			A2(author$project$Model$maxChar, start, end));
-	});
-var author$project$Model$updateExpression = F2(
-	function (node, expression) {
-		return _Utils_update(
-			node,
-			{p: expression});
-	});
-var author$project$Model$updateFlagsExpression = F2(
-	function (flags, newInput) {
-		return author$project$Model$FlagsNode(
-			_Utils_update(
-				flags,
-				{p: newInput}));
-	});
-var author$project$Model$updateFlags = F2(
-	function (expression, newFlags) {
-		return author$project$Model$FlagsNode(
-			{p: expression, ae: newFlags});
-	});
-var author$project$Model$updateFlagsInsensitivity = F2(
-	function (_n0, caseInsensitive) {
-		var expression = _n0.p;
-		var flags = _n0.ae;
-		return A2(
-			author$project$Model$updateFlags,
-			expression,
-			_Utils_update(
-				flags,
-				{bE: caseInsensitive}));
-	});
-var author$project$Model$updateFlagsMultiline = F2(
-	function (_n0, multiline) {
-		var expression = _n0.p;
-		var flags = _n0.ae;
-		return A2(
-			author$project$Model$updateFlags,
-			expression,
-			_Utils_update(
-				flags,
-				{bP: multiline}));
-	});
-var author$project$Model$updateFlagsMultiple = F2(
-	function (_n0, multiple) {
-		var expression = _n0.p;
-		var flags = _n0.ae;
-		return A2(
-			author$project$Model$updateFlags,
-			expression,
-			_Utils_update(
-				flags,
-				{dC: multiple}));
-	});
-var author$project$Model$updateMinimal = F2(
-	function (node, minimal) {
-		return _Utils_update(
-			node,
-			{ap: minimal});
-	});
-var author$project$Model$updateNotInCharRangeFirst = F2(
-	function (end, start) {
-		return A2(
-			author$project$Model$CharRangeNode,
-			A2(author$project$Model$minChar, start, end),
-			A2(author$project$Model$maxChar, start, end));
-	});
-var author$project$Model$updateNotInCharRangeLast = F2(
-	function (start, end) {
-		return A2(
-			author$project$Model$CharRangeNode,
-			A2(author$project$Model$minChar, end, start),
-			A2(author$project$Model$maxChar, start, end));
-	});
-var author$project$Model$positive = elm$core$Basics$max(0);
-var author$project$Model$updatePositiveCount = F2(
-	function (node, count) {
-		return _Utils_update(
-			node,
-			{
-				bG: author$project$Model$positive(count)
-			});
-	});
-var elm$core$Basics$min = F2(
-	function (x, y) {
-		return (_Utils_cmp(x, y) < 0) ? x : y;
-	});
-var author$project$Model$updateRangedRepetitionMaximum = F2(
-	function (repetition, count) {
-		return author$project$Model$RangedRepetitionNode(
-			_Utils_update(
-				repetition,
-				{
-					dy: author$project$Model$positive(count),
-					dA: A2(
-						elm$core$Basics$min,
-						author$project$Model$positive(count),
-						repetition.dA)
-				}));
-	});
-var author$project$Model$updateRangedRepetitionMinimum = F2(
-	function (repetition, count) {
-		return author$project$Model$RangedRepetitionNode(
-			_Utils_update(
-				repetition,
-				{
-					dy: A2(
-						elm$core$Basics$max,
-						author$project$Model$positive(count),
-						repetition.dy),
-					dA: author$project$Model$positive(count)
-				}));
-	});
-var author$project$Model$updateSuccessor = F2(
-	function (node, successor) {
-		return _Utils_update(
-			node,
-			{cV: successor});
-	});
-var author$project$Model$nodeProperties = function (node) {
-	switch (node.$) {
-		case 0:
-			var symbol = node.a;
-			return _List_fromArray(
-				[
-					A4(
-					author$project$Model$Property,
-					author$project$Model$symbolName(symbol),
-					author$project$Model$symbolDescription(symbol),
-					author$project$Model$TitleProperty,
-					true)
-				]);
-		case 1:
-			var chars = node.a;
-			return _List_fromArray(
-				[
-					A4(
-					author$project$Model$Property,
-					author$project$Model$typeNames.ab,
-					'Matches ' + A2(
-						elm$core$String$join,
-						', ',
-						A2(
-							elm$core$List$map,
-							elm$core$String$fromChar,
-							elm$core$String$toList(chars))),
-					A2(author$project$Model$CharsProperty, chars, author$project$Model$CharSetNode),
-					true)
-				]);
-		case 2:
-			var chars = node.a;
-			return _List_fromArray(
-				[
-					A4(
-					author$project$Model$Property,
-					author$project$Model$typeNames.bj,
-					'Matches any char but ' + A2(
-						elm$core$String$join,
-						', ',
-						A2(
-							elm$core$List$map,
-							elm$core$String$fromChar,
-							elm$core$String$toList(chars))),
-					A2(author$project$Model$CharsProperty, chars, author$project$Model$NotInCharSetNode),
-					true)
-				]);
-		case 3:
-			var literal = node.a;
-			return _List_fromArray(
-				[
-					A4(
-					author$project$Model$Property,
-					author$project$Model$typeNames.aP,
-					'Matches exactly `' + (literal + '` and nothing else'),
-					A2(author$project$Model$CharsProperty, literal, author$project$Model$LiteralNode),
-					true)
-				]);
-		case 8:
-			var captured = node.a;
-			return _List_fromArray(
-				[
-					A4(
-					author$project$Model$Property,
-					author$project$Model$typeNames._,
-					author$project$Model$typeDescriptions._,
-					A2(author$project$Model$ConnectingProperty, captured, author$project$Model$CaptureNode),
-					true)
-				]);
-		case 4:
-			var start = node.a;
-			var end = node.b;
-			return _List_fromArray(
-				[
-					A4(
-					author$project$Model$Property,
-					author$project$Model$typeNames.aI,
-					'Match any char whose integer value is equal to or between ' + (elm$core$String$fromChar(start) + (' and ' + elm$core$String$fromChar(end))),
-					author$project$Model$TitleProperty,
-					true),
-					A4(
-					author$project$Model$Property,
-					'First Char',
-					'The lower range bound char, will match itself',
-					A2(
-						author$project$Model$CharProperty,
-						start,
-						author$project$Model$updateCharRangeFirst(end)),
-					false),
-					A4(
-					author$project$Model$Property,
-					'Last Char',
-					'The upper range bound char, will match itself',
-					A2(
-						author$project$Model$CharProperty,
-						end,
-						author$project$Model$updateCharRangeLast(start)),
-					false)
-				]);
-		case 5:
-			var start = node.a;
-			var end = node.b;
-			return _List_fromArray(
-				[
-					A4(
-					author$project$Model$Property,
-					author$project$Model$typeNames.aT,
-					'Match any char whose integer value is neither equal to nor between ' + (elm$core$String$fromChar(start) + (' and ' + elm$core$String$fromChar(end))),
-					author$project$Model$TitleProperty,
-					true),
-					A4(
-					author$project$Model$Property,
-					'First Char',
-					'The lower range bound char, will not match itself',
-					A2(
-						author$project$Model$CharProperty,
-						start,
-						author$project$Model$updateNotInCharRangeFirst(end)),
-					false),
-					A4(
-					author$project$Model$Property,
-					'Last Char',
-					'The upper range bound char, will not match itself ',
-					A2(
-						author$project$Model$CharProperty,
-						end,
-						author$project$Model$updateNotInCharRangeLast(start)),
-					false)
-				]);
-		case 6:
-			var options = node.a;
-			return _List_fromArray(
-				[
-					A4(author$project$Model$Property, author$project$Model$typeNames.au, author$project$Model$typeDescriptions.au, author$project$Model$TitleProperty, true),
-					A4(
-					author$project$Model$Property,
-					'Option',
-					'Match if this or any other option is matched',
-					A3(author$project$Model$ConnectingProperties, false, options, author$project$Model$SetNode),
-					false)
-				]);
-		case 7:
-			var members = node.a;
-			return _List_fromArray(
-				[
-					A4(author$project$Model$Property, author$project$Model$typeNames.at, author$project$Model$typeDescriptions.at, author$project$Model$TitleProperty, true),
-					A4(
-					author$project$Model$Property,
-					'Member',
-					'A member of the sequence',
-					A3(author$project$Model$ConnectingProperties, true, members, author$project$Model$SequenceNode),
-					false)
-				]);
-		case 18:
-			var flagsNode = node.a;
-			return _List_fromArray(
-				[
-					A4(
-					author$project$Model$Property,
-					author$project$Model$typeNames.ae,
-					author$project$Model$typeDescriptions.ae,
-					A2(
-						author$project$Model$ConnectingProperty,
-						flagsNode.p,
-						author$project$Model$updateFlagsExpression(flagsNode)),
-					false),
-					A4(
-					author$project$Model$Property,
-					'Multiple Matches',
-					'Do not stop after the first match',
-					A2(
-						author$project$Model$BoolProperty,
-						flagsNode.ae.dC,
-						author$project$Model$updateFlagsMultiple(flagsNode)),
-					false),
-					A4(
-					author$project$Model$Property,
-					'Case Insensitive',
-					'Match as if everything had the same case',
-					A2(
-						author$project$Model$BoolProperty,
-						flagsNode.ae.bE,
-						author$project$Model$updateFlagsInsensitivity(flagsNode)),
-					false),
-					A4(
-					author$project$Model$Property,
-					'Multiline Matches',
-					'Allow every matches to be found across multiple lines',
-					A2(
-						author$project$Model$BoolProperty,
-						flagsNode.ae.bP,
-						author$project$Model$updateFlagsMultiline(flagsNode)),
-					false)
-				]);
-		case 9:
-			var followed = node.a;
-			return _List_fromArray(
-				[
-					A4(
-					author$project$Model$Property,
-					author$project$Model$typeNames.ak,
-					author$project$Model$typeDescriptions.ak,
-					A2(
-						author$project$Model$ConnectingProperty,
-						followed.p,
-						A2(
-							elm$core$Basics$composeL,
-							author$project$Model$IfFollowedByNode,
-							author$project$Model$updateExpression(followed))),
-					true),
-					A4(
-					author$project$Model$Property,
-					'Successor',
-					'What needs to follow the expression',
-					A2(
-						author$project$Model$ConnectingProperty,
-						followed.cV,
-						A2(
-							elm$core$Basics$composeL,
-							author$project$Model$IfFollowedByNode,
-							author$project$Model$updateSuccessor(followed))),
-					false)
-				]);
-		case 10:
-			var followed = node.a;
-			return _List_fromArray(
-				[
-					A4(
-					author$project$Model$Property,
-					author$project$Model$typeNames.al,
-					author$project$Model$typeDescriptions.al,
-					A2(
-						author$project$Model$ConnectingProperty,
-						followed.p,
-						A2(
-							elm$core$Basics$composeL,
-							author$project$Model$IfNotFollowedByNode,
-							author$project$Model$updateExpression(followed))),
-					true),
-					A4(
-					author$project$Model$Property,
-					'Successor',
-					'What must not follow the expression',
-					A2(
-						author$project$Model$ConnectingProperty,
-						followed.cV,
-						A2(
-							elm$core$Basics$composeL,
-							author$project$Model$IfNotFollowedByNode,
-							author$project$Model$updateSuccessor(followed))),
-					false)
-				]);
-		case 11:
-			var option = node.a;
-			return _List_fromArray(
-				[
-					A4(
-					author$project$Model$Property,
-					author$project$Model$typeNames.aU,
-					author$project$Model$typeDescriptions.aU,
-					A2(
-						author$project$Model$ConnectingProperty,
-						option.p,
-						A2(
-							elm$core$Basics$composeL,
-							author$project$Model$OptionalNode,
-							author$project$Model$updateExpression(option))),
-					true),
-					A4(
-					author$project$Model$Property,
-					'Prefer None',
-					'Prefer not to match',
-					A2(
-						author$project$Model$BoolProperty,
-						option.ap,
-						A2(
-							elm$core$Basics$composeL,
-							author$project$Model$OptionalNode,
-							author$project$Model$updateMinimal(option))),
-					false)
-				]);
-		case 12:
-			var counted = node.a;
-			return _List_fromArray(
-				[
-					A4(
-					author$project$Model$Property,
-					author$project$Model$typeNames.W,
-					author$project$Model$typeDescriptions.W,
-					A2(
-						author$project$Model$ConnectingProperty,
-						counted.p,
-						A2(
-							elm$core$Basics$composeL,
-							author$project$Model$AtLeastOneNode,
-							author$project$Model$updateExpression(counted))),
-					true),
-					A4(
-					author$project$Model$Property,
-					'Minimize Count',
-					'Match as few occurences as possible',
-					A2(
-						author$project$Model$BoolProperty,
-						counted.ap,
-						A2(
-							elm$core$Basics$composeL,
-							author$project$Model$AtLeastOneNode,
-							author$project$Model$updateMinimal(counted))),
-					false)
-				]);
-		case 13:
-			var counted = node.a;
-			return _List_fromArray(
-				[
-					A4(
-					author$project$Model$Property,
-					author$project$Model$typeNames.V,
-					author$project$Model$typeDescriptions.V,
-					A2(
-						author$project$Model$ConnectingProperty,
-						counted.p,
-						A2(
-							elm$core$Basics$composeL,
-							author$project$Model$AnyRepetitionNode,
-							author$project$Model$updateExpression(counted))),
-					true),
-					A4(
-					author$project$Model$Property,
-					'Minimize Count',
-					'Match as few occurences as possible',
-					A2(
-						author$project$Model$BoolProperty,
-						counted.ap,
-						A2(
-							elm$core$Basics$composeL,
-							author$project$Model$AnyRepetitionNode,
-							author$project$Model$updateMinimal(counted))),
-					false)
-				]);
-		case 17:
-			var repetition = node.a;
-			return _List_fromArray(
-				[
-					A4(
-					author$project$Model$Property,
-					author$project$Model$typeNames.aJ,
-					'Match only if this expression is repeated exactly ' + (elm$core$String$fromInt(repetition.bG) + ' times'),
-					A2(
-						author$project$Model$ConnectingProperty,
-						repetition.p,
-						A2(
-							elm$core$Basics$composeL,
-							author$project$Model$ExactRepetitionNode,
-							author$project$Model$updateExpression(repetition))),
-					true),
-					A4(
-					author$project$Model$Property,
-					'Count',
-					'How often the expression is required',
-					A2(
-						author$project$Model$IntProperty,
-						repetition.bG,
-						A2(
-							elm$core$Basics$composeL,
-							author$project$Model$ExactRepetitionNode,
-							author$project$Model$updatePositiveCount(repetition))),
-					false)
-				]);
-		case 14:
-			var counted = node.a;
-			return _List_fromArray(
-				[
-					A4(
-					author$project$Model$Property,
-					author$project$Model$typeNames.aV,
-					'Match only if the expression is repeated no less than ' + (elm$core$String$fromInt(counted.dA) + (' and no more than ' + (elm$core$String$fromInt(counted.dy) + ' times'))),
-					A2(
-						author$project$Model$ConnectingProperty,
-						counted.p,
-						A2(
-							elm$core$Basics$composeL,
-							author$project$Model$RangedRepetitionNode,
-							author$project$Model$updateExpression(counted))),
-					true),
-					A4(
-					author$project$Model$Property,
-					'Minimum',
-					'Match only if the expression is repeated no less than ' + (elm$core$String$fromInt(counted.dA) + ' times'),
-					A2(
-						author$project$Model$IntProperty,
-						counted.dA,
-						author$project$Model$updateRangedRepetitionMinimum(counted)),
-					false),
-					A4(
-					author$project$Model$Property,
-					'Maximum',
-					'Match only if the expression is repeated no more than ' + (elm$core$String$fromInt(counted.dy) + ' times'),
-					A2(
-						author$project$Model$IntProperty,
-						counted.dy,
-						author$project$Model$updateRangedRepetitionMaximum(counted)),
-					false),
-					A4(
-					author$project$Model$Property,
-					'Minimize Count',
-					'Match as few occurences as possible',
-					A2(
-						author$project$Model$BoolProperty,
-						counted.ap,
-						A2(
-							elm$core$Basics$composeL,
-							author$project$Model$RangedRepetitionNode,
-							author$project$Model$updateMinimal(counted))),
-					false)
-				]);
-		case 15:
-			var counted = node.a;
-			return _List_fromArray(
-				[
-					A4(
-					author$project$Model$Property,
-					author$project$Model$typeNames.aR,
-					'Match only if the expression is repeated no less than ' + (elm$core$String$fromInt(counted.bG) + ' times'),
-					A2(
-						author$project$Model$ConnectingProperty,
-						counted.p,
-						A2(
-							elm$core$Basics$composeL,
-							author$project$Model$MinimumRepetitionNode,
-							author$project$Model$updateExpression(counted))),
-					true),
-					A4(
-					author$project$Model$Property,
-					'Count',
-					'Minimum number of repetitions',
-					A2(
-						author$project$Model$IntProperty,
-						counted.bG,
-						A2(
-							elm$core$Basics$composeL,
-							author$project$Model$MinimumRepetitionNode,
-							author$project$Model$updatePositiveCount(counted))),
-					false),
-					A4(
-					author$project$Model$Property,
-					'Minimize Count',
-					'Match as few occurences as possible',
-					A2(
-						author$project$Model$BoolProperty,
-						counted.ap,
-						A2(
-							elm$core$Basics$composeL,
-							author$project$Model$MinimumRepetitionNode,
-							author$project$Model$updateMinimal(counted))),
-					false)
-				]);
-		default:
-			var counted = node.a;
-			return _List_fromArray(
-				[
-					A4(
-					author$project$Model$Property,
-					author$project$Model$typeNames.aQ,
-					'Match only if the expression is repeated no more than ' + (elm$core$String$fromInt(counted.bG) + ' times'),
-					A2(
-						author$project$Model$ConnectingProperty,
-						counted.p,
-						A2(
-							elm$core$Basics$composeL,
-							author$project$Model$MaximumRepetitionNode,
-							author$project$Model$updateExpression(counted))),
-					true),
-					A4(
-					author$project$Model$Property,
-					'Count',
-					'Maximum number of repetitions',
-					A2(
-						author$project$Model$IntProperty,
-						counted.bG,
-						A2(
-							elm$core$Basics$composeL,
-							author$project$Model$MaximumRepetitionNode,
-							author$project$Model$updatePositiveCount(counted))),
-					false),
-					A4(
-					author$project$Model$Property,
-					'Minimize Count',
-					'Match as few occurences as possible',
-					A2(
-						author$project$Model$BoolProperty,
-						counted.ap,
-						A2(
-							elm$core$Basics$composeL,
-							author$project$Model$MaximumRepetitionNode,
-							author$project$Model$updateMinimal(counted))),
-					false)
-				]);
-	}
-};
 var author$project$View$NodeView = F2(
 	function (node, connections) {
-		return {db: connections, cv: node};
+		return {b6: connections, cz: node};
 	});
-var author$project$Model$propertyHeight = 25;
 var author$project$View$viewNodeConnections = F3(
 	function (nodes, props, nodeView) {
 		var connectionLine = F4(
@@ -10414,8 +10492,8 @@ var author$project$View$viewNodeConnections = F3(
 							elm$svg$Svg$Attributes$class('connection'),
 							A2(
 							author$project$View$bezierSvgConnectionpath,
-							A2(author$project$Vec2$Vec2, to.bB, to.bC + ((index + 0.5) * author$project$Model$propertyHeight)),
-							A2(author$project$Vec2$Vec2, from.bB + width, from.bC + (0.5 * author$project$Model$propertyHeight)))
+							A2(author$project$Vec2$Vec2, to.bE, to.bF + ((index + 0.5) * author$project$Model$propertyHeight)),
+							A2(author$project$Vec2$Vec2, from.bE + width, from.bF + (0.5 * author$project$Model$propertyHeight)))
 						]),
 					_List_Nil);
 			});
@@ -10424,16 +10502,16 @@ var author$project$View$viewNodeConnections = F3(
 				var viewSupplier = function (supplierNodeView) {
 					return A4(
 						connectionLine,
-						supplierNodeView.cI,
-						author$project$Model$nodeWidth(supplierNodeView.cv),
-						node.cI,
+						supplierNodeView.as,
+						author$project$Model$nodeWidth(supplierNodeView.cz),
+						node.as,
 						index);
 				};
 				var supplier = A2(author$project$IdMap$get, supplierId, nodes);
 				return A2(elm$core$Maybe$map, viewSupplier, supplier);
 			});
 		var viewInputConnection = function (property) {
-			var _n0 = property.bF;
+			var _n0 = property.de;
 			_n0$2:
 			while (true) {
 				switch (_n0.$) {
@@ -10494,7 +10572,7 @@ var author$project$Update$StartPrepareEditingConnection = function (a) {
 var author$project$View$hasDragConnectionPrototype = F2(
 	function (dragMode, nodeId) {
 		if ((!dragMode.$) && (dragMode.a.$ === 3)) {
-			var supplier = dragMode.a.a.ax;
+			var supplier = dragMode.a.a.az;
 			return _Utils_eq(nodeId, supplier);
 		} else {
 			return false;
@@ -10505,7 +10583,7 @@ var author$project$View$translate = F2(
 		return A2(
 			elm$html$Html$Attributes$style,
 			'transform',
-			'translate(' + (elm$core$String$fromFloat(position.bB) + (unit + (',' + (elm$core$String$fromFloat(position.bC) + (unit + ')'))))));
+			'translate(' + (elm$core$String$fromFloat(position.bE) + (unit + (',' + (elm$core$String$fromFloat(position.bF) + (unit + ')'))))));
 	});
 var author$project$View$translateHTML = author$project$View$translate('px');
 var author$project$Update$RealizeConnection = function (a) {
@@ -11102,30 +11180,30 @@ var author$project$View$viewProperties = F3(
 						if ((!dragMode.$) && (dragMode.a.$ === 2)) {
 							var mouse = dragMode.a.a.q;
 							if (!input.$) {
-								var supplier = input.a.ax;
-								var onChange = input.a.cz;
-								return ((_Utils_cmp(event.n.a, mouse.bB) < 0) && (!_Utils_eq(supplier, elm$core$Maybe$Nothing))) ? author$project$Update$StartEditingConnection(
+								var supplier = input.a.az;
+								var onChange = input.a.cD;
+								return ((_Utils_cmp(event.n.a, mouse.bE) < 0) && (!_Utils_eq(supplier, elm$core$Maybe$Nothing))) ? author$project$Update$StartEditingConnection(
 									{
 										q: author$project$Vec2$fromTuple(event.n),
-										cv: onChange(elm$core$Maybe$Nothing),
-										cw: nodeId,
-										ax: supplier
+										cz: onChange(elm$core$Maybe$Nothing),
+										cA: nodeId,
+										az: supplier
 									}) : (output ? author$project$Update$StartCreateConnection(
 									{
 										q: author$project$Vec2$fromTuple(event.n),
-										ax: nodeId
+										az: nodeId
 									}) : author$project$Update$FinishDrag);
 							} else {
 								return output ? author$project$Update$StartCreateConnection(
 									{
 										q: author$project$Vec2$fromTuple(event.n),
-										ax: nodeId
+										az: nodeId
 									}) : author$project$Update$FinishDrag;
 							}
 						} else {
 							return author$project$Update$UpdateDrag(
 								{
-									dD: author$project$Vec2$fromTuple(event.n)
+									dE: author$project$Vec2$fromTuple(event.n)
 								});
 						}
 					}());
@@ -11136,10 +11214,10 @@ var author$project$View$viewProperties = F3(
 				if (!dragMode.$) {
 					switch (dragMode.a.$) {
 						case 2:
-							var node = dragMode.a.a.cv;
+							var node = dragMode.a.a.cz;
 							return _Utils_eq(nodeId, node);
 						case 4:
-							var node = dragMode.a.a.cv;
+							var node = dragMode.a.a.cz;
 							return _Utils_eq(nodeId, node);
 						default:
 							break _n5$2;
@@ -11172,14 +11250,14 @@ var author$project$View$viewProperties = F3(
 					_List_fromArray(
 						[
 							mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$onLeave(
-							A2(onLeave, elm$core$Maybe$Nothing, property.da))
+							A2(onLeave, elm$core$Maybe$Nothing, property.dc))
 						]),
 					directInput,
-					property.ct,
-					property.b6,
+					property.cx,
+					property.b9,
 					false,
 					leftConnector(false),
-					rightConnector(property.da));
+					rightConnector(property.dc));
 			});
 		var enableDisconnect = function () {
 			_n4$2:
@@ -11207,8 +11285,8 @@ var author$project$View$viewProperties = F3(
 						A2(
 							onLeave,
 							elm$core$Maybe$Just(
-								{cz: onChange, ax: currentSupplier}),
-							property.da))
+								{cD: onChange, az: currentSupplier}),
+							property.dc))
 					]) : _List_Nil;
 				var left = leftConnector(true);
 				var connectOnEnter = F2(
@@ -11217,14 +11295,14 @@ var author$project$View$viewProperties = F3(
 							author$project$Update$RealizeConnection(
 								{
 									q: author$project$Vec2$fromTuple(event.n),
-									dE: onChange(
+									dF: onChange(
 										elm$core$Maybe$Just(supplier)),
-									cw: nodeId
+									cA: nodeId
 								}));
 					});
 				var onEnter = function () {
 					if ((!dragMode.$) && (dragMode.a.$ === 3)) {
-						var supplier = dragMode.a.a.ax;
+						var supplier = dragMode.a.a.az;
 						return _Utils_eq(supplier, nodeId) ? _List_Nil : _List_fromArray(
 							[
 								mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$onEnter(
@@ -11238,14 +11316,14 @@ var author$project$View$viewProperties = F3(
 					propertyHTML,
 					_Utils_ap(onEnter, onLeaveHandlers),
 					A2(elm$html$Html$div, _List_Nil, _List_Nil),
-					property.ct,
-					property.b6,
+					property.cx,
+					property.b9,
 					true,
 					left,
-					rightConnector(property.da));
+					rightConnector(property.dc));
 			});
 		var singleProperty = function (property) {
-			var _n0 = property.bF;
+			var _n0 = property.de;
 			switch (_n0.$) {
 				case 0:
 					var value = _n0.a;
@@ -11341,7 +11419,7 @@ var author$project$View$viewProperties = F3(
 							return countThem ? _Utils_update(
 								prop,
 								{
-									ct: prop.ct + (' ' + elm$core$String$fromInt(index + 1))
+									cx: prop.cx + (' ' + elm$core$String$fromInt(index + 1))
 								}) : prop;
 						});
 					var realProperties = elm$core$Array$toList(
@@ -11376,11 +11454,11 @@ var author$project$View$viewProperties = F3(
 									A2(onLeave, elm$core$Maybe$Nothing, true))
 								]),
 							A2(elm$html$Html$div, _List_Nil, _List_Nil),
-							property.ct,
-							property.b6,
+							property.cx,
+							property.b9,
 							false,
 							leftConnector(false),
-							rightConnector(property.da))
+							rightConnector(property.dc))
 						]);
 			}
 		};
@@ -11405,31 +11483,31 @@ var author$project$View$viewNodeContent = F6(
 			});
 		var onMouseDownAndStopPropagation = function (event) {
 			return (event.Z === 3) ? {
-				bN: author$project$Update$DragModeMessage(
+				bP: author$project$Update$DragModeMessage(
 					author$project$Update$StartPrepareEditingConnection(
 						{
 							q: author$project$Vec2$fromTuple(event.n),
-							cv: nodeId
+							cz: nodeId
 						})),
 				u: true,
 				v: true
 			} : ((event.Z === 1) ? {
-				bN: author$project$Update$DragModeMessage(
+				bP: author$project$Update$DragModeMessage(
 					author$project$Update$StartNodeMove(
 						{
 							q: author$project$Vec2$fromTuple(event.n),
-							cv: nodeId
+							cz: nodeId
 						})),
 				u: true,
 				v: true
-			} : {bN: author$project$Update$DoNothing, u: false, v: false});
+			} : {bP: author$project$Update$DoNothing, u: false, v: false});
 		};
 		var onContextMenu = function (event) {
 			return _Utils_eq(dragMode, elm$core$Maybe$Nothing) ? author$project$Update$DragModeMessage(
 				author$project$Update$StartPrepareEditingConnection(
 					{
 						q: author$project$Vec2$fromTuple(event.n),
-						cv: nodeId
+						cz: nodeId
 					})) : author$project$Update$DoNothing;
 		};
 		var mayStopPropagation = F2(
@@ -11445,10 +11523,10 @@ var author$project$View$viewNodeContent = F6(
 				if (!dragMode.$) {
 					switch (dragMode.a.$) {
 						case 2:
-							var node = dragMode.a.a.cv;
+							var node = dragMode.a.a.cz;
 							return _Utils_eq(nodeId, node);
 						case 4:
-							var node = dragMode.a.a.cv;
+							var node = dragMode.a.a.cz;
 							return _Utils_eq(nodeId, node);
 						default:
 							break _n0$2;
@@ -11470,7 +11548,7 @@ var author$project$View$viewNodeContent = F6(
 				true) : _Utils_Tuple2(author$project$Update$DoNothing, false);
 		};
 		var contentWidth = elm$core$String$fromFloat(
-			author$project$Model$nodeWidth(nodeView.cv)) + 'px';
+			author$project$Model$nodeWidth(nodeView.cz)) + 'px';
 		var autolayoutAndStopPropagation = function (event) {
 			return (event.Z === 1) ? _Utils_Tuple2(
 				author$project$Update$AutoLayout(nodeId),
@@ -11481,7 +11559,7 @@ var author$project$View$viewNodeContent = F6(
 			_List_fromArray(
 				[
 					A2(elm$html$Html$Attributes$style, 'width', contentWidth),
-					author$project$View$translateHTML(nodeView.cI),
+					author$project$View$translateHTML(nodeView.as),
 					A2(
 					author$project$View$classes,
 					'graph-node',
@@ -11526,6 +11604,24 @@ var author$project$View$viewNodeContent = F6(
 							elm$html$Html$div,
 							_List_fromArray(
 								[
+									A2(mayStopPropagation, 'mousedown', autolayoutAndStopPropagation),
+									elm$html$Html$Attributes$class('autolayout button'),
+									elm$html$Html$Attributes$title('Automatically layout all inputs of this node')
+								]),
+							_List_fromArray(
+								[
+									A2(
+									elm$html$Html$img,
+									_List_fromArray(
+										[
+											elm$html$Html$Attributes$src('html/img/tidy.svg')
+										]),
+									_List_Nil)
+								])),
+							A2(
+							elm$html$Html$div,
+							_List_fromArray(
+								[
 									A2(mayStopPropagation, 'mousedown', duplicateAndStopPropagation),
 									elm$html$Html$Attributes$class('duplicate button'),
 									elm$html$Html$Attributes$title('Duplicate this Node')
@@ -11565,7 +11661,7 @@ var author$project$View$viewNode = F5(
 	function (dragMode, selectedNode, outputNode, nodes, _n0) {
 		var nodeId = _n0.a;
 		var nodeView = _n0.b;
-		var props = author$project$Model$nodeProperties(nodeView.cv);
+		var props = author$project$Model$nodeProperties(nodeView.cz);
 		return A2(
 			author$project$View$NodeView,
 			A6(author$project$View$viewNodeContent, dragMode, selectedNode, outputNode, nodeId, props, nodeView),
@@ -11625,7 +11721,7 @@ var author$project$Model$Always = 12;
 var author$project$Model$Never = 11;
 var author$project$Model$Prototype = F3(
 	function (name, node, description) {
-		return {b6: description, ct: name, cv: node};
+		return {b9: description, cx: name, cz: node};
 	});
 var author$project$Model$symbolProto = F2(
 	function (getter, symbol) {
@@ -11648,25 +11744,25 @@ var author$project$Model$prototypes = _List_fromArray(
 		A2(
 		author$project$Model$symbolProto,
 		function ($) {
-			return $.by;
+			return $.bB;
 		},
 		0),
 		A2(
 		author$project$Model$symbolProto,
 		function ($) {
-			return $.bf;
+			return $.bi;
 		},
 		1),
 		A2(
 		author$project$Model$symbolProto,
 		function ($) {
-			return $.a6;
+			return $.a8;
 		},
 		2),
 		A2(
 		author$project$Model$symbolProto,
 		function ($) {
-			return $.bd;
+			return $.bg;
 		},
 		3),
 		A2(
@@ -11678,45 +11774,45 @@ var author$project$Model$prototypes = _List_fromArray(
 		A2(
 		author$project$Model$typeProto,
 		function ($) {
-			return $.au;
+			return $.av;
 		},
 		author$project$Model$SetNode(
 			elm$core$Array$fromList(_List_Nil))),
 		A2(
 		author$project$Model$typeProto,
 		function ($) {
-			return $.aP;
+			return $.aR;
 		},
 		author$project$Model$LiteralNode('the')),
 		A2(
 		author$project$Model$typeProto,
 		function ($) {
-			return $.at;
+			return $.au;
 		},
 		author$project$Model$SequenceNode(
 			elm$core$Array$fromList(_List_Nil))),
 		A2(
 		author$project$Model$typeProto,
 		function ($) {
-			return $.aI;
+			return $.aK;
 		},
 		A2(author$project$Model$CharRangeNode, 'A', 'Z')),
 		A2(
 		author$project$Model$typeProto,
 		function ($) {
-			return $.aT;
+			return $.aV;
 		},
 		A2(author$project$Model$NotInCharRangeNode, 'A', 'Z')),
 		A2(
 		author$project$Model$typeProto,
 		function ($) {
-			return $.bj;
+			return $.bm;
 		},
 		author$project$Model$NotInCharSetNode(';:!?')),
 		A2(
 		author$project$Model$typeProto,
 		function ($) {
-			return $.aU;
+			return $.aW;
 		},
 		author$project$Model$OptionalNode(
 			{p: elm$core$Maybe$Nothing, ap: false})),
@@ -11737,83 +11833,83 @@ var author$project$Model$prototypes = _List_fromArray(
 		A2(
 		author$project$Model$symbolProto,
 		function ($) {
-			return $.a8;
+			return $.ba;
 		},
 		14),
 		A2(
 		author$project$Model$symbolProto,
 		function ($) {
-			return $.bu;
+			return $.bx;
 		},
 		13),
 		A2(
 		author$project$Model$symbolProto,
 		function ($) {
-			return $.bA;
+			return $.bD;
 		},
 		6),
 		A2(
 		author$project$Model$symbolProto,
 		function ($) {
-			return $.bh;
+			return $.bk;
 		},
 		7),
 		A2(
 		author$project$Model$typeProto,
 		function ($) {
-			return $.aV;
+			return $.aX;
 		},
 		author$project$Model$RangedRepetitionNode(
-			{p: elm$core$Maybe$Nothing, dy: 4, ap: false, dA: 2})),
+			{p: elm$core$Maybe$Nothing, dz: 4, ap: false, dB: 2})),
 		A2(
 		author$project$Model$typeProto,
 		function ($) {
-			return $.aR;
+			return $.aT;
 		},
 		author$project$Model$MinimumRepetitionNode(
-			{bG: 2, p: elm$core$Maybe$Nothing, ap: false})),
+			{bJ: 2, p: elm$core$Maybe$Nothing, ap: false})),
 		A2(
 		author$project$Model$typeProto,
 		function ($) {
-			return $.aQ;
+			return $.aS;
 		},
 		author$project$Model$MaximumRepetitionNode(
-			{bG: 4, p: elm$core$Maybe$Nothing, ap: false})),
+			{bJ: 4, p: elm$core$Maybe$Nothing, ap: false})),
 		A2(
 		author$project$Model$typeProto,
 		function ($) {
-			return $.aJ;
+			return $.aL;
 		},
 		author$project$Model$ExactRepetitionNode(
-			{bG: 3, p: elm$core$Maybe$Nothing})),
+			{bJ: 3, p: elm$core$Maybe$Nothing})),
 		A2(
 		author$project$Model$symbolProto,
 		function ($) {
-			return $.bz;
+			return $.bC;
 		},
 		4),
 		A2(
 		author$project$Model$symbolProto,
 		function ($) {
-			return $.bg;
+			return $.bj;
 		},
 		5),
 		A2(
 		author$project$Model$symbolProto,
 		function ($) {
-			return $.bb;
+			return $.be;
 		},
 		8),
 		A2(
 		author$project$Model$symbolProto,
 		function ($) {
-			return $.be;
+			return $.bh;
 		},
 		9),
 		A2(
 		author$project$Model$symbolProto,
 		function ($) {
-			return $.bv;
+			return $.by;
 		},
 		10),
 		A2(
@@ -11832,13 +11928,13 @@ var author$project$Model$prototypes = _List_fromArray(
 		A2(
 		author$project$Model$symbolProto,
 		function ($) {
-			return $.bi;
+			return $.bl;
 		},
 		11),
 		A2(
 		author$project$Model$symbolProto,
 		function ($) {
-			return $.a3;
+			return $.a5;
 		},
 		12),
 		A2(
@@ -11847,14 +11943,14 @@ var author$project$Model$prototypes = _List_fromArray(
 			return $.ak;
 		},
 		author$project$Model$IfFollowedByNode(
-			{p: elm$core$Maybe$Nothing, cV: elm$core$Maybe$Nothing})),
+			{p: elm$core$Maybe$Nothing, cY: elm$core$Maybe$Nothing})),
 		A2(
 		author$project$Model$typeProto,
 		function ($) {
 			return $.al;
 		},
 		author$project$Model$IfNotFollowedByNode(
-			{p: elm$core$Maybe$Nothing, cV: elm$core$Maybe$Nothing}))
+			{p: elm$core$Maybe$Nothing, cY: elm$core$Maybe$Nothing}))
 	]);
 var author$project$Update$InsertLiteral = function (a) {
 	return {$: 2, a: a};
@@ -11890,7 +11986,7 @@ var author$project$View$viewSearch = function (query) {
 					function (_n2) {
 						return author$project$Update$SearchMessage(
 							author$project$Update$FinishSearch(
-								author$project$Update$InsertPrototype(prototype.cv)));
+								author$project$Update$InsertPrototype(prototype.cz)));
 					})
 				]),
 			_List_fromArray(
@@ -11903,7 +11999,7 @@ var author$project$View$viewSearch = function (query) {
 						]),
 					_List_fromArray(
 						[
-							elm$html$Html$text(prototype.ct)
+							elm$html$Html$text(prototype.cx)
 						])),
 					A2(
 					elm$html$Html$p,
@@ -11913,7 +12009,7 @@ var author$project$View$viewSearch = function (query) {
 						]),
 					_List_fromArray(
 						[
-							elm$html$Html$text(prototype.b6)
+							elm$html$Html$text(prototype.b9)
 						]))
 				]));
 	};
@@ -11922,7 +12018,7 @@ var author$project$View$viewSearch = function (query) {
 		elm$regex$Regex$never,
 		A2(
 			elm$regex$Regex$fromStringWith,
-			{bE: true, bP: false},
+			{bH: true, bR: false},
 			query));
 	var lowercaseQuery = elm$core$String$toLower(query);
 	var isEmpty = elm$core$String$isEmpty(query);
@@ -11933,7 +12029,7 @@ var author$project$View$viewSearch = function (query) {
 			elm$core$String$toLower(name)) || A2(elm$regex$Regex$contains, regex, name));
 	};
 	var matches = function (prototype) {
-		return test(prototype.ct);
+		return test(prototype.cx);
 	};
 	var results = A2(
 		elm$core$List$map,
@@ -12053,7 +12149,7 @@ var mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$onUp = A2(mpizenberg$e
 var mpizenberg$elm_pointer_events$Html$Events$Extra$Wheel$defaultOptions = {u: true, v: false};
 var mpizenberg$elm_pointer_events$Html$Events$Extra$Wheel$Event = F3(
 	function (mouseEvent, deltaY, deltaMode) {
-		return {di: deltaMode, dj: deltaY, dB: mouseEvent};
+		return {dk: deltaMode, dl: deltaY, dC: mouseEvent};
 	});
 var mpizenberg$elm_pointer_events$Html$Events$Extra$Wheel$DeltaLine = 1;
 var mpizenberg$elm_pointer_events$Html$Events$Extra$Wheel$DeltaPage = 2;
@@ -12086,7 +12182,7 @@ var mpizenberg$elm_pointer_events$Html$Events$Extra$Wheel$onWithOptions = F2(
 				elm$json$Json$Decode$map,
 				function (ev) {
 					return {
-						bN: tag(ev),
+						bP: tag(ev),
 						u: options.u,
 						v: options.v
 					};
@@ -12095,7 +12191,7 @@ var mpizenberg$elm_pointer_events$Html$Events$Extra$Wheel$onWithOptions = F2(
 	});
 var mpizenberg$elm_pointer_events$Html$Events$Extra$Wheel$onWheel = mpizenberg$elm_pointer_events$Html$Events$Extra$Wheel$onWithOptions(mpizenberg$elm_pointer_events$Html$Events$Extra$Wheel$defaultOptions);
 var author$project$View$view = function (untrackedModel) {
-	var trackedModel = untrackedModel.dp.dQ;
+	var trackedModel = untrackedModel.dr.dR;
 	var startViewMove = function (event) {
 		return (event.Z === 2) ? author$project$Update$DragModeMessage(
 			author$project$Update$StartViewMove(
@@ -12105,21 +12201,21 @@ var author$project$View$view = function (untrackedModel) {
 	};
 	var nodeViews = A2(
 		elm$core$List$map,
-		A4(author$project$View$viewNode, untrackedModel.b7, trackedModel.cS, trackedModel.cD.bL, trackedModel.cx),
-		author$project$IdMap$toList(trackedModel.cx));
+		A4(author$project$View$viewNode, untrackedModel.ca, trackedModel.cV, trackedModel.cH.ci, trackedModel.cB),
+		author$project$IdMap$toList(trackedModel.cB));
 	var expressionResult = A2(
 		elm$core$Maybe$map,
 		elm$core$Result$map(author$project$Build$constructRegexLiteral),
-		trackedModel.c7);
+		trackedModel.c9);
 	var connections = author$project$View$flattenList(
 		A2(
 			elm$core$List$map,
 			function ($) {
-				return $.db;
+				return $.b6;
 			},
 			nodeViews));
 	var _n0 = function () {
-		var _n1 = untrackedModel.b7;
+		var _n1 = untrackedModel.ca;
 		_n1$2:
 		while (true) {
 			if (!_n1.$) {
@@ -12128,8 +12224,8 @@ var author$project$View$view = function (untrackedModel) {
 						var mouse = _n1.a.a.q;
 						return _Utils_Tuple3(true, elm$core$Maybe$Nothing, mouse);
 					case 3:
-						var supplier = _n1.a.a.ax;
-						var openEnd = _n1.a.a.bR;
+						var supplier = _n1.a.a.az;
+						var openEnd = _n1.a.a.bT;
 						return _Utils_Tuple3(
 							false,
 							elm$core$Maybe$Just(supplier),
@@ -12161,7 +12257,7 @@ var author$project$View$view = function (untrackedModel) {
 					return author$project$Update$DragModeMessage(
 						author$project$Update$UpdateDrag(
 							{
-								dD: author$project$Vec2$fromTuple(event.n)
+								dE: author$project$Vec2$fromTuple(event.n)
 							}));
 				}),
 				mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$onUp(
@@ -12178,12 +12274,12 @@ var author$project$View$view = function (untrackedModel) {
 					[
 						_Utils_Tuple2(moveDragging, 'move-dragging'),
 						_Utils_Tuple2(connectDragging, 'connect-dragging'),
-						_Utils_Tuple2(trackedModel.ca.cj, 'editing-example-text')
+						_Utils_Tuple2(trackedModel.cd.cn, 'editing-example-text')
 					]))
 			]),
 		_List_fromArray(
 			[
-				A2(elm$html$Html$Lazy$lazy, author$project$View$viewExampleText, trackedModel.ca),
+				A2(elm$html$Html$Lazy$lazy, author$project$View$viewExampleText, trackedModel.cd),
 				A2(
 				elm$svg$Svg$svg,
 				_List_fromArray(
@@ -12196,13 +12292,13 @@ var author$project$View$view = function (untrackedModel) {
 						elm$svg$Svg$g,
 						_List_fromArray(
 							[
-								author$project$View$magnifyAndOffsetSVG(untrackedModel.ea)
+								author$project$View$magnifyAndOffsetSVG(untrackedModel.d9)
 							]),
 						connectDragging ? _Utils_ap(
 							connections,
 							_List_fromArray(
 								[
-									A4(author$project$View$viewConnectDrag, untrackedModel.ea, trackedModel.cx, connectDragId, mousePosition)
+									A4(author$project$View$viewConnectDrag, untrackedModel.d9, trackedModel.cB, connectDragId, mousePosition)
 								])) : connections)
 					])),
 				A2(
@@ -12219,8 +12315,8 @@ var author$project$View$view = function (untrackedModel) {
 						function (event) {
 							return author$project$Update$UpdateView(
 								{
-									c2: (event.dj < 0) ? 1 : (-1),
-									dn: author$project$Vec2$fromTuple(event.dB.n)
+									c5: (event.dl < 0) ? 1 : (-1),
+									dp: author$project$Vec2$fromTuple(event.dC.n)
 								});
 						}),
 						author$project$View$preventContextMenu(
@@ -12233,12 +12329,12 @@ var author$project$View$view = function (untrackedModel) {
 						_List_fromArray(
 							[
 								elm$html$Html$Attributes$class('transform-wrapper'),
-								author$project$View$magnifyAndOffsetHTML(untrackedModel.ea)
+								author$project$View$magnifyAndOffsetHTML(untrackedModel.d9)
 							]),
 						A2(
 							elm$core$List$map,
 							function ($) {
-								return $.cv;
+								return $.cz;
 							},
 							nodeViews))
 					])),
@@ -12338,14 +12434,14 @@ var author$project$View$view = function (untrackedModel) {
 											[
 												elm$html$Html$Attributes$id('match-limit'),
 												elm$html$Html$Attributes$title(
-												'Display no more than ' + (elm$core$String$fromInt(trackedModel.ca.cq) + ' Matches from the example text, in order to perserve responsivenes'))
+												'Display no more than ' + (elm$core$String$fromInt(trackedModel.cd.cu) + ' Matches from the example text, in order to perserve responsivenes'))
 											]),
 										_List_fromArray(
 											[
 												elm$html$Html$text('Example Match Limit'),
 												A2(
 												author$project$View$viewPositiveIntInput,
-												trackedModel.ca.cq,
+												trackedModel.cd.cu,
 												A2(elm$core$Basics$composeL, author$project$Update$UpdateExampleText, author$project$Update$UpdateMaxMatchLimit))
 											])),
 										A2(
@@ -12354,11 +12450,11 @@ var author$project$View$view = function (untrackedModel) {
 											[
 												elm$html$Html$Attributes$id('edit-example'),
 												elm$html$Html$Attributes$class('button'),
-												elm$html$Html$Attributes$checked(trackedModel.ca.cj),
+												elm$html$Html$Attributes$checked(trackedModel.cd.cn),
 												mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$onClick(
 												elm$core$Basics$always(
 													author$project$Update$UpdateExampleText(
-														author$project$Update$SetEditing(!trackedModel.ca.cj)))),
+														author$project$Update$SetEditing(!trackedModel.cd.cn)))),
 												elm$html$Html$Attributes$title('Edit the Text which is displayed in the background')
 											]),
 										_List_fromArray(
@@ -12375,8 +12471,8 @@ var author$project$View$view = function (untrackedModel) {
 							]),
 						_List_fromArray(
 							[
-								author$project$View$viewSearchBar(untrackedModel.cR),
-								author$project$View$viewSearchResults(untrackedModel.cR)
+								author$project$View$viewSearchBar(untrackedModel.cU),
+								author$project$View$viewSearchResults(untrackedModel.cU)
 							])),
 						A2(
 						elm$html$Html$div,
@@ -12398,7 +12494,7 @@ var author$project$View$view = function (untrackedModel) {
 										_List_fromArray(
 											[
 												_Utils_Tuple2(
-												elm$core$List$isEmpty(untrackedModel.dp.cE),
+												elm$core$List$isEmpty(untrackedModel.dr.cI),
 												'disabled')
 											])),
 										mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$onClick(
@@ -12426,7 +12522,7 @@ var author$project$View$view = function (untrackedModel) {
 										_List_fromArray(
 											[
 												_Utils_Tuple2(
-												elm$core$List$isEmpty(untrackedModel.dp.cd),
+												elm$core$List$isEmpty(untrackedModel.dr.cg),
 												'disabled')
 											])),
 										mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$onClick(
@@ -12492,11 +12588,11 @@ var author$project$View$view = function (untrackedModel) {
 										'button',
 										_List_fromArray(
 											[
-												_Utils_Tuple2(trackedModel.cD.cn, 'checked')
+												_Utils_Tuple2(trackedModel.cH.cr, 'checked')
 											])),
 										mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$onClick(
 										elm$core$Basics$always(
-											author$project$Update$SetOutputLocked(!trackedModel.cD.cn))),
+											author$project$Update$SetOutputLocked(!trackedModel.cH.cr))),
 										elm$html$Html$Attributes$title('Always show the regex of the selected Node')
 									]),
 								_List_fromArray(
@@ -12513,7 +12609,7 @@ var author$project$View$view = function (untrackedModel) {
 						'notification button',
 						_List_fromArray(
 							[
-								_Utils_Tuple2(trackedModel.bH, 'show')
+								_Utils_Tuple2(trackedModel.bK, 'show')
 							])),
 						mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$onClick(
 						elm$core$Basics$always(author$project$Update$DismissCyclesError))
@@ -12631,7 +12727,7 @@ var elm$core$String$left = F2(
 	});
 var elm$url$Url$Url = F6(
 	function (protocol, host, port_, path, query, fragment) {
-		return {cc: fragment, ce: host, cF: path, cH: port_, cL: protocol, cM: query};
+		return {cf: fragment, ch: host, cJ: path, cL: port_, cO: protocol, cP: query};
 	});
 var elm$url$Url$chompBeforePath = F5(
 	function (protocol, path, params, frag, str) {
@@ -12742,16 +12838,16 @@ var elm$core$Platform$Sub$batch = _Platform_batch;
 var elm$core$Platform$Sub$none = elm$core$Platform$Sub$batch(_List_Nil);
 var author$project$Main$main = elm$browser$Browser$element(
 	{
-		dt: function (flags) {
+		dv: function (flags) {
 			return _Utils_Tuple2(
 				author$project$Main$init(flags),
 				elm$core$Platform$Cmd$none);
 		},
-		d0: elm$core$Basics$always(elm$core$Platform$Sub$none),
-		d7: F2(
+		d$: elm$core$Basics$always(elm$core$Platform$Sub$none),
+		d6: F2(
 			function (message, model) {
 				return A2(author$project$Main$update, message, model);
 			}),
-		ea: author$project$View$view
+		d9: author$project$View$view
 	});
 _Platform_export({'Main':{'init':author$project$Main$main(elm$json$Json$Decode$string)(0)}});}(this));

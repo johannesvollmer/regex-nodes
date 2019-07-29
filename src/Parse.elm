@@ -9,6 +9,9 @@ import Vec2 exposing (Vec2)
 type alias ParseResult a = Result ParseError a
 type alias ParseSubResult a = ParseResult (a, String)
 
+-- TODO dont do layout here, instead do it only in AutoLayout.elm
+
+
 type ParseError
   = ExpectedMoreChars
   | Expected String
@@ -65,74 +68,76 @@ addCompiledElement position nodes parsed = insert position parsed nodes
 -- TODO reuse existing intermediate result nodes
 
 insert : Vec2 -> CompiledElement -> Nodes -> (NodeId, Nodes)
-insert position element nodes = case element of
-  CompiledSequence members ->
-    let
-      insertChild index child = insert (Vec2 -200 (75 * toFloat (index - List.length members // 2)) |> Vec2.add position) child
-      (children, newNodes) = IdMap.insertListWith (List.indexedMap insertChild members) nodes
-      node = children |> Array.fromList |> SequenceNode |> NodeView position
-    in IdMap.insert node newNodes
+insert position element nodes =
+  let
+    node = NodeView position
+    add = insert position
 
-  CompiledCharSequence sequence -> IdMap.insert
-    (NodeView position (LiteralNode sequence)) nodes
+  in case element of
+    CompiledSequence members ->
+      let
+        (children, newNodes) = IdMap.insertListWith (List.map add members) nodes
+        nodeValue = children |> Array.fromList |> SequenceNode |> node
+      in IdMap.insert nodeValue newNodes
 
-  CompiledSymbol symbol -> IdMap.insert
-    (NodeView position (SymbolNode symbol)) nodes
+    CompiledCharSequence sequence -> IdMap.insert
+      (node (LiteralNode sequence)) nodes
 
-  CompiledCharRange inverted (a, b) -> IdMap.insert
-    (NodeView position ((if inverted then NotInCharRangeNode else CharRangeNode) a b)) nodes
+    CompiledSymbol symbol -> IdMap.insert
+      (node (SymbolNode symbol)) nodes
 
-  CompiledCapture child ->
-    let (childId, nodesWithChild) = insert (Vec2 -200 0 |> Vec2.add position) child nodes
-    in IdMap.insert (NodeView position (CaptureNode <| Just childId)) nodesWithChild
+    CompiledCharRange inverted (a, b) -> IdMap.insert
+      (node ((if inverted then NotInCharRangeNode else CharRangeNode) a b)) nodes
 
-  CompiledCharset { inverted, contents } -> IdMap.insert
-    (NodeView position (if inverted then NotInCharSetNode contents else CharSetNode contents)) nodes
+    CompiledCapture child ->
+      let (childId, nodesWithChild) = add child nodes
+      in IdMap.insert (node (CaptureNode <| Just childId)) nodesWithChild
 
-  CompiledSet options ->
-    let
-      insertChild index child = insert (Vec2 -200 (75 * (toFloat (index - List.length options // 2))) |> Vec2.add position) child
-      (children, newNodes) = IdMap.insertListWith (List.indexedMap insertChild options) nodes
-      node = children |> Array.fromList |> SetNode |> NodeView position
-    in IdMap.insert node newNodes
+    CompiledCharset { inverted, contents } -> IdMap.insert
+      (node (if inverted then NotInCharSetNode contents else CharSetNode contents)) nodes
 
-  CompiledIfFollowedBy { expression, successor } ->
-    let
-      (expressionId, nodesWithExpression) = insert (Vec2 -200 0 |> Vec2.add position) expression nodes
-      (successorId, nodesWithChildren) = insert (Vec2 -200 75 |> Vec2.add position) successor nodesWithExpression
-    in IdMap.insert
-      (NodeView position (IfFollowedByNode { expression = Just expressionId, successor = Just successorId }))
-      nodesWithChildren
+    CompiledSet options ->
+      let
+        (children, newNodes) = IdMap.insertListWith (List.map add options) nodes
+        nodeValue = children |> Array.fromList |> SetNode |> node
+      in IdMap.insert nodeValue newNodes
 
-  CompiledIfNotFollowedBy { expression, successor } ->
-    let
-      (expressionId, nodesWithExpression) = insert (Vec2 -200 0 |> Vec2.add position) expression nodes
-      (successorId, nodesWithChildren) = insert (Vec2 -200 75 |> Vec2.add position) successor nodesWithExpression
-    in IdMap.insert
-      (NodeView position (IfNotFollowedByNode { expression = Just expressionId, successor = Just successorId }))
-      nodesWithChildren
+    CompiledIfFollowedBy { expression, successor } ->
+      let
+        (expressionId, nodesWithExpression) = add expression nodes
+        (successorId, nodesWithChildren) = add successor nodesWithExpression
+      in IdMap.insert
+        (node (IfFollowedByNode { expression = Just expressionId, successor = Just successorId }))
+        nodesWithChildren
 
-  CompiledRangedRepetition { expression, minimum, maximum, minimal } ->
-    let (expressionId, nodesWithChild) = insert (Vec2 -200 0 |> Vec2.add position) expression nodes
-    in IdMap.insert (NodeView position (RangedRepetitionNode { expression = Just expressionId, minimum = minimum, maximum = maximum, minimal = minimal })) nodesWithChild
+    CompiledIfNotFollowedBy { expression, successor } ->
+      let
+        (expressionId, nodesWithExpression) = add expression nodes
+        (successorId, nodesWithChildren) = add successor nodesWithExpression
+      in IdMap.insert
+        (node (IfNotFollowedByNode { expression = Just expressionId, successor = Just successorId }))
+        nodesWithChildren
 
-  CompiledOptional { expression, minimal } ->
-    let (expressionId, nodesWithChild) = insert (Vec2 -200 0 |> Vec2.add position) expression nodes
-    in IdMap.insert (NodeView position (OptionalNode { expression = Just expressionId, minimal = minimal })) nodesWithChild
+    CompiledRangedRepetition { expression, minimum, maximum, minimal } ->
+      let (expressionId, nodesWithChild) = add expression nodes
+      in IdMap.insert (node (RangedRepetitionNode { expression = Just expressionId, minimum = minimum, maximum = maximum, minimal = minimal })) nodesWithChild
 
-  CompiledAtLeastOne { expression, minimal } ->
-    let (expressionId, nodesWithChild) = insert (Vec2 -200 0 |> Vec2.add position) expression nodes
-    in IdMap.insert (NodeView position (AtLeastOneNode { expression = Just expressionId, minimal = minimal })) nodesWithChild
+    CompiledOptional { expression, minimal } ->
+      let (expressionId, nodesWithChild) = add expression nodes
+      in IdMap.insert (node (OptionalNode { expression = Just expressionId, minimal = minimal })) nodesWithChild
 
-  CompiledAnyRepetition { expression, minimal } ->
-    let (expressionId, nodesWithChild) = insert (Vec2 -200 0 |> Vec2.add position) expression nodes
-    in IdMap.insert (NodeView position (AnyRepetitionNode { expression = Just expressionId, minimal = minimal })) nodesWithChild
+    CompiledAtLeastOne { expression, minimal } ->
+      let (expressionId, nodesWithChild) = add expression nodes
+      in IdMap.insert (node (AtLeastOneNode { expression = Just expressionId, minimal = minimal })) nodesWithChild
 
-    -- TODO DRY
-  CompiledFlags { expression, flags } ->
-    let (expressionId, nodesWithChild) = insert (Vec2 -200 0 |> Vec2.add position) expression nodes
-    in IdMap.insert (NodeView position (FlagsNode { expression = Just expressionId, flags = flags })) nodesWithChild
+    CompiledAnyRepetition { expression, minimal } ->
+      let (expressionId, nodesWithChild) = add expression nodes
+      in IdMap.insert (node (AnyRepetitionNode { expression = Just expressionId, minimal = minimal })) nodesWithChild
 
+      -- TODO DRY
+    CompiledFlags { expression, flags } ->
+      let (expressionId, nodesWithChild) = add expression nodes
+      in IdMap.insert (node (FlagsNode { expression = Just expressionId, flags = flags })) nodesWithChild
 
 
 

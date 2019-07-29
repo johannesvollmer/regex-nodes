@@ -1,7 +1,6 @@
 module Model exposing (..)
 
 import Array exposing (Array)
-import Dict
 import Vec2 exposing (Vec2)
 import IdMap exposing (IdMap)
 
@@ -620,72 +619,6 @@ nodeWidth node = case node of
 codeTextWidth = String.length >> (*) 5 >> toFloat
 mainTextWidth text = text |> String.length |> toFloat |> stringWidth
 stringWidth length =  (Basics.max 5 length) * (if length < 14 then 13 else 9)
-
-
-
--- AUTO LAYOUT
-
-type alias NodeBlock =
-  { position: Vec2
-  , size: Vec2
-  }
-
-type alias BlockProperty =
-  { id: NodeId
-  , property: Int
-  }
-
-type alias Connection =
-  { left: BlockProperty
-  , right: BlockProperty
-  }
-
-type alias NodeBlocks = Dict.Dict NodeId NodeBlock
-type alias Connections = List Connection
-
-type alias Graph =
-  { blocks: NodeBlocks
-  , connections: Connections
-  }
-
-autolayout: NodeId -> Nodes -> Nodes
-autolayout nodeId nodes =
-  let
-      graph = collectBlocks (Graph Dict.empty []) nodeId nodes
-
-  in nodes -- TODO
-
-collectBlocks: Graph -> NodeId -> Nodes -> Graph
-collectBlocks graph nodeId nodes = graph
-{-
-  let
-      properties = nodeProperties nodeView.node
-
-      newBlock: NodeView -> NodeBlock
-      newBlock nodeView = NodeBlock
-        nodeView.position
-        (Vec2 (nodeWidth nodeView.node) (List.length properties |> toFloat))
-
-      blocks = List.filter isConnection |> List.map collectBlocks properties
-      block = IdMap.get nodeId nodes |> Maybe.map newBlock
-
-  in
-    Graph
-      (Dict.insert nodeId block graph.blocks)
-      (() :: connections)
-
--}
-
-
-
-
--- PRIORITIES:
--- 1. MOVE OVERLAPPING NODES APART
--- 2. MAKE CONNECTIONS SMOOTH IN HORIZONTAL DIRECTION
--- 3. MOVE ALL NODES CLOSE TO EACH OTHER
-
-iterateAutoLayout: Float -> Graph -> Graph
-iterateAutoLayout time graph = graph
 
 
 
