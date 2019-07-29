@@ -4,6 +4,7 @@ import Array
 import Dict
 import IdMap
 import Model exposing (..)
+import Set
 import Vec2 exposing (Vec2)
 
 
@@ -96,6 +97,7 @@ baseLayoutToHeight nodeId blocks height rightX topY =
           in (y + subHeight, baseLayoutToHeight input subblocks subHeight childrenRightX y)
 
         (_, newBlocks) = List.map .connected block.inputs
+          |> deduplicateInOrder
           |> List.foldl layoutSubBlock (topY, blocks)
 
         newBlock = { block | position = Vec2 (rightX - block.size.x) (topY + 0.5 * height - 0.5 * block.size.y) }
@@ -111,7 +113,10 @@ treeHeight blocks nodeId  =
     Nothing -> 0
 
 blockChildrenHeight blocks block =
-  block.inputs |> List.map (.connected >> treeHeight blocks)
+  block.inputs
+    |> List.map .connected
+    |> deduplicateRandomOrder
+    |> List.map (treeHeight blocks)
     |> List.foldr (+) 0
 
 blockSelfHeight block =
@@ -119,7 +124,16 @@ blockSelfHeight block =
 
 
 
+deduplicateRandomOrder: List comparable -> List comparable
+deduplicateRandomOrder = Set.fromList >> Set.toList
 
+deduplicateInOrder: List comparable -> List comparable
+deduplicateInOrder list =
+  List.foldr buildDedupSet ([], Set.empty) list |> Tuple.first
+
+buildDedupSet element (resultList, resultSet) =
+  if Set.member element resultSet then (resultList, resultSet)
+    else (element :: resultList, Set.insert element resultSet)
 
 -- TODO: Iterative force-directed layout?
 

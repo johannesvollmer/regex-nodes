@@ -4614,188 +4614,15 @@ var author$project$Update$ParseRegex = function (a) {
 var author$project$Update$SearchMessage = function (a) {
 	return {$: 0, a: a};
 };
-var author$project$Model$propertyHeight = 25;
-var elm$core$Basics$add = _Basics_add;
-var elm$core$Basics$mul = _Basics_mul;
-var author$project$AutoLayout$blockSelfHeight = function (block) {
-	return block.ax.bF + (2 * author$project$Model$propertyHeight);
+var elm$core$Basics$identity = function (x) {
+	return x;
 };
-var elm$core$Basics$apR = F2(
-	function (x, f) {
-		return f(x);
-	});
-var elm$core$Basics$composeR = F3(
-	function (f, g, x) {
-		return g(
-			f(x));
-	});
-var elm$core$Basics$gt = _Utils_gt;
-var elm$core$Basics$max = F2(
-	function (x, y) {
-		return (_Utils_cmp(x, y) > 0) ? x : y;
-	});
-var elm$core$Basics$compare = _Utils_compare;
-var elm$core$Maybe$Just = function (a) {
-	return {$: 0, a: a};
-};
-var elm$core$Dict$get = F2(
-	function (targetKey, dict) {
-		get:
-		while (true) {
-			if (dict.$ === -2) {
-				return elm$core$Maybe$Nothing;
-			} else {
-				var key = dict.b;
-				var value = dict.c;
-				var left = dict.d;
-				var right = dict.e;
-				var _n1 = A2(elm$core$Basics$compare, targetKey, key);
-				switch (_n1) {
-					case 0:
-						var $temp$targetKey = targetKey,
-							$temp$dict = left;
-						targetKey = $temp$targetKey;
-						dict = $temp$dict;
-						continue get;
-					case 1:
-						return elm$core$Maybe$Just(value);
-					default:
-						var $temp$targetKey = targetKey,
-							$temp$dict = right;
-						targetKey = $temp$targetKey;
-						dict = $temp$dict;
-						continue get;
-				}
-			}
-		}
-	});
-var elm$core$List$foldl = F3(
-	function (func, acc, list) {
-		foldl:
-		while (true) {
-			if (!list.b) {
-				return acc;
-			} else {
-				var x = list.a;
-				var xs = list.b;
-				var $temp$func = func,
-					$temp$acc = A2(func, x, acc),
-					$temp$list = xs;
-				func = $temp$func;
-				acc = $temp$acc;
-				list = $temp$list;
-				continue foldl;
-			}
-		}
-	});
-var elm$core$List$reverse = function (list) {
-	return A3(elm$core$List$foldl, elm$core$List$cons, _List_Nil, list);
-};
-var elm$core$List$foldrHelper = F4(
-	function (fn, acc, ctr, ls) {
-		if (!ls.b) {
-			return acc;
-		} else {
-			var a = ls.a;
-			var r1 = ls.b;
-			if (!r1.b) {
-				return A2(fn, a, acc);
-			} else {
-				var b = r1.a;
-				var r2 = r1.b;
-				if (!r2.b) {
-					return A2(
-						fn,
-						a,
-						A2(fn, b, acc));
-				} else {
-					var c = r2.a;
-					var r3 = r2.b;
-					if (!r3.b) {
-						return A2(
-							fn,
-							a,
-							A2(
-								fn,
-								b,
-								A2(fn, c, acc)));
-					} else {
-						var d = r3.a;
-						var r4 = r3.b;
-						var res = (ctr > 500) ? A3(
-							elm$core$List$foldl,
-							fn,
-							acc,
-							elm$core$List$reverse(r4)) : A4(elm$core$List$foldrHelper, fn, acc, ctr + 1, r4);
-						return A2(
-							fn,
-							a,
-							A2(
-								fn,
-								b,
-								A2(
-									fn,
-									c,
-									A2(fn, d, res))));
-					}
-				}
-			}
-		}
-	});
-var elm$core$List$foldr = F3(
-	function (fn, acc, ls) {
-		return A4(elm$core$List$foldrHelper, fn, acc, 0, ls);
-	});
-var elm$core$List$map = F2(
-	function (f, xs) {
-		return A3(
-			elm$core$List$foldr,
-			F2(
-				function (x, acc) {
-					return A2(
-						elm$core$List$cons,
-						f(x),
-						acc);
-				}),
-			_List_Nil,
-			xs);
-	});
-var author$project$AutoLayout$blockChildrenHeight = F2(
-	function (blocks, block) {
-		return A3(
-			elm$core$List$foldr,
-			elm$core$Basics$add,
-			0,
-			A2(
-				elm$core$List$map,
-				A2(
-					elm$core$Basics$composeR,
-					function ($) {
-						return $.bI;
-					},
-					author$project$AutoLayout$treeHeight(blocks)),
-				block.bc));
-	});
-var author$project$AutoLayout$treeHeight = F2(
-	function (blocks, nodeId) {
-		var _n0 = A2(elm$core$Dict$get, nodeId, blocks);
-		if (!_n0.$) {
-			var block = _n0.a;
-			return A2(
-				elm$core$Basics$max,
-				author$project$AutoLayout$blockSelfHeight(block),
-				A2(author$project$AutoLayout$blockChildrenHeight, blocks, block));
-		} else {
-			return 0;
-		}
-	});
-var elm$core$Basics$sub = _Basics_sub;
-var elm$core$Basics$toFloat = _Basics_toFloat;
 var elm$core$Dict$Black = 1;
 var elm$core$Dict$RBNode_elm_builtin = F5(
 	function (a, b, c, d, e) {
 		return {$: -1, a: a, b: b, c: c, d: d, e: e};
 	});
+var elm$core$Basics$compare = _Utils_compare;
 var elm$core$Dict$Red = 0;
 var elm$core$Dict$balance = F5(
 	function (color, key, value, left, right) {
@@ -4899,6 +4726,228 @@ var elm$core$Dict$insert = F3(
 			return x;
 		}
 	});
+var elm$core$Set$Set_elm_builtin = elm$core$Basics$identity;
+var elm$core$Set$insert = F2(
+	function (key, _n0) {
+		var dict = _n0;
+		return A3(elm$core$Dict$insert, key, 0, dict);
+	});
+var elm$core$Basics$True = 0;
+var elm$core$Maybe$Just = function (a) {
+	return {$: 0, a: a};
+};
+var elm$core$Dict$get = F2(
+	function (targetKey, dict) {
+		get:
+		while (true) {
+			if (dict.$ === -2) {
+				return elm$core$Maybe$Nothing;
+			} else {
+				var key = dict.b;
+				var value = dict.c;
+				var left = dict.d;
+				var right = dict.e;
+				var _n1 = A2(elm$core$Basics$compare, targetKey, key);
+				switch (_n1) {
+					case 0:
+						var $temp$targetKey = targetKey,
+							$temp$dict = left;
+						targetKey = $temp$targetKey;
+						dict = $temp$dict;
+						continue get;
+					case 1:
+						return elm$core$Maybe$Just(value);
+					default:
+						var $temp$targetKey = targetKey,
+							$temp$dict = right;
+						targetKey = $temp$targetKey;
+						dict = $temp$dict;
+						continue get;
+				}
+			}
+		}
+	});
+var elm$core$Dict$member = F2(
+	function (key, dict) {
+		var _n0 = A2(elm$core$Dict$get, key, dict);
+		if (!_n0.$) {
+			return true;
+		} else {
+			return false;
+		}
+	});
+var elm$core$Set$member = F2(
+	function (key, _n0) {
+		var dict = _n0;
+		return A2(elm$core$Dict$member, key, dict);
+	});
+var author$project$AutoLayout$buildDedupSet = F2(
+	function (element, _n0) {
+		var resultList = _n0.a;
+		var resultSet = _n0.b;
+		return A2(elm$core$Set$member, element, resultSet) ? _Utils_Tuple2(resultList, resultSet) : _Utils_Tuple2(
+			A2(elm$core$List$cons, element, resultList),
+			A2(elm$core$Set$insert, element, resultSet));
+	});
+var elm$core$Basics$apR = F2(
+	function (x, f) {
+		return f(x);
+	});
+var elm$core$Basics$add = _Basics_add;
+var elm$core$Basics$gt = _Utils_gt;
+var elm$core$List$foldl = F3(
+	function (func, acc, list) {
+		foldl:
+		while (true) {
+			if (!list.b) {
+				return acc;
+			} else {
+				var x = list.a;
+				var xs = list.b;
+				var $temp$func = func,
+					$temp$acc = A2(func, x, acc),
+					$temp$list = xs;
+				func = $temp$func;
+				acc = $temp$acc;
+				list = $temp$list;
+				continue foldl;
+			}
+		}
+	});
+var elm$core$List$reverse = function (list) {
+	return A3(elm$core$List$foldl, elm$core$List$cons, _List_Nil, list);
+};
+var elm$core$List$foldrHelper = F4(
+	function (fn, acc, ctr, ls) {
+		if (!ls.b) {
+			return acc;
+		} else {
+			var a = ls.a;
+			var r1 = ls.b;
+			if (!r1.b) {
+				return A2(fn, a, acc);
+			} else {
+				var b = r1.a;
+				var r2 = r1.b;
+				if (!r2.b) {
+					return A2(
+						fn,
+						a,
+						A2(fn, b, acc));
+				} else {
+					var c = r2.a;
+					var r3 = r2.b;
+					if (!r3.b) {
+						return A2(
+							fn,
+							a,
+							A2(
+								fn,
+								b,
+								A2(fn, c, acc)));
+					} else {
+						var d = r3.a;
+						var r4 = r3.b;
+						var res = (ctr > 500) ? A3(
+							elm$core$List$foldl,
+							fn,
+							acc,
+							elm$core$List$reverse(r4)) : A4(elm$core$List$foldrHelper, fn, acc, ctr + 1, r4);
+						return A2(
+							fn,
+							a,
+							A2(
+								fn,
+								b,
+								A2(
+									fn,
+									c,
+									A2(fn, d, res))));
+					}
+				}
+			}
+		}
+	});
+var elm$core$List$foldr = F3(
+	function (fn, acc, ls) {
+		return A4(elm$core$List$foldrHelper, fn, acc, 0, ls);
+	});
+var elm$core$Set$empty = elm$core$Dict$empty;
+var elm$core$Tuple$first = function (_n0) {
+	var x = _n0.a;
+	return x;
+};
+var author$project$AutoLayout$deduplicateInOrder = function (list) {
+	return A3(
+		elm$core$List$foldr,
+		author$project$AutoLayout$buildDedupSet,
+		_Utils_Tuple2(_List_Nil, elm$core$Set$empty),
+		list).a;
+};
+var author$project$Model$propertyHeight = 25;
+var elm$core$Basics$mul = _Basics_mul;
+var author$project$AutoLayout$blockSelfHeight = function (block) {
+	return block.ax.bF + (2 * author$project$Model$propertyHeight);
+};
+var elm$core$Basics$composeR = F3(
+	function (f, g, x) {
+		return g(
+			f(x));
+	});
+var elm$core$Set$fromList = function (list) {
+	return A3(elm$core$List$foldl, elm$core$Set$insert, elm$core$Set$empty, list);
+};
+var author$project$AutoLayout$deduplicateRandomOrder = A2(elm$core$Basics$composeR, elm$core$Set$fromList, elm$core$Set$toList);
+var elm$core$Basics$max = F2(
+	function (x, y) {
+		return (_Utils_cmp(x, y) > 0) ? x : y;
+	});
+var elm$core$List$map = F2(
+	function (f, xs) {
+		return A3(
+			elm$core$List$foldr,
+			F2(
+				function (x, acc) {
+					return A2(
+						elm$core$List$cons,
+						f(x),
+						acc);
+				}),
+			_List_Nil,
+			xs);
+	});
+var author$project$AutoLayout$blockChildrenHeight = F2(
+	function (blocks, block) {
+		return A3(
+			elm$core$List$foldr,
+			elm$core$Basics$add,
+			0,
+			A2(
+				elm$core$List$map,
+				author$project$AutoLayout$treeHeight(blocks),
+				author$project$AutoLayout$deduplicateRandomOrder(
+					A2(
+						elm$core$List$map,
+						function ($) {
+							return $.bI;
+						},
+						block.bc))));
+	});
+var author$project$AutoLayout$treeHeight = F2(
+	function (blocks, nodeId) {
+		var _n0 = A2(elm$core$Dict$get, nodeId, blocks);
+		if (!_n0.$) {
+			var block = _n0.a;
+			return A2(
+				elm$core$Basics$max,
+				author$project$AutoLayout$blockSelfHeight(block),
+				A2(author$project$AutoLayout$blockChildrenHeight, blocks, block));
+		} else {
+			return 0;
+		}
+	});
+var elm$core$Basics$sub = _Basics_sub;
+var elm$core$Basics$toFloat = _Basics_toFloat;
 var elm$core$List$length = function (xs) {
 	return A3(
 		elm$core$List$foldl,
@@ -4935,12 +4984,13 @@ var author$project$AutoLayout$baseLayoutToHeight = F5(
 				elm$core$List$foldl,
 				layoutSubBlock,
 				_Utils_Tuple2(topY, blocks),
-				A2(
-					elm$core$List$map,
-					function ($) {
-						return $.bI;
-					},
-					block.bc));
+				author$project$AutoLayout$deduplicateInOrder(
+					A2(
+						elm$core$List$map,
+						function ($) {
+							return $.bI;
+						},
+						block.bc)));
 			var newBlocks = _n1.b;
 			return A3(elm$core$Dict$insert, nodeId, newBlock, newBlocks);
 		}
@@ -5262,7 +5312,6 @@ var author$project$Model$updateSuccessor = F2(
 			node,
 			{cY: successor});
 	});
-var elm$core$Basics$True = 0;
 var elm$core$Basics$composeL = F3(
 	function (g, f, x) {
 		return g(
@@ -5844,9 +5893,6 @@ var author$project$Model$nodeWidth = function (node) {
 		default:
 			return author$project$Model$mainTextWidth(author$project$Model$typeNames.aS);
 	}
-};
-var elm$core$Basics$identity = function (x) {
-	return x;
 };
 var elm$core$Dict$foldl = F3(
 	function (func, acc, dict) {
@@ -6633,10 +6679,6 @@ var elm$core$Array$compressNodes = F2(
 			}
 		}
 	});
-var elm$core$Tuple$first = function (_n0) {
-	var x = _n0.a;
-	return x;
-};
 var elm$core$Array$treeFromBuilder = F2(
 	function (nodeList, nodeListSize) {
 		treeFromBuilder:
@@ -8329,9 +8371,6 @@ var author$project$Parse$compileSequenceMember = F2(
 var author$project$Parse$ParsedFlags = function (a) {
 	return {$: 11, a: a};
 };
-var author$project$Parse$ParsedAnyRepetition = function (a) {
-	return {$: 8, a: a};
-};
 var author$project$Parse$ParsedAtLeastOne = function (a) {
 	return {$: 9, a: a};
 };
@@ -8682,9 +8721,9 @@ var author$project$Parse$extendSequence = function (current) {
 		var error = current.a;
 		return elm$core$Result$Err(error);
 	} else {
-		var _n14 = current.a;
-		var members = _n14.a;
-		var text = _n14.b;
+		var _n11 = current.a;
+		var members = _n11.a;
+		var text = _n11.b;
 		return (elm$core$String$isEmpty(text) || (A2(elm$core$String$startsWith, ')', text) || (A2(elm$core$String$startsWith, '|', text) || A2(elm$core$String$startsWith, '/', text)))) ? elm$core$Result$Ok(
 			_Utils_Tuple2(members, text)) : author$project$Parse$extendSequence(
 			A2(
@@ -8699,12 +8738,12 @@ var author$project$Parse$extendSet = function (current) {
 		var error = current.a;
 		return elm$core$Result$Err(error);
 	} else {
-		var _n11 = current.a;
-		var options = _n11.a;
-		var text = _n11.b;
-		var _n12 = A2(author$project$Parse$skipIfNext, '|', text);
-		if (_n12.a) {
-			var rest = _n12.b;
+		var _n8 = current.a;
+		var options = _n8.a;
+		var text = _n8.b;
+		var _n9 = A2(author$project$Parse$skipIfNext, '|', text);
+		if (_n9.a) {
+			var rest = _n9.b;
 			return author$project$Parse$extendSet(
 				A2(
 					elm$core$Result$map,
@@ -8712,29 +8751,14 @@ var author$project$Parse$extendSet = function (current) {
 						author$project$Parse$appendTo(options)),
 					author$project$Parse$parseSequence(rest)));
 		} else {
-			var rest = _n12.b;
+			var rest = _n9.b;
 			return elm$core$Result$Ok(
 				_Utils_Tuple2(options, rest));
 		}
 	}
 };
 var author$project$Parse$parseAnyRepetition = function (text) {
-	var parseIt = function (_n9) {
-		var expression = _n9.a;
-		var rest = _n9.b;
-		var _n7 = A2(author$project$Parse$skipIfNext, '*', rest);
-		var optional = _n7.a;
-		var rest1 = _n7.b;
-		var _n8 = optional ? A2(author$project$Parse$skipIfNext, '?', rest1) : _Utils_Tuple2(false, rest1);
-		var isLazy = _n8.a;
-		var rest2 = _n8.b;
-		return optional ? _Utils_Tuple2(
-			author$project$Parse$ParsedAnyRepetition(
-				{p: expression, ap: isLazy}),
-			rest2) : _Utils_Tuple2(expression, rest2);
-	};
-	var expressionResult = author$project$Parse$parseRangedRepetition(text);
-	return A2(elm$core$Result$map, parseIt, expressionResult);
+	return author$project$Parse$parseAtom(text);
 };
 var author$project$Parse$parseAtLeastOne = function (text) {
 	var parseIt = function (_n6) {
@@ -8817,9 +8841,6 @@ var author$project$Parse$parseParentheses = F3(
 	});
 var author$project$Parse$parseQuantified = function (text) {
 	return author$project$Parse$parseOptional(text);
-};
-var author$project$Parse$parseRangedRepetition = function (text) {
-	return author$project$Parse$parseAtom(text);
 };
 var author$project$Parse$parseSequence = function (text) {
 	return A2(
