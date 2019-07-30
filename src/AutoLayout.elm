@@ -69,6 +69,8 @@ buildBlockGraph nodeId nodes =
 
 flattenList list = List.foldr (++) [] list
 
+-- TODO if a node has multiple outputs, it should be placed in the lowest layer
+-- TODO layout every node once, which also avoids stack overflow on circular node graphs
 
 baseLayout : NodeId -> NodeBlocks -> NodeBlocks
 baseLayout nodeId blocks =

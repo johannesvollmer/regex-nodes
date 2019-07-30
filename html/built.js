@@ -8008,23 +8008,24 @@ var author$project$Parse$insert = F3(
 								dB: minimum
 							})),
 					nodesWithChild);
-			case 10:
+			case 11:
 				var expression = element.a.p;
-				var minimal = element.a.ap;
+				var count = element.a.bJ;
 				var _n10 = A2(add, expression, nodes);
 				var expressionId = _n10.a;
 				var nodesWithChild = _n10.b;
 				return A2(
 					author$project$IdMap$insert,
 					node(
-						author$project$Model$OptionalNode(
+						author$project$Model$ExactRepetitionNode(
 							{
-								p: elm$core$Maybe$Just(expressionId),
-								ap: minimal
+								bJ: count,
+								p: elm$core$Maybe$Just(expressionId)
 							})),
 					nodesWithChild);
-			case 11:
+			case 10:
 				var expression = element.a.p;
+				var count = element.a.bJ;
 				var minimal = element.a.ap;
 				var _n11 = A2(add, expression, nodes);
 				var expressionId = _n11.a;
@@ -8032,8 +8033,9 @@ var author$project$Parse$insert = F3(
 				return A2(
 					author$project$IdMap$insert,
 					node(
-						author$project$Model$AtLeastOneNode(
+						author$project$Model$MinimumRepetitionNode(
 							{
+								bJ: count,
 								p: elm$core$Maybe$Just(expressionId),
 								ap: minimal
 							})),
@@ -8047,6 +8049,36 @@ var author$project$Parse$insert = F3(
 				return A2(
 					author$project$IdMap$insert,
 					node(
+						author$project$Model$OptionalNode(
+							{
+								p: elm$core$Maybe$Just(expressionId),
+								ap: minimal
+							})),
+					nodesWithChild);
+			case 13:
+				var expression = element.a.p;
+				var minimal = element.a.ap;
+				var _n13 = A2(add, expression, nodes);
+				var expressionId = _n13.a;
+				var nodesWithChild = _n13.b;
+				return A2(
+					author$project$IdMap$insert,
+					node(
+						author$project$Model$AtLeastOneNode(
+							{
+								p: elm$core$Maybe$Just(expressionId),
+								ap: minimal
+							})),
+					nodesWithChild);
+			case 14:
+				var expression = element.a.p;
+				var minimal = element.a.ap;
+				var _n14 = A2(add, expression, nodes);
+				var expressionId = _n14.a;
+				var nodesWithChild = _n14.b;
+				return A2(
+					author$project$IdMap$insert,
+					node(
 						author$project$Model$AnyRepetitionNode(
 							{
 								p: elm$core$Maybe$Just(expressionId),
@@ -8056,9 +8088,9 @@ var author$project$Parse$insert = F3(
 			default:
 				var expression = element.a.p;
 				var flags = element.a.ae;
-				var _n13 = A2(add, expression, nodes);
-				var expressionId = _n13.a;
-				var nodesWithChild = _n13.b;
+				var _n15 = A2(add, expression, nodes);
+				var expressionId = _n15.a;
+				var nodesWithChild = _n15.b;
 				return A2(
 					author$project$IdMap$insert,
 					node(
@@ -8075,10 +8107,10 @@ var author$project$Parse$addCompiledElement = F3(
 		return A3(author$project$Parse$insert, position, parsed, nodes);
 	});
 var author$project$Parse$CompiledAnyRepetition = function (a) {
-	return {$: 12, a: a};
+	return {$: 14, a: a};
 };
 var author$project$Parse$CompiledAtLeastOne = function (a) {
-	return {$: 11, a: a};
+	return {$: 13, a: a};
 };
 var author$project$Parse$CompiledCapture = function (a) {
 	return {$: 6, a: a};
@@ -8086,8 +8118,11 @@ var author$project$Parse$CompiledCapture = function (a) {
 var author$project$Parse$CompiledCharSequence = function (a) {
 	return {$: 3, a: a};
 };
+var author$project$Parse$CompiledExactRepetition = function (a) {
+	return {$: 11, a: a};
+};
 var author$project$Parse$CompiledFlags = function (a) {
-	return {$: 13, a: a};
+	return {$: 15, a: a};
 };
 var author$project$Parse$CompiledIfFollowedBy = function (a) {
 	return {$: 7, a: a};
@@ -8095,8 +8130,11 @@ var author$project$Parse$CompiledIfFollowedBy = function (a) {
 var author$project$Parse$CompiledIfNotFollowedBy = function (a) {
 	return {$: 8, a: a};
 };
-var author$project$Parse$CompiledOptional = function (a) {
+var author$project$Parse$CompiledMinimumRepetition = function (a) {
 	return {$: 10, a: a};
+};
+var author$project$Parse$CompiledOptional = function (a) {
+	return {$: 12, a: a};
 };
 var author$project$Parse$CompiledRangedRepetition = function (a) {
 	return {$: 9, a: a};
@@ -8293,7 +8331,25 @@ var author$project$Parse$compile = function (element) {
 						ap: minimal,
 						dB: minimum
 					});
-			case 10:
+			case 9:
+				var expression = element.a.p;
+				var count = element.a.bJ;
+				return author$project$Parse$CompiledExactRepetition(
+					{
+						bJ: count,
+						p: author$project$Parse$compile(expression)
+					});
+			case 8:
+				var expression = element.a.p;
+				var count = element.a.bJ;
+				var minimal = element.a.ap;
+				return author$project$Parse$CompiledMinimumRepetition(
+					{
+						bJ: count,
+						p: author$project$Parse$compile(expression),
+						ap: minimal
+					});
+			case 12:
 				var expression = element.a.p;
 				var minimal = element.a.ap;
 				return author$project$Parse$CompiledOptional(
@@ -8301,7 +8357,7 @@ var author$project$Parse$compile = function (element) {
 						p: author$project$Parse$compile(expression),
 						ap: minimal
 					});
-			case 8:
+			case 10:
 				var expression = element.a.p;
 				var minimal = element.a.ap;
 				return author$project$Parse$CompiledAnyRepetition(
@@ -8309,7 +8365,7 @@ var author$project$Parse$compile = function (element) {
 						p: author$project$Parse$compile(expression),
 						ap: minimal
 					});
-			case 9:
+			case 11:
 				var expression = element.a.p;
 				var minimal = element.a.ap;
 				return author$project$Parse$CompiledAtLeastOne(
@@ -8369,13 +8425,19 @@ var author$project$Parse$compileSequenceMember = F2(
 		}
 	});
 var author$project$Parse$ParsedFlags = function (a) {
-	return {$: 11, a: a};
+	return {$: 13, a: a};
+};
+var author$project$Parse$ParsedAnyRepetition = function (a) {
+	return {$: 10, a: a};
 };
 var author$project$Parse$ParsedAtLeastOne = function (a) {
-	return {$: 9, a: a};
+	return {$: 11, a: a};
 };
 var author$project$Parse$ParsedCapture = function (a) {
 	return {$: 4, a: a};
+};
+var author$project$Parse$ParsedExactRepetition = function (a) {
+	return {$: 9, a: a};
 };
 var author$project$Parse$ParsedIfFollowedBy = function (a) {
 	return {$: 5, a: a};
@@ -8383,8 +8445,14 @@ var author$project$Parse$ParsedIfFollowedBy = function (a) {
 var author$project$Parse$ParsedIfNotFollowedBy = function (a) {
 	return {$: 6, a: a};
 };
+var author$project$Parse$ParsedMinimumRepetition = function (a) {
+	return {$: 8, a: a};
+};
 var author$project$Parse$ParsedOptional = function (a) {
-	return {$: 10, a: a};
+	return {$: 12, a: a};
+};
+var author$project$Parse$ParsedRangedRepetition = function (a) {
+	return {$: 7, a: a};
 };
 var author$project$Parse$ParsedSequence = function (a) {
 	return {$: 0, a: a};
@@ -8711,6 +8779,83 @@ var author$project$Parse$parseGenericAtomicChar = function (text) {
 			A2(author$project$Parse$maybeOptions, author$project$Parse$symbolizeLetterbased, author$project$Parse$symbolizeTabLinebreak),
 			text));
 };
+var author$project$Parse$Exact = function (a) {
+	return {$: 0, a: a};
+};
+var author$project$Parse$Ranged = function (a) {
+	return {$: 1, a: a};
+};
+var author$project$Parse$splitFirst = F2(
+	function (delimiter, text) {
+		var _n0 = A2(elm$core$String$split, delimiter, text);
+		if (_n0.b) {
+			var first = _n0.a;
+			var rest = _n0.b;
+			return elm$core$Maybe$Just(
+				_Utils_Tuple2(
+					first,
+					A2(elm$core$String$join, delimiter, rest)));
+		} else {
+			return elm$core$Maybe$Nothing;
+		}
+	});
+var elm$core$String$toInt = _String_toInt;
+var author$project$Parse$parseRepetitionRange = function (text) {
+	var parseNumberList = A2(
+		elm$core$Basics$composeR,
+		elm$core$String$split(','),
+		elm$core$List$map(elm$core$String$toInt));
+	var contents = A2(author$project$Parse$splitFirst, '}', text);
+	var ranges = A2(
+		elm$core$Maybe$map,
+		elm$core$Tuple$mapFirst(parseNumberList),
+		contents);
+	_n0$2:
+	while (true) {
+		if ((!ranges.$) && ranges.a.a.b) {
+			if (!ranges.a.a.b.b) {
+				if (!ranges.a.a.a.$) {
+					var _n1 = ranges.a;
+					var _n2 = _n1.a;
+					var singleCount = _n2.a.a;
+					var rest = _n1.b;
+					return elm$core$Result$Ok(
+						_Utils_Tuple2(
+							author$project$Parse$Exact(singleCount),
+							rest));
+				} else {
+					break _n0$2;
+				}
+			} else {
+				if (!ranges.a.a.b.b.b) {
+					var _n3 = ranges.a;
+					var _n4 = _n3.a;
+					var first = _n4.a;
+					var _n5 = _n4.b;
+					var second = _n5.a;
+					var rest = _n3.b;
+					var _n6 = A2(author$project$Parse$skipIfNext, '?', rest);
+					var minimal = _n6.a;
+					var rest1 = _n6.b;
+					return elm$core$Result$Ok(
+						_Utils_Tuple2(
+							author$project$Parse$Ranged(
+								_Utils_Tuple3(
+									A2(elm$core$Maybe$withDefault, 0, first),
+									second,
+									minimal)),
+							rest1));
+				} else {
+					break _n0$2;
+				}
+			}
+		} else {
+			break _n0$2;
+		}
+	}
+	return elm$core$Result$Err(
+		author$project$Parse$Expected('Invalid count specifier'));
+};
 var elm$core$Basics$or = _Basics_or;
 var elm$core$List$singleton = function (value) {
 	return _List_fromArray(
@@ -8721,9 +8866,9 @@ var author$project$Parse$extendSequence = function (current) {
 		var error = current.a;
 		return elm$core$Result$Err(error);
 	} else {
-		var _n11 = current.a;
-		var members = _n11.a;
-		var text = _n11.b;
+		var _n20 = current.a;
+		var members = _n20.a;
+		var text = _n20.b;
 		return (elm$core$String$isEmpty(text) || (A2(elm$core$String$startsWith, ')', text) || (A2(elm$core$String$startsWith, '|', text) || A2(elm$core$String$startsWith, '/', text)))) ? elm$core$Result$Ok(
 			_Utils_Tuple2(members, text)) : author$project$Parse$extendSequence(
 			A2(
@@ -8738,12 +8883,12 @@ var author$project$Parse$extendSet = function (current) {
 		var error = current.a;
 		return elm$core$Result$Err(error);
 	} else {
-		var _n8 = current.a;
-		var options = _n8.a;
-		var text = _n8.b;
-		var _n9 = A2(author$project$Parse$skipIfNext, '|', text);
-		if (_n9.a) {
-			var rest = _n9.b;
+		var _n17 = current.a;
+		var options = _n17.a;
+		var text = _n17.b;
+		var _n18 = A2(author$project$Parse$skipIfNext, '|', text);
+		if (_n18.a) {
+			var rest = _n18.b;
 			return author$project$Parse$extendSet(
 				A2(
 					elm$core$Result$map,
@@ -8751,25 +8896,40 @@ var author$project$Parse$extendSet = function (current) {
 						author$project$Parse$appendTo(options)),
 					author$project$Parse$parseSequence(rest)));
 		} else {
-			var rest = _n9.b;
+			var rest = _n18.b;
 			return elm$core$Result$Ok(
 				_Utils_Tuple2(options, rest));
 		}
 	}
 };
 var author$project$Parse$parseAnyRepetition = function (text) {
-	return author$project$Parse$parseAtom(text);
+	var parseIt = function (_n15) {
+		var expression = _n15.a;
+		var rest = _n15.b;
+		var _n13 = A2(author$project$Parse$skipIfNext, '*', rest);
+		var repeat = _n13.a;
+		var rest1 = _n13.b;
+		var _n14 = repeat ? A2(author$project$Parse$skipIfNext, '?', rest1) : _Utils_Tuple2(false, rest1);
+		var isLazy = _n14.a;
+		var rest2 = _n14.b;
+		return repeat ? _Utils_Tuple2(
+			author$project$Parse$ParsedAnyRepetition(
+				{p: expression, ap: isLazy}),
+			rest2) : _Utils_Tuple2(expression, rest2);
+	};
+	var expressionResult = author$project$Parse$parseRangedRepetition(text);
+	return A2(elm$core$Result$map, parseIt, expressionResult);
 };
 var author$project$Parse$parseAtLeastOne = function (text) {
-	var parseIt = function (_n6) {
-		var expression = _n6.a;
-		var rest = _n6.b;
-		var _n4 = A2(author$project$Parse$skipIfNext, '+', rest);
-		var optional = _n4.a;
-		var rest1 = _n4.b;
-		var _n5 = optional ? A2(author$project$Parse$skipIfNext, '?', rest1) : _Utils_Tuple2(false, rest1);
-		var isLazy = _n5.a;
-		var rest2 = _n5.b;
+	var parseIt = function (_n12) {
+		var expression = _n12.a;
+		var rest = _n12.b;
+		var _n10 = A2(author$project$Parse$skipIfNext, '+', rest);
+		var optional = _n10.a;
+		var rest1 = _n10.b;
+		var _n11 = optional ? A2(author$project$Parse$skipIfNext, '?', rest1) : _Utils_Tuple2(false, rest1);
+		var isLazy = _n11.a;
+		var rest2 = _n11.b;
 		return optional ? _Utils_Tuple2(
 			author$project$Parse$ParsedAtLeastOne(
 				{p: expression, ap: isLazy}),
@@ -8785,9 +8945,9 @@ var author$project$Parse$parseAtom = function (text) {
 	return isNext('[') ? author$project$Parse$parseCharset(text) : (isNext('(?:') ? author$project$Parse$cyclic$parseGroup()(text) : (isNext('(') ? author$project$Parse$cyclic$parseCapturingGroup()(text) : author$project$Parse$parseGenericAtomicChar(text)));
 };
 var author$project$Parse$parseLookAhead = function (text) {
-	var extract = function (_n3) {
-		var content = _n3.a;
-		var rest = _n3.b;
+	var extract = function (_n9) {
+		var content = _n9.a;
+		var rest = _n9.b;
 		return A2(elm$core$String$startsWith, '(?=', rest) ? A3(
 			author$project$Parse$parseParentheses,
 			function (s) {
@@ -8809,15 +8969,15 @@ var author$project$Parse$parseLookAhead = function (text) {
 	return A2(elm$core$Result$andThen, extract, expressionResult);
 };
 var author$project$Parse$parseOptional = function (text) {
-	var parseIt = function (_n2) {
-		var expression = _n2.a;
-		var rest = _n2.b;
-		var _n0 = A2(author$project$Parse$skipIfNext, '?', rest);
-		var optional = _n0.a;
-		var rest1 = _n0.b;
-		var _n1 = optional ? A2(author$project$Parse$skipIfNext, '?', rest1) : _Utils_Tuple2(false, rest1);
-		var isLazy = _n1.a;
-		var rest2 = _n1.b;
+	var parseIt = function (_n8) {
+		var expression = _n8.a;
+		var rest = _n8.b;
+		var _n6 = A2(author$project$Parse$skipIfNext, '?', rest);
+		var optional = _n6.a;
+		var rest1 = _n6.b;
+		var _n7 = optional ? A2(author$project$Parse$skipIfNext, '?', rest1) : _Utils_Tuple2(false, rest1);
+		var isLazy = _n7.a;
+		var rest2 = _n7.b;
 		return optional ? _Utils_Tuple2(
 			author$project$Parse$ParsedOptional(
 				{p: expression, ap: isLazy}),
@@ -8841,6 +9001,50 @@ var author$project$Parse$parseParentheses = F3(
 	});
 var author$project$Parse$parseQuantified = function (text) {
 	return author$project$Parse$parseOptional(text);
+};
+var author$project$Parse$parseRangedRepetition = function (text) {
+	return A2(
+		elm$core$Result$andThen,
+		function (_n0) {
+			var atom = _n0.a;
+			var rest = _n0.b;
+			var toNodes = function (repetition) {
+				if (!repetition.$) {
+					var count = repetition.a;
+					return author$project$Parse$ParsedExactRepetition(
+						{bJ: count, p: atom});
+				} else {
+					var _n4 = repetition.a;
+					var min = _n4.a;
+					var max = _n4.b;
+					var minimal = _n4.c;
+					if (max.$ === 1) {
+						return author$project$Parse$ParsedMinimumRepetition(
+							{bJ: min, p: atom, ap: minimal});
+					} else {
+						var maximum = max.a;
+						return author$project$Parse$ParsedRangedRepetition(
+							{p: atom, dz: maximum, ap: minimal, dB: min});
+					}
+				}
+			};
+			var _n1 = A2(author$project$Parse$skipIfNext, '{', rest);
+			var started = _n1.a;
+			var rest1 = _n1.b;
+			var range = started ? elm$core$Maybe$Just(
+				author$project$Parse$parseRepetitionRange(rest1)) : elm$core$Maybe$Nothing;
+			if (range.$ === 1) {
+				return elm$core$Result$Ok(
+					_Utils_Tuple2(atom, rest));
+			} else {
+				var result = range.a;
+				return A2(
+					elm$core$Result$map,
+					elm$core$Tuple$mapFirst(toNodes),
+					result);
+			}
+		},
+		author$project$Parse$parseAtom(text));
 };
 var author$project$Parse$parseSequence = function (text) {
 	return A2(
@@ -10992,7 +11196,6 @@ var author$project$View$viewCharsInput = F2(
 				]),
 			_List_Nil);
 	});
-var elm$core$String$toInt = _String_toInt;
 var author$project$View$stringToInt = F2(
 	function (fallback, string) {
 		return A2(

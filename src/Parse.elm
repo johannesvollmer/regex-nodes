@@ -31,6 +31,8 @@ type ParsedElement
   | ParsedIfFollowedBy { expression: ParsedElement, successor: ParsedElement }
   | ParsedIfNotFollowedBy { expression: ParsedElement, successor: ParsedElement }
   | ParsedRangedRepetition { expression : ParsedElement, minimum: Int, maximum: Int, minimal: Bool }
+  | ParsedMinimumRepetition { expression : ParsedElement, count: Int, minimal: Bool }
+  | ParsedExactRepetition { expression : ParsedElement, count: Int }
   | ParsedAnyRepetition { expression : ParsedElement, minimal: Bool }
   | ParsedAtLeastOne { expression : ParsedElement, minimal: Bool }
   | ParsedOptional { expression: ParsedElement, minimal: Bool }
@@ -49,6 +51,8 @@ type CompiledElement
   | CompiledIfFollowedBy { expression: CompiledElement, successor: CompiledElement }
   | CompiledIfNotFollowedBy { expression: CompiledElement, successor: CompiledElement }
   | CompiledRangedRepetition { expression : CompiledElement, minimum: Int, maximum: Int, minimal: Bool }
+  | CompiledMinimumRepetition { expression : CompiledElement, count: Int, minimal: Bool }
+  | CompiledExactRepetition { expression : CompiledElement, count: Int }
   | CompiledOptional { expression: CompiledElement, minimal: Bool }
   | CompiledAtLeastOne { expression: CompiledElement, minimal: Bool }
   | CompiledAnyRepetition { expression: CompiledElement, minimal: Bool }
@@ -122,6 +126,14 @@ insert position element nodes =
       let (expressionId, nodesWithChild) = add expression nodes
       in IdMap.insert (node (RangedRepetitionNode { expression = Just expressionId, minimum = minimum, maximum = maximum, minimal = minimal })) nodesWithChild
 
+    CompiledExactRepetition { expression, count } ->
+      let (expressionId, nodesWithChild) = add expression nodes
+      in IdMap.insert (node (ExactRepetitionNode { expression = Just expressionId, count = count })) nodesWithChild
+
+    CompiledMinimumRepetition { expression, count, minimal } ->
+      let (expressionId, nodesWithChild) = add expression nodes
+      in IdMap.insert (node (MinimumRepetitionNode { expression = Just expressionId, count = count, minimal = minimal })) nodesWithChild
+
     CompiledOptional { expression, minimal } ->
       let (expressionId, nodesWithChild) = add expression nodes
       in IdMap.insert (node (OptionalNode { expression = Just expressionId, minimal = minimal })) nodesWithChild
@@ -162,6 +174,12 @@ compile element = case element of
 
   ParsedRangedRepetition { expression, minimum, maximum, minimal } -> CompiledRangedRepetition
     { expression = compile expression, minimum = minimum, maximum = maximum, minimal = minimal }
+
+  ParsedExactRepetition { expression, count } -> CompiledExactRepetition
+    { expression = compile expression, count = count }
+
+  ParsedMinimumRepetition { expression, count, minimal } -> CompiledMinimumRepetition
+    { expression = compile expression, count = count, minimal = minimal }
 
   ParsedOptional { expression, minimal } -> CompiledOptional
     { expression = compile expression, minimal = minimal }
@@ -350,12 +368,12 @@ parseAnyRepetition text =
     expressionResult = parseRangedRepetition text
     parseIt (expression, rest) =
       let
-        (optional, rest1) = skipIfNext "*" rest
-        (isLazy, rest2) = if optional
+        (repeat, rest1) = skipIfNext "*" rest
+        (isLazy, rest2) = if repeat
           then skipIfNext "?" rest1
           else (False, rest1)
 
-      in if optional
+      in if repeat
         then (ParsedAnyRepetition { expression = expression, minimal = isLazy }, rest2)
         else (expression, rest2)
 
@@ -363,7 +381,56 @@ parseAnyRepetition text =
 
 
 parseRangedRepetition : String -> ParseSubResult ParsedElement
-parseRangedRepetition text = parseAtom text -- TODO, also ExactRepetition!
+parseRangedRepetition text =
+  text |> parseAtom |> Result.andThen (\(atom, rest) ->
+    let
+      (started, rest1) = skipIfNext "{" rest
+      range = if started
+        then Just (parseRepetitionRange rest1)
+        else Nothing
+
+      toNodes repetition =
+        case repetition of
+          Exact count -> ParsedExactRepetition
+            { expression = atom, count = count }
+
+          Ranged (min, max, minimal) -> case max of
+              Nothing -> ParsedMinimumRepetition
+                { expression = atom, count = min, minimal = minimal }
+
+              Just maximum -> ParsedRangedRepetition
+                { expression = atom, minimum = min, maximum = maximum, minimal = minimal }
+
+    in case range of
+      Nothing -> Ok (atom, rest)
+      Just result -> result |> Result.map (Tuple.mapFirst toNodes)
+  )
+
+
+type Repetition = Exact Int | Ranged (Int, Maybe Int, Bool)
+parseRepetitionRange : String -> ParseSubResult Repetition
+parseRepetitionRange text =
+  let
+    contents = splitFirst "}" text
+    parseNumberList = String.split "," >> List.map String.toInt
+    ranges = contents |> Maybe.map (Tuple.mapFirst parseNumberList)
+
+  in case ranges of
+    Just ([Just singleCount], rest) -> Ok (Exact singleCount, rest)
+
+    Just ([first, second], rest) ->
+      let (minimal, rest1) = skipIfNext "?" rest
+      in Ok (Ranged (Maybe.withDefault 0 first, second, minimal), rest1)
+
+    _ -> Err (Expected "Invalid count specifier")
+
+
+-- split off after the first occurrence of the delimiter, and consume the delimiter
+splitFirst delimiter text =
+  case String.split delimiter text of
+    first :: rest -> Just (first, String.join delimiter rest) -- FIXME wow
+    _ -> Nothing
+
 
 -- an atom is any thing which has the highest precedence possible, especially brackets and characters
 parseAtom : String -> ParseSubResult ParsedElement
