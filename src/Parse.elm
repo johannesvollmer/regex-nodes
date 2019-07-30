@@ -5,6 +5,7 @@ import IdMap
 import Model exposing (..)
 import Result
 import Vec2 exposing (Vec2)
+import LinearDict exposing (LinearDict)
 
 type alias ParseResult a = Result ParseError a
 type alias ParseSubResult a = ParseResult (a, String)
@@ -66,92 +67,136 @@ addParsedRegexNode position nodes regex = parse regex
   |> Result.map (compile >> addCompiledElement position nodes)
 
 addCompiledElement : Vec2 -> Nodes -> CompiledElement -> (NodeId, Nodes)
-addCompiledElement position nodes parsed = insert position parsed nodes
+addCompiledElement position nodes parsed = let (a,b,_) = insert position parsed nodes LinearDict.empty in (a,b)
 
 
 -- TODO reuse existing intermediate result nodes
 
-insert : Vec2 -> CompiledElement -> Nodes -> (NodeId, Nodes)
-insert position element nodes =
+type alias DuplicationGuard = LinearDict CompiledElement NodeId
+
+
+
+insert : Vec2 -> CompiledElement -> Nodes -> DuplicationGuard -> (NodeId, Nodes, DuplicationGuard)
+insert position element nodes guard =
   let
-    node = NodeView position
-    add = insert position
+    simpleNode = NodeView position
+    simpleInsert = insert position
 
   in case element of
     CompiledSequence members ->
       let
-        (children, newNodes) = IdMap.insertListWith (List.map add members) nodes
-        nodeValue = children |> Array.fromList |> SequenceNode |> node
-      in IdMap.insert nodeValue newNodes
+        (children, newNodes, newGuard) = insertElements members nodes guard
+        nodeValue = children |> Array.fromList |> SequenceNode |> simpleNode
+      in insertElement nodeValue newNodes element newGuard
 
-    CompiledCharSequence sequence -> IdMap.insert
-      (node (LiteralNode sequence)) nodes
+    CompiledCharSequence sequence -> insertElement
+      (simpleNode (LiteralNode sequence)) nodes element guard
 
-    CompiledSymbol symbol -> IdMap.insert
-      (node (SymbolNode symbol)) nodes
+    CompiledSymbol symbol -> insertElement
+      (simpleNode (SymbolNode symbol)) nodes element guard
 
-    CompiledCharRange inverted (a, b) -> IdMap.insert
-      (node ((if inverted then NotInCharRangeNode else CharRangeNode) a b)) nodes
+    CompiledCharRange inverted (a, b) -> insertElement
+      (simpleNode ((if inverted then NotInCharRangeNode else CharRangeNode) a b)) nodes element guard
 
     CompiledCapture child ->
-      let (childId, nodesWithChild) = add child nodes
-      in IdMap.insert (node (CaptureNode <| Just childId)) nodesWithChild
+      let (childId, nodesWithChild, guardWithChild) = simpleInsert child nodes guard -- children will be reused if possible
+      in insertElement (simpleNode (CaptureNode <| Just childId)) nodesWithChild element guardWithChild
 
-    CompiledCharset { inverted, contents } -> IdMap.insert
-      (node (if inverted then NotInCharSetNode contents else CharSetNode contents)) nodes
+    CompiledCharset { inverted, contents } -> insertElement
+      (simpleNode (if inverted then NotInCharSetNode contents else CharSetNode contents)) nodes element guard
 
     CompiledSet options ->
       let
-        (children, newNodes) = IdMap.insertListWith (List.map add options) nodes
-        nodeValue = children |> Array.fromList |> SetNode |> node
-      in IdMap.insert nodeValue newNodes
+        (children, newNodes, newGuard) = insertElements options nodes guard
+        nodeValue = children |> Array.fromList |> SetNode |> simpleNode
+      in insertElement nodeValue newNodes element newGuard
 
     CompiledIfFollowedBy { expression, successor } ->
       let
-        (expressionId, nodesWithExpression) = add expression nodes
-        (successorId, nodesWithChildren) = add successor nodesWithExpression
-      in IdMap.insert
-        (node (IfFollowedByNode { expression = Just expressionId, successor = Just successorId }))
-        nodesWithChildren
+        (expressionId, nodesWithExpression, guard1) = simpleInsert expression nodes guard -- children will be reused if possible
+        (successorId, nodesWithChildren, guard2) = simpleInsert successor nodesWithExpression guard1
+      in insertElement
+        (simpleNode (IfFollowedByNode { expression = Just expressionId, successor = Just successorId }))
+        nodesWithChildren element guard2
 
     CompiledIfNotFollowedBy { expression, successor } ->
       let
-        (expressionId, nodesWithExpression) = add expression nodes
-        (successorId, nodesWithChildren) = add successor nodesWithExpression
-      in IdMap.insert
-        (node (IfNotFollowedByNode { expression = Just expressionId, successor = Just successorId }))
-        nodesWithChildren
+        (expressionId, nodesWithExpression, guard1) = simpleInsert expression nodes guard
+        (successorId, nodesWithChildren, guard2) = simpleInsert successor nodesWithExpression guard1
+      in insertElement
+        (simpleNode (IfNotFollowedByNode { expression = Just expressionId, successor = Just successorId }))
+        nodesWithChildren element guard2
 
     CompiledRangedRepetition { expression, minimum, maximum, minimal } ->
-      let (expressionId, nodesWithChild) = add expression nodes
-      in IdMap.insert (node (RangedRepetitionNode { expression = Just expressionId, minimum = minimum, maximum = maximum, minimal = minimal })) nodesWithChild
+      let (expressionId, nodesWithChild, guard1) = simpleInsert expression nodes guard
+      in insertElement
+        (simpleNode (RangedRepetitionNode { expression = Just expressionId, minimum = minimum, maximum = maximum, minimal = minimal }))
+        nodesWithChild element guard1
 
     CompiledExactRepetition { expression, count } ->
-      let (expressionId, nodesWithChild) = add expression nodes
-      in IdMap.insert (node (ExactRepetitionNode { expression = Just expressionId, count = count })) nodesWithChild
+      let (expressionId, nodesWithChild, guardWithChild) = simpleInsert expression nodes guard
+      in insertElement
+        (simpleNode (ExactRepetitionNode { expression = Just expressionId, count = count }))
+        nodesWithChild element guardWithChild
 
     CompiledMinimumRepetition { expression, count, minimal } ->
-      let (expressionId, nodesWithChild) = add expression nodes
-      in IdMap.insert (node (MinimumRepetitionNode { expression = Just expressionId, count = count, minimal = minimal })) nodesWithChild
+      let (expressionId, nodesWithChild, guardWithChild) = simpleInsert expression nodes guard
+      in insertElement
+        (simpleNode (MinimumRepetitionNode { expression = Just expressionId, count = count, minimal = minimal }))
+        nodesWithChild element guardWithChild
 
     CompiledOptional { expression, minimal } ->
-      let (expressionId, nodesWithChild) = add expression nodes
-      in IdMap.insert (node (OptionalNode { expression = Just expressionId, minimal = minimal })) nodesWithChild
+      let (expressionId, nodesWithChild, guardWithChild) = simpleInsert expression nodes guard
+      in insertElement
+        (simpleNode (OptionalNode { expression = Just expressionId, minimal = minimal }))
+        nodesWithChild element guardWithChild
 
     CompiledAtLeastOne { expression, minimal } ->
-      let (expressionId, nodesWithChild) = add expression nodes
-      in IdMap.insert (node (AtLeastOneNode { expression = Just expressionId, minimal = minimal })) nodesWithChild
+      let (expressionId, nodesWithChild, guardWithChild) = simpleInsert expression nodes guard
+      in insertElement
+        (simpleNode (AtLeastOneNode { expression = Just expressionId, minimal = minimal }))
+        nodesWithChild element guardWithChild
 
     CompiledAnyRepetition { expression, minimal } ->
-      let (expressionId, nodesWithChild) = add expression nodes
-      in IdMap.insert (node (AnyRepetitionNode { expression = Just expressionId, minimal = minimal })) nodesWithChild
+      let (expressionId, nodesWithChild, guardWithChild) = simpleInsert expression nodes guard
+      in insertElement
+        (simpleNode (AnyRepetitionNode { expression = Just expressionId, minimal = minimal }))
+        nodesWithChild element guardWithChild
 
       -- TODO DRY
     CompiledFlags { expression, flags } ->
-      let (expressionId, nodesWithChild) = add expression nodes
-      in IdMap.insert (node (FlagsNode { expression = Just expressionId, flags = flags })) nodesWithChild
+      let (expressionId, nodesWithChild, guardWithChild) = simpleInsert expression nodes guard
+      in insertElement
+        (simpleNode (FlagsNode { expression = Just expressionId, flags = flags }))
+        nodesWithChild element guardWithChild
 
 
+insertElement: NodeView -> Nodes -> CompiledElement -> DuplicationGuard -> (NodeId, Nodes, DuplicationGuard)
+insertElement newNode currentNodes newElement currentGuard = -- TODO make newNode lazy
+  case LinearDict.get newElement currentGuard of
+    Just existingId -> -- reconnect to old node
+      (existingId, currentNodes, currentGuard)
+
+    Nothing ->
+      let -- actually insert new
+        (id, map) = currentNodes |> IdMap.insert newNode
+        newGuard = currentGuard |> LinearDict.insert newElement id
+      in (id, map, newGuard)
+
+
+insertElements: List CompiledElement -> Nodes -> DuplicationGuard
+  -> (List NodeId, Nodes, DuplicationGuard)
+
+insertElements newNodeIds currentNodes currentGuard =
+  case newNodeIds of
+    [] -> ([], currentNodes, currentGuard)
+
+    element :: rest ->
+      let
+        (restIds, restNodes, restGuards) = insertElements rest currentNodes currentGuard
+        (id, newNodes, newGuard) = insert (Vec2 0 0) element restNodes restGuards
+
+      in (id :: restIds, newNodes, newGuard)
 
 
 

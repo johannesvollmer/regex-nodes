@@ -7838,39 +7838,7 @@ var author$project$Update$moveViewInModel = F3(
 					})
 			});
 	});
-var author$project$IdMap$insert = F2(
-	function (value, idMap) {
-		return _Utils_Tuple2(
-			idMap.aU,
-			A2(author$project$IdMap$insertAnonymous, value, idMap));
-	});
-var elm$core$Tuple$mapFirst = F2(
-	function (func, _n0) {
-		var x = _n0.a;
-		var y = _n0.b;
-		return _Utils_Tuple2(
-			func(x),
-			y);
-	});
-var author$project$IdMap$insertListWith = F2(
-	function (values, idMap) {
-		var insertWithInserter = F2(
-			function (inserter, _n0) {
-				var ids = _n0.a;
-				var result = _n0.b;
-				return A2(
-					elm$core$Tuple$mapFirst,
-					function (id) {
-						return A2(elm$core$List$cons, id, ids);
-					},
-					inserter(result));
-			});
-		return A3(
-			elm$core$List$foldr,
-			insertWithInserter,
-			_Utils_Tuple2(_List_Nil, idMap),
-			values);
-	});
+var author$project$LinearDict$empty = _List_Nil;
 var author$project$Model$NotInCharRangeNode = F2(
 	function (a, b) {
 		return {$: 5, a: a, b: b};
@@ -7878,128 +7846,224 @@ var author$project$Model$NotInCharRangeNode = F2(
 var author$project$Model$SymbolNode = function (a) {
 	return {$: 0, a: a};
 };
-var author$project$Parse$insert = F3(
-	function (position, element, nodes) {
-		var node = author$project$Model$NodeView(position);
-		var add = author$project$Parse$insert(position);
+var author$project$IdMap$insert = F2(
+	function (value, idMap) {
+		return _Utils_Tuple2(
+			idMap.aU,
+			A2(author$project$IdMap$insertAnonymous, value, idMap));
+	});
+var elm$core$List$filter = F2(
+	function (isGood, list) {
+		return A3(
+			elm$core$List$foldr,
+			F2(
+				function (x, xs) {
+					return isGood(x) ? A2(elm$core$List$cons, x, xs) : xs;
+				}),
+			_List_Nil,
+			list);
+	});
+var elm$core$List$head = function (list) {
+	if (list.b) {
+		var x = list.a;
+		var xs = list.b;
+		return elm$core$Maybe$Just(x);
+	} else {
+		return elm$core$Maybe$Nothing;
+	}
+};
+var elm$core$Tuple$second = function (_n0) {
+	var y = _n0.b;
+	return y;
+};
+var author$project$LinearDict$get = F2(
+	function (key, dict) {
+		return A2(
+			elm$core$Maybe$map,
+			elm$core$Tuple$second,
+			elm$core$List$head(
+				A2(
+					elm$core$List$filter,
+					A2(
+						elm$core$Basics$composeR,
+						elm$core$Tuple$first,
+						elm$core$Basics$eq(key)),
+					dict)));
+	});
+var author$project$LinearDict$member = F2(
+	function (key, dict) {
+		return !_Utils_eq(
+			A2(author$project$LinearDict$get, key, dict),
+			elm$core$Maybe$Nothing);
+	});
+var author$project$LinearDict$replaceValueForKey = F3(
+	function (key, newValue, _n0) {
+		var currentKey = _n0.a;
+		var currentValue = _n0.b;
+		return _Utils_eq(key, currentKey) ? _Utils_Tuple2(currentKey, newValue) : _Utils_Tuple2(currentKey, currentValue);
+	});
+var author$project$LinearDict$insert = F3(
+	function (key, value, dict) {
+		return A2(author$project$LinearDict$member, key, dict) ? A2(
+			elm$core$List$map,
+			A2(author$project$LinearDict$replaceValueForKey, key, value),
+			dict) : A2(
+			elm$core$List$cons,
+			_Utils_Tuple2(key, value),
+			dict);
+	});
+var author$project$Parse$insertElement = F4(
+	function (newNode, currentNodes, newElement, currentGuard) {
+		var _n0 = A2(author$project$LinearDict$get, newElement, currentGuard);
+		if (!_n0.$) {
+			var existingId = _n0.a;
+			return _Utils_Tuple3(existingId, currentNodes, currentGuard);
+		} else {
+			var _n1 = A2(author$project$IdMap$insert, newNode, currentNodes);
+			var id = _n1.a;
+			var map = _n1.b;
+			var newGuard = A3(author$project$LinearDict$insert, newElement, id, currentGuard);
+			return _Utils_Tuple3(id, map, newGuard);
+		}
+	});
+var author$project$Parse$insert = F4(
+	function (position, element, nodes, guard) {
+		var simpleNode = author$project$Model$NodeView(position);
+		var simpleInsert = author$project$Parse$insert(position);
 		switch (element.$) {
 			case 0:
 				var members = element.a;
-				var _n1 = A2(
-					author$project$IdMap$insertListWith,
-					A2(elm$core$List$map, add, members),
-					nodes);
-				var children = _n1.a;
-				var newNodes = _n1.b;
-				var nodeValue = node(
+				var _n4 = A3(author$project$Parse$insertElements, members, nodes, guard);
+				var children = _n4.a;
+				var newNodes = _n4.b;
+				var newGuard = _n4.c;
+				var nodeValue = simpleNode(
 					author$project$Model$SequenceNode(
 						elm$core$Array$fromList(children)));
-				return A2(author$project$IdMap$insert, nodeValue, newNodes);
+				return A4(author$project$Parse$insertElement, nodeValue, newNodes, element, newGuard);
 			case 3:
 				var sequence = element.a;
-				return A2(
-					author$project$IdMap$insert,
-					node(
+				return A4(
+					author$project$Parse$insertElement,
+					simpleNode(
 						author$project$Model$LiteralNode(sequence)),
-					nodes);
+					nodes,
+					element,
+					guard);
 			case 1:
 				var symbol = element.a;
-				return A2(
-					author$project$IdMap$insert,
-					node(
+				return A4(
+					author$project$Parse$insertElement,
+					simpleNode(
 						author$project$Model$SymbolNode(symbol)),
-					nodes);
+					nodes,
+					element,
+					guard);
 			case 2:
 				var inverted = element.a;
-				var _n2 = element.b;
-				var a = _n2.a;
-				var b = _n2.b;
-				return A2(
-					author$project$IdMap$insert,
-					node(
+				var _n5 = element.b;
+				var a = _n5.a;
+				var b = _n5.b;
+				return A4(
+					author$project$Parse$insertElement,
+					simpleNode(
 						A2(
 							inverted ? author$project$Model$NotInCharRangeNode : author$project$Model$CharRangeNode,
 							a,
 							b)),
-					nodes);
+					nodes,
+					element,
+					guard);
 			case 6:
 				var child = element.a;
-				var _n3 = A2(add, child, nodes);
-				var childId = _n3.a;
-				var nodesWithChild = _n3.b;
-				return A2(
-					author$project$IdMap$insert,
-					node(
+				var _n6 = A3(simpleInsert, child, nodes, guard);
+				var childId = _n6.a;
+				var nodesWithChild = _n6.b;
+				var guardWithChild = _n6.c;
+				return A4(
+					author$project$Parse$insertElement,
+					simpleNode(
 						author$project$Model$CaptureNode(
 							elm$core$Maybe$Just(childId))),
-					nodesWithChild);
+					nodesWithChild,
+					element,
+					guardWithChild);
 			case 4:
 				var inverted = element.a.aO;
 				var contents = element.a.de;
-				return A2(
-					author$project$IdMap$insert,
-					node(
+				return A4(
+					author$project$Parse$insertElement,
+					simpleNode(
 						inverted ? author$project$Model$NotInCharSetNode(contents) : author$project$Model$CharSetNode(contents)),
-					nodes);
+					nodes,
+					element,
+					guard);
 			case 5:
 				var options = element.a;
-				var _n4 = A2(
-					author$project$IdMap$insertListWith,
-					A2(elm$core$List$map, add, options),
-					nodes);
-				var children = _n4.a;
-				var newNodes = _n4.b;
-				var nodeValue = node(
+				var _n7 = A3(author$project$Parse$insertElements, options, nodes, guard);
+				var children = _n7.a;
+				var newNodes = _n7.b;
+				var newGuard = _n7.c;
+				var nodeValue = simpleNode(
 					author$project$Model$SetNode(
 						elm$core$Array$fromList(children)));
-				return A2(author$project$IdMap$insert, nodeValue, newNodes);
+				return A4(author$project$Parse$insertElement, nodeValue, newNodes, element, newGuard);
 			case 7:
 				var expression = element.a.p;
 				var successor = element.a.cY;
-				var _n5 = A2(add, expression, nodes);
-				var expressionId = _n5.a;
-				var nodesWithExpression = _n5.b;
-				var _n6 = A2(add, successor, nodesWithExpression);
-				var successorId = _n6.a;
-				var nodesWithChildren = _n6.b;
-				return A2(
-					author$project$IdMap$insert,
-					node(
+				var _n8 = A3(simpleInsert, expression, nodes, guard);
+				var expressionId = _n8.a;
+				var nodesWithExpression = _n8.b;
+				var guard1 = _n8.c;
+				var _n9 = A3(simpleInsert, successor, nodesWithExpression, guard1);
+				var successorId = _n9.a;
+				var nodesWithChildren = _n9.b;
+				var guard2 = _n9.c;
+				return A4(
+					author$project$Parse$insertElement,
+					simpleNode(
 						author$project$Model$IfFollowedByNode(
 							{
 								p: elm$core$Maybe$Just(expressionId),
 								cY: elm$core$Maybe$Just(successorId)
 							})),
-					nodesWithChildren);
+					nodesWithChildren,
+					element,
+					guard2);
 			case 8:
 				var expression = element.a.p;
 				var successor = element.a.cY;
-				var _n7 = A2(add, expression, nodes);
-				var expressionId = _n7.a;
-				var nodesWithExpression = _n7.b;
-				var _n8 = A2(add, successor, nodesWithExpression);
-				var successorId = _n8.a;
-				var nodesWithChildren = _n8.b;
-				return A2(
-					author$project$IdMap$insert,
-					node(
+				var _n10 = A3(simpleInsert, expression, nodes, guard);
+				var expressionId = _n10.a;
+				var nodesWithExpression = _n10.b;
+				var guard1 = _n10.c;
+				var _n11 = A3(simpleInsert, successor, nodesWithExpression, guard1);
+				var successorId = _n11.a;
+				var nodesWithChildren = _n11.b;
+				var guard2 = _n11.c;
+				return A4(
+					author$project$Parse$insertElement,
+					simpleNode(
 						author$project$Model$IfNotFollowedByNode(
 							{
 								p: elm$core$Maybe$Just(expressionId),
 								cY: elm$core$Maybe$Just(successorId)
 							})),
-					nodesWithChildren);
+					nodesWithChildren,
+					element,
+					guard2);
 			case 9:
 				var expression = element.a.p;
 				var minimum = element.a.dB;
 				var maximum = element.a.dz;
 				var minimal = element.a.ap;
-				var _n9 = A2(add, expression, nodes);
-				var expressionId = _n9.a;
-				var nodesWithChild = _n9.b;
-				return A2(
-					author$project$IdMap$insert,
-					node(
+				var _n12 = A3(simpleInsert, expression, nodes, guard);
+				var expressionId = _n12.a;
+				var nodesWithChild = _n12.b;
+				var guard1 = _n12.c;
+				return A4(
+					author$project$Parse$insertElement,
+					simpleNode(
 						author$project$Model$RangedRepetitionNode(
 							{
 								p: elm$core$Maybe$Just(expressionId),
@@ -8007,104 +8071,153 @@ var author$project$Parse$insert = F3(
 								ap: minimal,
 								dB: minimum
 							})),
-					nodesWithChild);
+					nodesWithChild,
+					element,
+					guard1);
 			case 11:
 				var expression = element.a.p;
 				var count = element.a.bJ;
-				var _n10 = A2(add, expression, nodes);
-				var expressionId = _n10.a;
-				var nodesWithChild = _n10.b;
-				return A2(
-					author$project$IdMap$insert,
-					node(
+				var _n13 = A3(simpleInsert, expression, nodes, guard);
+				var expressionId = _n13.a;
+				var nodesWithChild = _n13.b;
+				var guardWithChild = _n13.c;
+				return A4(
+					author$project$Parse$insertElement,
+					simpleNode(
 						author$project$Model$ExactRepetitionNode(
 							{
 								bJ: count,
 								p: elm$core$Maybe$Just(expressionId)
 							})),
-					nodesWithChild);
+					nodesWithChild,
+					element,
+					guardWithChild);
 			case 10:
 				var expression = element.a.p;
 				var count = element.a.bJ;
 				var minimal = element.a.ap;
-				var _n11 = A2(add, expression, nodes);
-				var expressionId = _n11.a;
-				var nodesWithChild = _n11.b;
-				return A2(
-					author$project$IdMap$insert,
-					node(
+				var _n14 = A3(simpleInsert, expression, nodes, guard);
+				var expressionId = _n14.a;
+				var nodesWithChild = _n14.b;
+				var guardWithChild = _n14.c;
+				return A4(
+					author$project$Parse$insertElement,
+					simpleNode(
 						author$project$Model$MinimumRepetitionNode(
 							{
 								bJ: count,
 								p: elm$core$Maybe$Just(expressionId),
 								ap: minimal
 							})),
-					nodesWithChild);
+					nodesWithChild,
+					element,
+					guardWithChild);
 			case 12:
 				var expression = element.a.p;
 				var minimal = element.a.ap;
-				var _n12 = A2(add, expression, nodes);
-				var expressionId = _n12.a;
-				var nodesWithChild = _n12.b;
-				return A2(
-					author$project$IdMap$insert,
-					node(
+				var _n15 = A3(simpleInsert, expression, nodes, guard);
+				var expressionId = _n15.a;
+				var nodesWithChild = _n15.b;
+				var guardWithChild = _n15.c;
+				return A4(
+					author$project$Parse$insertElement,
+					simpleNode(
 						author$project$Model$OptionalNode(
 							{
 								p: elm$core$Maybe$Just(expressionId),
 								ap: minimal
 							})),
-					nodesWithChild);
+					nodesWithChild,
+					element,
+					guardWithChild);
 			case 13:
 				var expression = element.a.p;
 				var minimal = element.a.ap;
-				var _n13 = A2(add, expression, nodes);
-				var expressionId = _n13.a;
-				var nodesWithChild = _n13.b;
-				return A2(
-					author$project$IdMap$insert,
-					node(
+				var _n16 = A3(simpleInsert, expression, nodes, guard);
+				var expressionId = _n16.a;
+				var nodesWithChild = _n16.b;
+				var guardWithChild = _n16.c;
+				return A4(
+					author$project$Parse$insertElement,
+					simpleNode(
 						author$project$Model$AtLeastOneNode(
 							{
 								p: elm$core$Maybe$Just(expressionId),
 								ap: minimal
 							})),
-					nodesWithChild);
+					nodesWithChild,
+					element,
+					guardWithChild);
 			case 14:
 				var expression = element.a.p;
 				var minimal = element.a.ap;
-				var _n14 = A2(add, expression, nodes);
-				var expressionId = _n14.a;
-				var nodesWithChild = _n14.b;
-				return A2(
-					author$project$IdMap$insert,
-					node(
+				var _n17 = A3(simpleInsert, expression, nodes, guard);
+				var expressionId = _n17.a;
+				var nodesWithChild = _n17.b;
+				var guardWithChild = _n17.c;
+				return A4(
+					author$project$Parse$insertElement,
+					simpleNode(
 						author$project$Model$AnyRepetitionNode(
 							{
 								p: elm$core$Maybe$Just(expressionId),
 								ap: minimal
 							})),
-					nodesWithChild);
+					nodesWithChild,
+					element,
+					guardWithChild);
 			default:
 				var expression = element.a.p;
 				var flags = element.a.ae;
-				var _n15 = A2(add, expression, nodes);
-				var expressionId = _n15.a;
-				var nodesWithChild = _n15.b;
-				return A2(
-					author$project$IdMap$insert,
-					node(
+				var _n18 = A3(simpleInsert, expression, nodes, guard);
+				var expressionId = _n18.a;
+				var nodesWithChild = _n18.b;
+				var guardWithChild = _n18.c;
+				return A4(
+					author$project$Parse$insertElement,
+					simpleNode(
 						author$project$Model$FlagsNode(
 							{
 								p: elm$core$Maybe$Just(expressionId),
 								ae: flags
 							})),
-					nodesWithChild);
+					nodesWithChild,
+					element,
+					guardWithChild);
+		}
+	});
+var author$project$Parse$insertElements = F3(
+	function (newNodeIds, currentNodes, currentGuard) {
+		if (!newNodeIds.b) {
+			return _Utils_Tuple3(_List_Nil, currentNodes, currentGuard);
+		} else {
+			var element = newNodeIds.a;
+			var rest = newNodeIds.b;
+			var _n1 = A3(author$project$Parse$insertElements, rest, currentNodes, currentGuard);
+			var restIds = _n1.a;
+			var restNodes = _n1.b;
+			var restGuards = _n1.c;
+			var _n2 = A4(
+				author$project$Parse$insert,
+				A2(author$project$Vec2$Vec2, 0, 0),
+				element,
+				restNodes,
+				restGuards);
+			var id = _n2.a;
+			var newNodes = _n2.b;
+			var newGuard = _n2.c;
+			return _Utils_Tuple3(
+				A2(elm$core$List$cons, id, restIds),
+				newNodes,
+				newGuard);
 		}
 	});
 var author$project$Parse$addCompiledElement = F3(
 	function (position, nodes, parsed) {
-		return A3(author$project$Parse$insert, position, parsed, nodes);
+		var _n0 = A4(author$project$Parse$insert, position, parsed, nodes, author$project$LinearDict$empty);
+		var a = _n0.a;
+		var b = _n0.b;
+		return _Utils_Tuple2(a, b);
 	});
 var author$project$Parse$CompiledAnyRepetition = function (a) {
 	return {$: 14, a: a};
@@ -8536,6 +8649,14 @@ var author$project$Parse$skipIfNext = F2(
 				elm$core$String$dropLeft,
 				elm$core$String$length(symbol),
 				text)) : _Utils_Tuple2(false, text);
+	});
+var elm$core$Tuple$mapFirst = F2(
+	function (func, _n0) {
+		var x = _n0.a;
+		var y = _n0.b;
+		return _Utils_Tuple2(
+			func(x),
+			y);
 	});
 var author$project$Parse$parseAtomicChar = F2(
 	function (escape, text) {
@@ -10306,10 +10427,6 @@ var author$project$Update$UpdateMaxMatchLimit = function (a) {
 };
 var author$project$Update$UpdateView = function (a) {
 	return {$: 4, a: a};
-};
-var elm$core$Tuple$second = function (_n0) {
-	var y = _n0.b;
-	return y;
 };
 var author$project$Vec2$fromTuple = function (value) {
 	return A2(author$project$Vec2$Vec2, value.a, value.b);
@@ -12182,17 +12299,6 @@ var author$project$Update$InsertLiteral = function (a) {
 var author$project$Update$InsertPrototype = function (a) {
 	return {$: 0, a: a};
 };
-var elm$core$List$filter = F2(
-	function (isGood, list) {
-		return A3(
-			elm$core$List$foldr,
-			F2(
-				function (x, xs) {
-					return isGood(x) ? A2(elm$core$List$cons, x, xs) : xs;
-				}),
-			_List_Nil,
-			list);
-	});
 var elm$core$String$toLower = _String_toLower;
 var elm$html$Html$code = _VirtualDom_node('code');
 var elm$html$Html$p = _VirtualDom_node('p');
