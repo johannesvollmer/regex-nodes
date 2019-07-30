@@ -74,7 +74,7 @@ BrowserStack loves Open Source, and Open Source loves BrowserStack.
     - [x] After improving parsing, add a more interesting start setup
 - [x] Build Scripts + Build to Github Pages
     - [x] Use optimized builds instead of debug builds for github pages
-- [ ] Use node width and property count when layouting parsed nodes
+- [x] Use node width and property count when layouting parsed nodes
       Or use iterative physics approach (force-directed layout)
 - [ ] While in "Add Nodes", press enter to pick the first option
 - [x] Parse regex code in "Add Nodes"
@@ -88,7 +88,7 @@ BrowserStack loves Open Source, and Open Source loves BrowserStack.
     - [x] Look Ahead `a(?!b)`
     - [x] Quantifiers `a?b{0,3}`
         - [x]  `a?b??c+?d*?`
-        - [ ]  `b{0,3}c{1,}d{5}`
+        - [x]  `b{0,3} c{1,} d{5}`
     - [x] Positioning `(^, $)`
 - [x] How to delete nodes
     - [ ] Option: Delete with children
@@ -98,7 +98,7 @@ BrowserStack loves Open Source, and Open Source loves BrowserStack.
 - [x] Do not adjust example for every node move
 - [x] Middle mouse button view movement
     - [x] Blur text input on non-middle-mouse-clicking anywhere
-- [ ] Simplify UX of changing order in "Set Node"s
+- [x] Simplify UX of changing order in "Set Node"s
 - [x] Prevent cyclic connections
 - [x] Tooltips
     - [ ] Custom, styled tooltips?
@@ -111,12 +111,12 @@ BrowserStack loves Open Source, and Open Source loves BrowserStack.
     - [ ] Using the real window size
 - [ ] Consider rewriting Css to Sass
 - [ ] On input focus select container node
-- [ ] Node Groups!
-- [ ] Take care of Unicode in the output regex
+- [ ] Premade Reusable Node Patterns!
+- [ ] Unicode in the output regex
 - [ ] Unicode literal node?
-- [ ] Add support for mobile devices
-- [ ] Enable sharing node graphs by url?
+- [ ] Support mobile devices
+- [x] Enable sharing node graphs by url?
+    - [ ] Do not always update URI, but only when user wants to share?
 - [ ] Reset view button when panned too far away
-- [ ] Do not always update URI, but only when user wants to share?
-- [ ] Deduplicate parsed node graph
+- [x] Deduplicate parsed node graph
 - [ ] Turn this whole project into a NodeJS monster just for testing and minification of the generated javascript.... or wait until a better solution arrives. 
