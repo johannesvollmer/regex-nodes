@@ -10,9 +10,6 @@ import LinearDict exposing (LinearDict)
 type alias ParseResult a = Result ParseError a
 type alias ParseSubResult a = ParseResult (a, String)
 
--- TODO dont do layout here, instead do it only in AutoLayout.elm
-
-
 type ParseError
   = ExpectedMoreChars
   | Expected String
@@ -70,11 +67,7 @@ addCompiledElement : Vec2 -> Nodes -> CompiledElement -> (NodeId, Nodes)
 addCompiledElement position nodes parsed = let (a,b,_) = insert position parsed nodes LinearDict.empty in (a,b)
 
 
--- TODO reuse existing intermediate result nodes
-
 type alias DuplicationGuard = LinearDict CompiledElement NodeId
-
-
 
 insert : Vec2 -> CompiledElement -> Nodes -> DuplicationGuard -> (NodeId, Nodes, DuplicationGuard)
 insert position element nodes guard =
@@ -556,8 +549,10 @@ parseCharsetAtom text =
 
       extractRange : (Char, String) -> ParseSubResult CharsetAtom
       extractRange (firstAtom, remaining) = case skipIfNext "-" remaining of
-        (True, rest) -> atom rest |> Result.andThen atomToCharOrErr
-                                  |> Result.map (Tuple.mapFirst (Tuple.pair firstAtom >> Range))
+        (True, rest) -> if String.startsWith "]" rest
+          then Ok (Plain '-', rest) -- `-` can be the last char in a set without being escaped????
+          else atom rest |> Result.andThen atomToCharOrErr
+            |> Result.map (Tuple.mapFirst (Tuple.pair firstAtom >> Range))
 
         _ -> Ok (Plain firstAtom, remaining)
 

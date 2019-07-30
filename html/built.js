@@ -8741,7 +8741,10 @@ var author$project$Parse$parseCharsetAtom = function (text) {
 		var _n2 = A2(author$project$Parse$skipIfNext, '-', remaining);
 		if (_n2.a) {
 			var rest = _n2.b;
-			return A2(
+			return A2(elm$core$String$startsWith, ']', rest) ? elm$core$Result$Ok(
+				_Utils_Tuple2(
+					author$project$Parse$Plain('-'),
+					rest)) : A2(
 				elm$core$Result$map,
 				elm$core$Tuple$mapFirst(
 					A2(
