@@ -166,10 +166,11 @@ insert position element nodes guard =
 
 insertElement: NodeView -> Nodes -> CompiledElement -> DuplicationGuard -> (NodeId, Nodes, DuplicationGuard)
 insertElement newNode currentNodes newElement currentGuard =
-  if isSimple newElement -- FIXME this simplification will sometimes lead to new but unconnected nodes
+  if isSimple newElement -- FIXME this simplification will sometimes lead to new but completely unconnected nodes??
     then insertNewElement newNode currentNodes newElement currentGuard
+
     else case LinearDict.get newElement currentGuard of
-      Just existingId -> -- reconnect to old node
+      Just existingId -> -- reconnect to existing node
         (existingId, currentNodes, currentGuard)
 
       Nothing -> insertNewElement newNode currentNodes newElement currentGuard
