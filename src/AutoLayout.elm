@@ -146,8 +146,10 @@ buildDedupSet element (resultList, resultSet) =
 
 
 
-
-
+repeat: Int -> (a -> a) -> a -> a
+repeat count action value =
+  if count <= 0 then value
+  else repeat (count - 1) action (action value) -- tail call
 
 
 
