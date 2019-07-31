@@ -166,16 +166,20 @@ insert position element nodes guard =
 
 insertElement: NodeView -> Nodes -> CompiledElement -> DuplicationGuard -> (NodeId, Nodes, DuplicationGuard)
 insertElement newNode currentNodes newElement currentGuard = -- TODO make newNode lazy
-  case LinearDict.get newElement currentGuard of
-    Just existingId -> -- reconnect to old node
-      (existingId, currentNodes, currentGuard)
+  if isSimple newElement
+    then insertNewElement newNode currentNodes newElement currentGuard
+    else case LinearDict.get newElement currentGuard of
+      Just existingId -> -- reconnect to old node
+        (existingId, currentNodes, currentGuard)
 
-    Nothing ->
-      let -- actually insert new
-        (id, map) = currentNodes |> IdMap.insert newNode
-        newGuard = currentGuard |> LinearDict.insert newElement id
-      in (id, map, newGuard)
+      Nothing -> insertNewElement newNode currentNodes newElement currentGuard
 
+
+insertNewElement newNode currentNodes newElement currentGuard =
+  let -- actually insert new
+    (id, map) = currentNodes |> IdMap.insert newNode
+    newGuard = currentGuard |> LinearDict.insert newElement id
+  in (id, map, newGuard)
 
 insertElements: List CompiledElement -> Nodes -> DuplicationGuard
   -> (List NodeId, Nodes, DuplicationGuard)
@@ -191,8 +195,14 @@ insertElements newNodeIds currentNodes currentGuard =
 
       in (id :: restIds, newNodes, newGuard)
 
-
-
+-- used to determine whether a node should be reused or (for simple nodes) just inserted again
+isSimple node =
+  case node of
+    CompiledCharSequence sequence -> String.length sequence < 4
+    CompiledCharset options -> String.length options.contents < 4
+    CompiledCharRange _ range -> range == ('a', 'z') || range == ('A', 'Z') || range == ('0', '9')
+    CompiledSymbol _ -> True
+    _ -> False
 
 -- TODO DRY
 compile : ParsedElement -> CompiledElement

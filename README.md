@@ -112,6 +112,9 @@ BrowserStack loves Open Source, and Open Source loves BrowserStack.
 - [ ] Consider rewriting Css to Sass
 - [ ] On input focus select container node
 - [ ] Premade Reusable Node Patterns!
+    - [ ] UX: A node, which by default is collapsed, and on click 
+          reveals all connected nodes which are otherwise hidden
+          (Think of it more like a section in a wiki which is summarized by the header)
 - [ ] Unicode in the output regex
 - [ ] Unicode literal node?
 - [ ] Support mobile devices

@@ -4584,7 +4584,7 @@ var author$project$Model$initialHistoryValue = {
 	bK: false,
 	cd: {
 		b3: elm$core$Maybe$Nothing,
-		de: A2(elm$core$String$repeat, 12, 'Leverage agile frameworks to provide a robust synopsis for high level overviews. Iterative approaches to corporate strategy foster collaborative thinking to further the overall value proposition. Organically grow the holistic world view of disruptive innovation via workplace diversity and empowerment. Bring to the table win-win survival strategies to ensure proactive domination. At the end of the day, going forward, a new normal that has evolved from generation X is on the runway heading towards a streamlined cloud solution. User generated content in real-time will have multiple touchpoints for offshoring. Capitalize on low hanging fruit to identify a ballpark value added activity to beta test. Override the digital divide with additional clickthroughs from DevOps. Nanotechnology immersion along the information highway will close the loop on focusing solely on the bottom line.'),
+		de: A2(elm$core$String$repeat, 12, 'Leverage agile frameworks to provide a robust synopsis for high level overviews. Iterative approaches to corporate strategy foster collaborative thinking to further the overall value proposition. Organically grow the holistic world view of disruptive innovation via workplace diversity and empowerment. Bring to the table win-win survival strategies to ensure proactive domination. At the end of the day, going forward, a new normal that has evolved from generation X is on the runway heading towards 4 streamlined cloud solution. Consider mailing to what_is_this_4@i-dont-do-mail.org User generated content in real-time will have 4-128 touchpoints for offshoring. Capitalize on low hanging fruit to identify a ballpark value added activity to beta test. Override the digital divide with additional clickthroughs from DevOps. Nanotechnology immersion along the information highway will close the loop on focusing solely on the bottom line.'),
 		cn: false,
 		cu: 4000
 	},
@@ -7846,12 +7846,6 @@ var author$project$Model$NotInCharRangeNode = F2(
 var author$project$Model$SymbolNode = function (a) {
 	return {$: 0, a: a};
 };
-var author$project$IdMap$insert = F2(
-	function (value, idMap) {
-		return _Utils_Tuple2(
-			idMap.aU,
-			A2(author$project$IdMap$insertAnonymous, value, idMap));
-	});
 var elm$core$List$filter = F2(
 	function (isGood, list) {
 		return A3(
@@ -7890,6 +7884,12 @@ var author$project$LinearDict$get = F2(
 						elm$core$Basics$eq(key)),
 					dict)));
 	});
+var author$project$IdMap$insert = F2(
+	function (value, idMap) {
+		return _Utils_Tuple2(
+			idMap.aU,
+			A2(author$project$IdMap$insertAnonymous, value, idMap));
+	});
 var author$project$LinearDict$member = F2(
 	function (key, dict) {
 		return !_Utils_eq(
@@ -7912,18 +7912,50 @@ var author$project$LinearDict$insert = F3(
 			_Utils_Tuple2(key, value),
 			dict);
 	});
+var author$project$Parse$insertNewElement = F4(
+	function (newNode, currentNodes, newElement, currentGuard) {
+		var _n0 = A2(author$project$IdMap$insert, newNode, currentNodes);
+		var id = _n0.a;
+		var map = _n0.b;
+		var newGuard = A3(author$project$LinearDict$insert, newElement, id, currentGuard);
+		return _Utils_Tuple3(id, map, newGuard);
+	});
+var elm$core$Basics$or = _Basics_or;
+var author$project$Parse$isSimple = function (node) {
+	switch (node.$) {
+		case 3:
+			var sequence = node.a;
+			return elm$core$String$length(sequence) < 4;
+		case 4:
+			var options = node.a;
+			return elm$core$String$length(options.de) < 4;
+		case 2:
+			var range = node.b;
+			return _Utils_eq(
+				range,
+				_Utils_Tuple2('a', 'z')) || (_Utils_eq(
+				range,
+				_Utils_Tuple2('A', 'Z')) || _Utils_eq(
+				range,
+				_Utils_Tuple2('0', '9')));
+		case 1:
+			return true;
+		default:
+			return false;
+	}
+};
 var author$project$Parse$insertElement = F4(
 	function (newNode, currentNodes, newElement, currentGuard) {
-		var _n0 = A2(author$project$LinearDict$get, newElement, currentGuard);
-		if (!_n0.$) {
-			var existingId = _n0.a;
-			return _Utils_Tuple3(existingId, currentNodes, currentGuard);
+		if (author$project$Parse$isSimple(newElement)) {
+			return A4(author$project$Parse$insertNewElement, newNode, currentNodes, newElement, currentGuard);
 		} else {
-			var _n1 = A2(author$project$IdMap$insert, newNode, currentNodes);
-			var id = _n1.a;
-			var map = _n1.b;
-			var newGuard = A3(author$project$LinearDict$insert, newElement, id, currentGuard);
-			return _Utils_Tuple3(id, map, newGuard);
+			var _n0 = A2(author$project$LinearDict$get, newElement, currentGuard);
+			if (!_n0.$) {
+				var existingId = _n0.a;
+				return _Utils_Tuple3(existingId, currentNodes, currentGuard);
+			} else {
+				return A4(author$project$Parse$insertNewElement, newNode, currentNodes, newElement, currentGuard);
+			}
 		}
 	});
 var author$project$Parse$insert = F4(
@@ -8980,7 +9012,6 @@ var author$project$Parse$parseRepetitionRange = function (text) {
 	return elm$core$Result$Err(
 		author$project$Parse$Expected('Invalid count specifier'));
 };
-var elm$core$Basics$or = _Basics_or;
 var elm$core$List$singleton = function (value) {
 	return _List_fromArray(
 		[value]);
