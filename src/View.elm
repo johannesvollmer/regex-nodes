@@ -376,7 +376,7 @@ viewConnectDrag : View -> Nodes -> Maybe NodeId -> Vec2 -> Html Message
 viewConnectDrag viewTransformation nodes dragId mouse =
   let
     node = Maybe.andThen (\id -> IdMap.get id nodes) dragId
-    nodePosition = Maybe.map (.position) node |> Maybe.withDefault (Vec2 0 0)
+    nodePosition = Maybe.map (.position) node |> Maybe.withDefault Vec2.zero
 
     nodeAnchor = Vec2
       (nodePosition.x + (Maybe.map (.node >> nodeWidth) node |> Maybe.withDefault 0))
@@ -460,7 +460,7 @@ viewNodeContent dragMode selectedNode outputNode nodeId props nodeView =
 
     autolayoutAndStopPropagation event =
       if event.button == Mouse.MainButton
-      then (AutoLayout nodeId, True)
+      then (AutoLayout False nodeId, True)
       else (DoNothing, False) -- do not stop event propagation on non-primary mouse down
 
     mayStopPropagation : String -> (Mouse.Event -> (Message, Bool)) -> Attribute Message

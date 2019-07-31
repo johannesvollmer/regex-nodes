@@ -165,8 +165,8 @@ insert position element nodes guard =
 
 
 insertElement: NodeView -> Nodes -> CompiledElement -> DuplicationGuard -> (NodeId, Nodes, DuplicationGuard)
-insertElement newNode currentNodes newElement currentGuard = -- TODO make newNode lazy
-  if isSimple newElement
+insertElement newNode currentNodes newElement currentGuard =
+  if isSimple newElement -- FIXME this simplification will sometimes lead to new but unconnected nodes
     then insertNewElement newNode currentNodes newElement currentGuard
     else case LinearDict.get newElement currentGuard of
       Just existingId -> -- reconnect to old node
@@ -191,7 +191,7 @@ insertElements newNodeIds currentNodes currentGuard =
     element :: rest ->
       let
         (restIds, restNodes, restGuards) = insertElements rest currentNodes currentGuard
-        (id, newNodes, newGuard) = insert (Vec2 0 0) element restNodes restGuards
+        (id, newNodes, newGuard) = insert Vec2.zero element restNodes restGuards
 
       in (id :: restIds, newNodes, newGuard)
 

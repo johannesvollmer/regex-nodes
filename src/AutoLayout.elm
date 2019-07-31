@@ -9,21 +9,33 @@ import Vec2 exposing (Vec2)
 
 
 
-layout: NodeId -> Nodes -> Nodes
-layout nodeId nodes =
+layout: Bool -> NodeId -> Nodes -> Nodes
+layout hard nodeId nodes =
   let
     -- build simulation from real node graph
     current = buildBlockGraph nodeId nodes
 
-    -- do a manual base layout as a starting point
-    updatedBlocks = baseLayout nodeId current
+    -- do a manual base layout as a starting point, if desired
+    baseBlocks = if hard
+      then baseLayout nodeId current
+      else current
+
+    -- do an iterative physical layout
+    smoothedBlocks = forceBasedLayout baseBlocks
+
+    finalBlocks = smoothedBlocks
+
+    -- move all nodes such that the main node does not move
+    delta = Maybe.map2 (\original new -> Vec2.sub original.position new.position)
+      (IdMap.get nodeId nodes) (Dict.get nodeId finalBlocks)
+      |> Maybe.withDefault Vec2.zero
 
     -- transfer simulation to real node graph
     updateNode id nodeView =
-      case Dict.get id updatedBlocks of
+      case Dict.get id finalBlocks of
         Nothing -> nodeView
         Just simulatedBlock ->
-          { nodeView | position = simulatedBlock.position }
+          { nodeView | position = Vec2.add delta simulatedBlock.position }
 
   in IdMap.updateAll updateNode nodes
 
@@ -77,10 +89,13 @@ baseLayout nodeId blocks =
   let
     totalHeight = treeHeight blocks nodeId
     block = Dict.get nodeId blocks
-    { x, y } = block |> Maybe.map .position |> Maybe.withDefault (Vec2 0 0)
-    size = block |> Maybe.map .size |> Maybe.withDefault (Vec2 0 0)
+    { x, y } = block |> Maybe.map .position |> Maybe.withDefault Vec2.zero
+    size = block |> Maybe.map .size |> Maybe.withDefault Vec2.zero
 
   in baseLayoutToHeight nodeId blocks totalHeight (x + size.x) (y - 0.5*totalHeight + 0.5*size.y)
+
+baseHorizontalPadding = 2 * propertyHeight
+layerHeightFactor = 1
 
 baseLayoutToHeight : NodeId -> NodeBlocks -> Float -> Float -> Float -> NodeBlocks
 baseLayoutToHeight nodeId blocks height rightX topY =
@@ -90,8 +105,8 @@ baseLayoutToHeight nodeId blocks height rightX topY =
       let
 
         -- increase spacing where many children stack up to a great height
-        childrenRightX = rightX - block.size.x - propertyHeight
-          - 0.5*propertyHeight * toFloat (List.length block.inputs)
+        childrenRightX = rightX - block.size.x - baseHorizontalPadding
+          - layerHeightFactor * propertyHeight * toFloat (List.length block.inputs)
 
         layoutSubBlock input (y, subblocks) =
           let
@@ -137,23 +152,92 @@ buildDedupSet element (resultList, resultSet) =
   if Set.member element resultSet then (resultList, resultSet)
     else (element :: resultList, Set.insert element resultSet)
 
--- TODO: Iterative force-directed layout?
-
--- PRIORITIES:
--- 1. MOVE OVERLAPPING NODES APART
--- 2. MAKE CONNECTIONS SMOOTH IN HORIZONTAL DIRECTION
--- 3. MOVE ALL NODES CLOSE TO EACH OTHER
 
 
+
+-- ITERATIVE FORCE LAYOUT
+
+-- force proportions:
+uncollide = 1
+horizontalUntwist = 0.6
+horizontalGroup = 0.001
+keepDistanceToLargeLayers = 0.3
+verticalConvergence = 0.00001
+groupAll = 0.000000001
+
+-- minimal distances:
+horizontalPadding = 4 * propertyHeight
+collisionPadding = 0.9 * propertyHeight
+
+-- automatic calculation of number of iterations
+forceBasedLayout blocks =
+  let
+    atLeast = max
+    nodes = Dict.size blocks |> toFloat
+    complexity = nodes * nodes
+    budged = 2048 * 32
+
+    desiredIterations = budged / complexity
+    iterations = floor desiredIterations |> atLeast 1
+
+  in repeat iterations iterateLayout blocks
+
+
+iterateLayout blocks = blocks |> Dict.map (iterateBlock blocks)
+
+
+-- simulating a single block
+iterateBlock: NodeBlocks -> NodeId -> NodeBlock -> NodeBlock
+iterateBlock  blocks id block =
+  let
+      accumulateForceBetweenNodes otherId otherBlock force =
+          if id == otherId then force else
+          let
+            center = Vec2.ray 0.5 block.size block.position
+            otherCenter = Vec2.ray 0.5 otherBlock.size otherBlock.position
+            minDistance = 0.6 * (Vec2.length block.size) + 0.6 * (Vec2.length otherBlock.size) + collisionPadding
+            difference = Vec2.sub center otherCenter
+            distance = Vec2.length difference
+
+            distanceForce =
+              if distance < minDistance then Vec2.scale (0.5 * uncollide / distance) difference -- push apart if colliding (normalizing the difference) (0.5 because every node only pushes itself)
+              else Vec2.scale -(groupAll * distance) difference -- pull together slightly
+
+            otherIsInput = List.map .connected block.inputs |> List.member otherId
+            otherIsOutput = List.map .connected otherBlock.inputs |> List.member id
+            horizontalConnectionForce =
+              if otherIsInput then
+                let smoothness = block.position.x - (otherBlock.position.x + otherBlock.size.x)
+                      - horizontalPadding - keepDistanceToLargeLayers * abs difference.y
+
+                in (if smoothness < 0 then horizontalUntwist else horizontalGroup) * -smoothness
+
+              else if otherIsOutput then
+                let smoothness = otherBlock.position.x - (block.position.x + block.size.x)
+                      - horizontalPadding - keepDistanceToLargeLayers * abs difference.y
+
+                in -((if smoothness < 0 then horizontalUntwist else horizontalGroup) * -smoothness)
+              else 0
+
+            verticalConnectionForce =
+              if otherIsInput || otherIsOutput then
+                verticalConvergence * -difference.y
+              else 0
+
+
+            connectionForce = Vec2 (0.5 * horizontalConnectionForce) (0.5 * verticalConnectionForce) -- * 0.5 because every node processes every other
+          in
+             force |> Vec2.add distanceForce |> Vec2.add connectionForce
+
+      collisionForce = blocks |> Dict.foldr accumulateForceBetweenNodes Vec2.zero
+      totalForce = collisionForce
+  in
+    { block | position = Vec2.add block.position totalForce }
 
 repeat: Int -> (a -> a) -> a -> a
 repeat count action value =
   if count <= 0 then value
   else repeat (count - 1) action (action value) -- tail call
-
-
-
-
 
 
 

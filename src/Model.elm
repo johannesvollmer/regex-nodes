@@ -41,7 +41,7 @@ initialValue =
   { history = { past = [], present = initialHistoryValue, future = [] }
   , dragMode = Nothing
   , search = Nothing
-  , view = View 0 (Vec2 0 0)
+  , view = View 0 Vec2.zero
   }
 
 

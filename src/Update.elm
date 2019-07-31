@@ -20,7 +20,7 @@ type Message
   | UpdateExampleText ExampleTextMessage
   | DeleteNode NodeId
   | DuplicateNode NodeId
-  | AutoLayout NodeId
+  | AutoLayout Bool NodeId
   | DismissCyclesError -- TODO remove monolithic structure
   | Deselect
   | Undo
@@ -112,7 +112,7 @@ update message model =
     DuplicateNode id -> advance <| duplicateNode coreModel id
     DeleteNode id -> advanceModel <| deleteNode id model
 
-    AutoLayout id -> advance <| { coreModel | nodes = AutoLayout.layout id coreModel.nodes }
+    AutoLayout hard id -> advance <| { coreModel | nodes = AutoLayout.layout hard id coreModel.nodes }
 
     SearchMessage searchMessage ->
       case searchMessage of
@@ -258,7 +258,7 @@ parseRegexNodes model regex =
 
       -- select the generated result and autolayout
       resultHistory resultNodeId nodes =
-        { history | present = selectNode resultNodeId { coreModel | nodes = AutoLayout.layout resultNodeId nodes } }
+        { history | present = selectNode resultNodeId { coreModel | nodes = AutoLayout.layout True resultNodeId nodes } }
 
       -- clear the search
       resultModel (resultNodeId, nodes) =
