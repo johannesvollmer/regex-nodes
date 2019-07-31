@@ -123,3 +123,4 @@ BrowserStack loves Open Source, and Open Source loves BrowserStack.
 - [ ] Reset view button when panned too far away
 - [x] Deduplicate parsed node graph
 - [ ] Turn this whole project into a NodeJS monster just for testing and minification of the generated javascript.... or wait until a better solution arrives. 
+- [ ] If the example text is short, center it to the screen 

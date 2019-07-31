@@ -5,12 +5,10 @@ import Html exposing (..)
 import Html.Lazy exposing (lazy)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onInput, onBlur, onFocus)
-import Dict exposing (Dict)
 import Html.Events.Extra.Mouse as Mouse
 import Html.Events.Extra.Wheel as Wheel
 import IdMap
-import Svg exposing (Svg, svg, line, g)
-import Svg.Attributes exposing (x1, x2, y1, y2)
+import Svg exposing (Svg, svg, g)
 import Regex
 import Json.Decode
 
