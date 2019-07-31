@@ -104,7 +104,8 @@ BrowserStack loves Open Source, and Open Source loves BrowserStack.
     - [ ] Custom, styled tooltips?
 - [ ] Live Explanations!!
 - [ ] Move node including all input nodes? (Next to duplicate and delete)
-- [ ] Iterative Auto-layout using physics simulation?
+- [x] Iterative Auto-layout using physics simulation?
+    - [ ] UX: Animate while holding button down instead of once per click
 - [ ] Reconnect replaced connections 
       when reverting connection prototype
 - [x] Instantiate Nodes centered to the screen
