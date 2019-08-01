@@ -208,6 +208,7 @@ isSimple node =
 -- TODO DRY
 compile : ParsedElement -> CompiledElement
 compile element = case element of
+
   ParsedSet [ onlyOneOption ] -> compile onlyOneOption
   ParsedSet options -> CompiledSet <| List.map compile options
   ParsedSequence manyMembers -> compileSequence manyMembers
@@ -248,7 +249,7 @@ compile element = case element of
 compileCharOrSymbol charOrSymbol = case charOrSymbol of
   Plain char -> CompiledCharSequence <| String.fromChar char
   Escaped symbol -> CompiledSymbol symbol
-  Range (a, b)-> CompiledCharSequence (String.fromChar a ++ "-" ++ String.fromChar b) -- should not happen outside of char sets?
+  Range _ -> CompiledCharSequence "Error" -- should not happen outside of char sets?
 
 -- collapse all subsequent chars into a literal
 compileSequence members = case List.foldr compileSequenceMember [] members of
@@ -271,12 +272,12 @@ compileCharset { inverted, contents } = -- FIXME [^ax-z] != [^a]|[^x-z] !!!!
   case List.foldr compileCharsetOption ("", [], []) contents of
       (chars, [], []) -> CompiledCharset { inverted = inverted, contents = chars }
       ("", [symbol], []) -> CompiledSymbol symbol -- FIXME will ignore `inverted`
-      ("", [], [range]) -> CompiledCharRange inverted range
+      ("", [], [range]) -> compileRange inverted range
       ("", symbols, ranges) -> CompiledSet (List.map CompiledSymbol symbols ++ List.map (CompiledCharRange inverted) ranges)  -- FIXME will ignore `inverted`
       (chars, symbols, ranges) -> CompiledSet <|
         CompiledCharset { inverted = inverted, contents = chars }
           :: (List.map CompiledSymbol symbols) -- TODO dry -- FIXME will ignore `inverted` in symbols
-          ++ (List.map (CompiledCharRange inverted) ranges) -- TODO dry -- FIXME will ignore `inverted` in symbols
+          ++ (List.map (compileRange inverted) ranges) -- TODO dry -- FIXME will ignore `inverted` in symbols
 
 -- TODO filter duplicate options
 compileCharsetOption member (chars, symbols, ranges) = case member of
@@ -284,8 +285,10 @@ compileCharsetOption member (chars, symbols, ranges) = case member of
   Escaped symbol -> (chars, symbol :: symbols, ranges)
   Range (start, end) -> (chars, symbols, (start, end) :: ranges)
 
-
-
+compileRange inverted range =
+  case (inverted, range) of
+    (False, ('0', '9')) -> CompiledSymbol DigitChar
+    _ -> CompiledCharRange inverted range
 
 
 parse : String -> ParseResult ParsedElement

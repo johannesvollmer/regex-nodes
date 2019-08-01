@@ -161,13 +161,13 @@ buildDedupSet element (resultList, resultSet) =
 uncollide = 1
 horizontalUntwist = 0.6
 horizontalGroup = 0.001
-keepDistanceToLargeLayers = 0.3
-verticalConvergence = 0.00001
+verticalConvergence = 0.0001
 groupAll = 0.000000001
 
 -- minimal distances:
-horizontalPadding = 4 * propertyHeight
+horizontalPadding = 1 * propertyHeight
 collisionPadding = 0.9 * propertyHeight
+keepDistanceToLargeLayers = 2 * propertyHeight
 
 -- automatic calculation of number of iterations
 forceBasedLayout blocks =
@@ -184,6 +184,10 @@ forceBasedLayout blocks =
 
 
 iterateLayout blocks = blocks |> Dict.map (iterateBlock blocks)
+
+
+hasInput input block =
+  List.map .connected block.inputs |> List.member input
 
 
 -- simulating a single block
@@ -203,20 +207,27 @@ iterateBlock  blocks id block =
               if distance < minDistance then Vec2.scale (0.5 * uncollide / distance) difference -- push apart if colliding (normalizing the difference) (0.5 because every node only pushes itself)
               else Vec2.scale -(groupAll * distance) difference -- pull together slightly
 
-            otherIsInput = List.map .connected block.inputs |> List.member otherId
-            otherIsOutput = List.map .connected otherBlock.inputs |> List.member id
-            horizontalConnectionForce =
-              if otherIsInput then
-                let smoothness = block.position.x - (otherBlock.position.x + otherBlock.size.x)
-                      - horizontalPadding - keepDistanceToLargeLayers * abs difference.y
+            otherIsInput = hasInput otherId block
+            otherIsOutput = hasInput id otherBlock
 
+            smoothnessBetween leftBlock rightBlock =
+              rightBlock.position.x - (leftBlock.position.x + leftBlock.size.x)
+                - horizontalPadding -- - keepDistanceToLargeLayers * abs difference.y
+                - keepDistanceToLargeLayers * (toFloat <| max (List.length leftBlock.inputs) (List.length rightBlock.inputs))
+
+            smoothen left right =
+                let smoothness = smoothnessBetween left right
                 in (if smoothness < 0 then horizontalUntwist else horizontalGroup) * -smoothness
 
-              else if otherIsOutput then
-                let smoothness = otherBlock.position.x - (block.position.x + block.size.x)
-                      - horizontalPadding - keepDistanceToLargeLayers * abs difference.y
 
-                in -((if smoothness < 0 then horizontalUntwist else horizontalGroup) * -smoothness)
+            horizontalConnectionForce =
+              if otherIsInput then smoothen otherBlock block
+--                let smoothness = smoothnessBetween otherBlock block
+--                in (if smoothness < 0 then horizontalUntwist else horizontalGroup) * -smoothness
+
+              else if otherIsOutput then -(smoothen block otherBlock)
+--                let smoothness = smoothnessBetween block otherBlock
+--                in -((if smoothness < 0 then horizontalUntwist else horizontalGroup) * -smoothness)
               else 0
 
             verticalConnectionForce =

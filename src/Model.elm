@@ -133,9 +133,20 @@ type Node
   | MaximumRepetitionNode { expression : Maybe NodeId, count: Int, minimal: Bool }
   | ExactRepetitionNode { expression : Maybe NodeId, count : Int }
 
-
   | FlagsNode { expression : Maybe NodeId, flags : RegexFlags }
 
+--  | Pattern { expression: Maybe NodeId, name: String }
+--  | SubResultNode { expression: Maybe NodeId }
+
+
+type Pattern
+  = MinimalAlphabetLowercase
+  | MinimalAlphabetUppercase
+  | DecimalNumber
+  | Integer
+  | Hex
+  | ScientificNumber
+  | Punctuation
 
 {-| Any group of chars that can be represented by a single regex character, for example `\n` for linebreaks -}
 type Symbol
@@ -311,6 +322,20 @@ viewTransform { magnification, offset} =
 
 defaultFlags = RegexFlags True False True
 
+
+summary node = case node of
+  LiteralNode literal -> Just ("`" ++ literal ++ "`")
+  CharSetNode options -> Just ("One of `" ++ options ++ "`")
+  NotInCharSetNode options -> Just ("None of `" ++ options ++ "`")
+  CharRangeNode start end ->  Just ("One of `" ++ String.fromChar start ++ "` - `" ++ String.fromChar end ++ "`")
+  NotInCharRangeNode start end ->  Just ("None of `" ++ String.fromChar start ++ "` - `" ++ String.fromChar end ++ "`")
+  _ -> Nothing
+
+
+toPattern nodeId nodes = case IdMap.get nodeId nodes of
+  Just (CharRangeNode 'a' 'z') -> Just MinimalAlphabetLowercase
+  Just (CharRangeNode 'A' 'Z') -> Just MinimalAlphabetUppercase
+  _ -> Nothing
 
 
 symbolName = symbolProperty symbolNames
@@ -517,6 +542,11 @@ nodeProperties node =
           (BoolProperty counted.minimal (MaximumRepetitionNode << updateMinimal counted)) False
       ]
 
+--    SubResultNode result ->
+--      [ Property (compileRegexString expression nodes)
+--        ("This property shows the connected expression")
+--        (ConnectingProperty result.expression (SubResultNode << updateExpression result)) True
+--      ]
 
 
 -- TODO implement generically using (nodeProperties node)
