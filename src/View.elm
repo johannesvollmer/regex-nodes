@@ -78,10 +78,7 @@ view untrackedModel =
       (
         [ id "node-graph"
         , (Mouse.onWithOptions "mousedown" { stopPropagation = False, preventDefault = False } startViewMove) -- do not prevent input blur on click
-        , Wheel.onWheel (\event -> UpdateView (MagnifyView
-          { amount = (if event.deltaY < 0 then 1 else -1)
-          , focus = (Vec2.fromTuple event.mouseEvent.clientPos)
-          }))
+        , Wheel.onWheel wheel
         , preventContextMenu (always DoNothing)
         ]
       )
@@ -210,6 +207,18 @@ view untrackedModel =
       ]
     ]
 
+
+
+wheel event =
+  { amount = case event.deltaMode of
+     Wheel.DeltaPixel -> -event.deltaY
+     Wheel.DeltaLine -> -event.deltaY * 40
+     Wheel.DeltaPage -> -event.deltaY * 1000
+
+  , focus = (Vec2.fromTuple event.mouseEvent.clientPos)
+  }
+
+  |> MagnifyView |> UpdateView
 
 unwrapResult result = case result of
   Ok a -> a

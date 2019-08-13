@@ -355,7 +355,7 @@ moveNode view nodes nodeId movement =
 
 updateView amount focus oldView =
   let
-    magnification = oldView.magnification + amount
+    magnification = oldView.magnification + amount * 0.009 -- * 0.4
     transform = viewTransform { magnification = magnification, offset = oldView.offset }
 
     oldTransform = viewTransform oldView
