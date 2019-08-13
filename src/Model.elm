@@ -598,8 +598,8 @@ updatePositiveCount node count = { node | count = positive count }
 updateCharRangeFirst end start = CharRangeNode (minChar start end) (maxChar start end) -- swaps chars if necessary
 updateCharRangeLast start end = CharRangeNode (minChar end start) (maxChar start end) -- swaps chars if necessary
 
-updateNotInCharRangeFirst end start = CharRangeNode (minChar start end) (maxChar start end) -- swaps chars if necessary
-updateNotInCharRangeLast start end = CharRangeNode (minChar end start) (maxChar start end) -- swaps chars if necessary
+updateNotInCharRangeFirst end start = NotInCharRangeNode (minChar start end) (maxChar start end) -- swaps chars if necessary
+updateNotInCharRangeLast start end = NotInCharRangeNode (minChar end start) (maxChar start end) -- swaps chars if necessary
 
 updateRangedRepetitionMinimum repetition count = RangedRepetitionNode
   { repetition | minimum = positive count, maximum = max (positive count) repetition.maximum }

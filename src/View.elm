@@ -259,7 +259,11 @@ viewSearch query =
     lowercaseQuery = String.toLower query
     regex = Maybe.withDefault Regex.never (Regex.fromStringWith { caseInsensitive = True, multiline = False } query)
 
-    test name = isEmpty || String.contains lowercaseQuery (String.toLower name) || (Regex.contains regex name)
+    test name = isEmpty
+      || String.contains lowercaseQuery (String.toLower name)
+      || List.all (\word -> String.contains word (String.toLower name)) (String.words lowercaseQuery)
+      || (Regex.contains regex name)
+
     matches prototype = test prototype.name
 
     render prototype = div

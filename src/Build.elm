@@ -92,8 +92,8 @@ buildNodeExpression cost nodes node =
       SymbolNode symbol -> Ok (cost, buildSymbol symbol)
       CharSetNode chars -> Ok (cost, charset chars)
       NotInCharSetNode chars -> Ok (cost, notInCharset chars)
-      CharRangeNode start end -> Ok (cost, charRange start end)
-      NotInCharRangeNode start end -> Ok (cost, notInCharRange start end)
+      CharRangeNode start end -> Ok (cost, simplifyInCharRange start end)
+      NotInCharRangeNode start end -> Ok (cost, simplifyNotInCharRange start end)
       LiteralNode chars -> Ok (cost, literal chars)
 
       SequenceNode members -> buildMembers True sequence members
@@ -109,18 +109,41 @@ buildNodeExpression cost nodes node =
       AtLeastOneNode { expression, minimal } -> buildSingleChild True (atLeastOne minimal) expression
       AnyRepetitionNode { expression, minimal } -> buildSingleChild True (anyRepetition minimal) expression
       ExactRepetitionNode { expression, count } -> buildSingleChild True (exactRepetition count) expression
-      RangedRepetitionNode { expression, minimum, maximum, minimal } -> buildSingleChild True (rangedRepetition minimal minimum maximum) expression
       MinimumRepetitionNode { expression, count, minimal } -> buildSingleChild True (minimumRepetition minimal count) expression
       MaximumRepetitionNode { expression, count, minimal } -> buildSingleChild True (maximumRepetition minimal count) expression
 
+      RangedRepetitionNode { expression, minimum, maximum, minimal } ->
+        expression |> simplifyRangedRepetition minimal minimum maximum (buildSingleChild True)
+        -- buildSingleChild True (rangedRepetition minimal minimum maximum) expression
+
+
   in string
+
+
+-- TODO this is not parentheses aware
+simplifyRangedRepetition minimal minimum maximum buildSingleChild =
+  if minimum == maximum then buildSingleChild (exactRepetition minimum)
+  else buildSingleChild (rangedRepetition minimal minimum maximum)
+
+-- TODO not in range
+simplifyInCharRange start end =
+  if start == '0' && end == '9'
+  then buildSymbol DigitChar
+  else charRange start end
+
+-- TODO not in range
+simplifyNotInCharRange start end =
+  if start == '0' && end == '9'
+  then buildSymbol NonDigitChar
+  else notInCharRange start end
+
 
 {-| Dereferences a node and returns `buildExpression` of it, handling corner cases -}
 buildExpression : Bool -> Int -> Nodes -> Int -> Maybe NodeId -> BuildResult (Int, String)
 buildExpression childMayNeedParens cost nodes ownPrecedence nodeId =
   if cost < 0 then Err cycles
   else case nodeId of
-    Nothing -> Ok (cost, "(nothing)")
+    Nothing -> Ok (cost, "(?:nothing)")
 
     Just id ->
       let

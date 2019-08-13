@@ -5253,17 +5253,21 @@ var author$project$Model$updateMinimal = F2(
 			node,
 			{at: minimal});
 	});
+var author$project$Model$NotInCharRangeNode = F2(
+	function (a, b) {
+		return {$: 5, a: a, b: b};
+	});
 var author$project$Model$updateNotInCharRangeFirst = F2(
 	function (end, start) {
 		return A2(
-			author$project$Model$CharRangeNode,
+			author$project$Model$NotInCharRangeNode,
 			A2(author$project$Model$minChar, start, end),
 			A2(author$project$Model$maxChar, start, end));
 	});
 var author$project$Model$updateNotInCharRangeLast = F2(
 	function (start, end) {
 		return A2(
-			author$project$Model$CharRangeNode,
+			author$project$Model$NotInCharRangeNode,
 			A2(author$project$Model$minChar, end, start),
 			A2(author$project$Model$maxChar, start, end));
 	});
@@ -7132,12 +7136,6 @@ var author$project$Build$escapeChars = F2(
 				elm$core$String$toList(chars)));
 	});
 var author$project$Build$escapeCharset = author$project$Build$escapeChars('[^-.\\]');
-var author$project$Build$charRange = F2(
-	function (start, end) {
-		return '[' + (author$project$Build$escapeCharset(
-			elm$core$String$fromChar(start)) + ('-' + (author$project$Build$escapeCharset(
-			elm$core$String$fromChar(end)) + ']')));
-	});
 var author$project$Build$charset = function (chars) {
 	return '[' + (author$project$Build$escapeCharset(chars) + ']');
 };
@@ -7171,12 +7169,6 @@ var author$project$Build$minimumRepetition = F3(
 			author$project$Build$andMinimal,
 			min,
 			expression + ('{' + (elm$core$String$fromInt(minimum) + ',}')));
-	});
-var author$project$Build$notInCharRange = F2(
-	function (start, end) {
-		return '[^' + (author$project$Build$escapeCharset(
-			elm$core$String$fromChar(start)) + ('-' + (author$project$Build$escapeCharset(
-			elm$core$String$fromChar(end)) + ']')));
 	});
 var author$project$Build$notInCharset = function (chars) {
 	return '[^' + (author$project$Build$escapeCharset(chars) + ']');
@@ -7248,13 +7240,6 @@ var author$project$Build$precedence = function (node) {
 			return 5;
 	}
 };
-var author$project$Build$rangedRepetition = F4(
-	function (min, minimum, maximum, expression) {
-		return A2(
-			author$project$Build$andMinimal,
-			min,
-			expression + ('{' + (elm$core$String$fromInt(minimum) + (',' + (elm$core$String$fromInt(maximum) + '}')))));
-	});
 var elm$core$Basics$not = _Basics_not;
 var elm$core$List$isEmpty = function (xs) {
 	if (!xs.b) {
@@ -7272,6 +7257,41 @@ var author$project$Build$sequence = function (members) {
 var author$project$Build$set = function (options) {
 	return (!elm$core$List$isEmpty(options)) ? A2(elm$core$String$join, '|', options) : '(nothing)';
 };
+var author$project$Build$charRange = F2(
+	function (start, end) {
+		return '[' + (author$project$Build$escapeCharset(
+			elm$core$String$fromChar(start)) + ('-' + (author$project$Build$escapeCharset(
+			elm$core$String$fromChar(end)) + ']')));
+	});
+var author$project$Model$DigitChar = 2;
+var author$project$Build$simplifyInCharRange = F2(
+	function (start, end) {
+		return ((start === '0') && (end === '9')) ? author$project$Build$buildSymbol(2) : A2(author$project$Build$charRange, start, end);
+	});
+var author$project$Build$notInCharRange = F2(
+	function (start, end) {
+		return '[^' + (author$project$Build$escapeCharset(
+			elm$core$String$fromChar(start)) + ('-' + (author$project$Build$escapeCharset(
+			elm$core$String$fromChar(end)) + ']')));
+	});
+var author$project$Model$NonDigitChar = 3;
+var author$project$Build$simplifyNotInCharRange = F2(
+	function (start, end) {
+		return ((start === '0') && (end === '9')) ? author$project$Build$buildSymbol(3) : A2(author$project$Build$notInCharRange, start, end);
+	});
+var author$project$Build$rangedRepetition = F4(
+	function (min, minimum, maximum, expression) {
+		return A2(
+			author$project$Build$andMinimal,
+			min,
+			expression + ('{' + (elm$core$String$fromInt(minimum) + (',' + (elm$core$String$fromInt(maximum) + '}')))));
+	});
+var author$project$Build$simplifyRangedRepetition = F4(
+	function (minimal, minimum, maximum, buildSingleChild) {
+		return _Utils_eq(minimum, maximum) ? buildSingleChild(
+			author$project$Build$exactRepetition(minimum)) : buildSingleChild(
+			A3(author$project$Build$rangedRepetition, minimal, minimum, maximum));
+	});
 var elm$core$Result$andThen = F2(
 	function (callback, result) {
 		if (!result.$) {
@@ -7325,7 +7345,7 @@ var author$project$Build$buildExpression = F5(
 		} else {
 			if (nodeId.$ === 1) {
 				return elm$core$Result$Ok(
-					_Utils_Tuple2(cost, '(nothing)'));
+					_Utils_Tuple2(cost, '(?:nothing)'));
 			} else {
 				var id = nodeId.a;
 				var parens = function (node) {
@@ -7453,14 +7473,14 @@ var author$project$Build$buildNodeExpression = F3(
 					return elm$core$Result$Ok(
 						_Utils_Tuple2(
 							cost,
-							A2(author$project$Build$charRange, start, end)));
+							A2(author$project$Build$simplifyInCharRange, start, end)));
 				case 5:
 					var start = node.a;
 					var end = node.b;
 					return elm$core$Result$Ok(
 						_Utils_Tuple2(
 							cost,
-							A2(author$project$Build$notInCharRange, start, end)));
+							A2(author$project$Build$simplifyNotInCharRange, start, end)));
 				case 3:
 					var chars = node.a;
 					return elm$core$Result$Ok(
@@ -7519,16 +7539,6 @@ var author$project$Build$buildNodeExpression = F3(
 						true,
 						author$project$Build$exactRepetition(count),
 						expression);
-				case 14:
-					var expression = node.a.q;
-					var minimum = node.a.dB;
-					var maximum = node.a.dz;
-					var minimal = node.a.at;
-					return A3(
-						buildSingleChild,
-						true,
-						A3(author$project$Build$rangedRepetition, minimal, minimum, maximum),
-						expression);
 				case 15:
 					var expression = node.a.q;
 					var count = node.a.bJ;
@@ -7538,7 +7548,7 @@ var author$project$Build$buildNodeExpression = F3(
 						true,
 						A2(author$project$Build$minimumRepetition, minimal, count),
 						expression);
-				default:
+				case 16:
 					var expression = node.a.q;
 					var count = node.a.bJ;
 					var minimal = node.a.at;
@@ -7546,6 +7556,18 @@ var author$project$Build$buildNodeExpression = F3(
 						buildSingleChild,
 						true,
 						A2(author$project$Build$maximumRepetition, minimal, count),
+						expression);
+				default:
+					var expression = node.a.q;
+					var minimum = node.a.dB;
+					var maximum = node.a.dz;
+					var minimal = node.a.at;
+					return A5(
+						author$project$Build$simplifyRangedRepetition,
+						minimal,
+						minimum,
+						maximum,
+						buildSingleChild(true),
 						expression);
 			}
 		}();
@@ -7981,10 +8003,6 @@ var author$project$Update$moveViewInModel = F3(
 			});
 	});
 var author$project$LinearDict$empty = _List_Nil;
-var author$project$Model$NotInCharRangeNode = F2(
-	function (a, b) {
-		return {$: 5, a: a, b: b};
-	});
 var author$project$Model$SymbolNode = function (a) {
 	return {$: 0, a: a};
 };
@@ -8482,7 +8500,6 @@ var author$project$Parse$compileCharsetOption = F2(
 						ranges));
 		}
 	});
-var author$project$Model$DigitChar = 2;
 var author$project$Parse$compileRange = F2(
 	function (inverted, range) {
 		var _n0 = _Utils_Tuple2(inverted, range);
@@ -8858,7 +8875,6 @@ var author$project$Parse$parseAtomicChar = F2(
 			elm$core$Tuple$mapFirst(author$project$Parse$Plain),
 			charSubResult);
 	});
-var author$project$Model$NonDigitChar = 3;
 var author$project$Model$NonWhitespaceChar = 1;
 var author$project$Model$NonWordBoundary = 7;
 var author$project$Model$NonWordChar = 5;
@@ -12477,7 +12493,15 @@ var author$project$Update$InsertLiteral = function (a) {
 var author$project$Update$InsertPrototype = function (a) {
 	return {$: 0, a: a};
 };
+var elm$core$List$all = F2(
+	function (isOkay, list) {
+		return !A2(
+			elm$core$List$any,
+			A2(elm$core$Basics$composeL, elm$core$Basics$not, isOkay),
+			list);
+	});
 var elm$core$String$toLower = _String_toLower;
+var elm$core$String$words = _String_words;
 var elm$html$Html$code = _VirtualDom_node('code');
 var elm$html$Html$p = _VirtualDom_node('p');
 var author$project$View$viewSearch = function (query) {
@@ -12534,7 +12558,15 @@ var author$project$View$viewSearch = function (query) {
 		return isEmpty || (A2(
 			elm$core$String$contains,
 			lowercaseQuery,
-			elm$core$String$toLower(name)) || A2(elm$regex$Regex$contains, regex, name));
+			elm$core$String$toLower(name)) || (A2(
+			elm$core$List$all,
+			function (word) {
+				return A2(
+					elm$core$String$contains,
+					word,
+					elm$core$String$toLower(name));
+			},
+			elm$core$String$words(lowercaseQuery)) || A2(elm$regex$Regex$contains, regex, name)));
 	};
 	var matches = function (prototype) {
 		return test(prototype.cx);
