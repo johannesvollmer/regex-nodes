@@ -59,6 +59,7 @@ in this directory to compile on every file save.
 # Project Songs (archived here for future nostalgia)
 - Sorsari: Children of Gaia
 - Barnacle Boi: Downpour
+- Yedgar: Asura
 
 # Shoutout
 
