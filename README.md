@@ -56,6 +56,10 @@ in this directory to compile on every file save.
    braces and Unicode literals at all costs.
 3. Simply connecting and rearranging properties of set nodes and sequence nodes.
    
+# Project Songs (archived here for future nostalgia)
+- Sorsari: Children of Gaia
+- Barnacle Boi: Downpour
+- Yedgar: Asura
 
 # Shoutout
 
