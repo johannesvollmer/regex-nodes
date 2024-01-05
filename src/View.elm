@@ -346,7 +346,7 @@ viewExampleTexts matches =
 viewNode : Maybe DragMode -> Maybe NodeId -> Maybe NodeId -> Nodes -> (NodeId, Model.NodeView) -> NodeView
 viewNode dragMode selectedNode outputNode nodes (nodeId, nodeView) =
   let props = nodeProperties nodeView.node in
-  NodeView (viewNodeContent dragMode selectedNode outputNode nodeId props nodeView) (viewNodeConnections nodes props nodeView)
+  NodeView (viewNodeContent nodes dragMode selectedNode outputNode nodeId props nodeView) (viewNodeConnections nodes props nodeView)
 
 
 viewNodeConnections : Nodes -> List Property -> Model.NodeView -> List (Svg Message)
@@ -428,8 +428,8 @@ hasDragConnectionPrototype dragMode nodeId = case dragMode of
     _ -> False
 
 -- TODO use lazy html!
-viewNodeContent : Maybe DragMode -> Maybe NodeId -> Maybe NodeId -> NodeId -> List Property -> Model.NodeView -> Html Message
-viewNodeContent dragMode selectedNode outputNode nodeId props nodeView =
+viewNodeContent : Nodes -> Maybe DragMode -> Maybe NodeId -> Maybe NodeId -> NodeId -> List Property -> Model.NodeView -> Html Message
+viewNodeContent nodes dragMode selectedNode outputNode nodeId props nodeView =
   let
     contentWidth = (nodeWidth nodeView.node |> String.fromFloat) ++ "px"
 
@@ -506,7 +506,7 @@ viewNodeContent dragMode selectedNode outputNode nodeId props nodeView =
       , preventDefaultAndMayStopPropagation "mousedown" onMouseDownAndStopPropagation -- always prevent default (to prevent native drag)?
       , preventContextMenu onContextMenu
       ]
-      (viewProperties nodeId dragMode props)
+      (viewProperties nodes nodeId dragMode props)
 
     , div
       [ class "menu" ]
@@ -534,8 +534,8 @@ viewNodeContent dragMode selectedNode outputNode nodeId props nodeView =
     ]
 
 
-viewProperties : NodeId -> Maybe DragMode -> List Property -> List (Html Message)
-viewProperties nodeId dragMode props =
+viewProperties : Nodes -> NodeId -> Maybe DragMode -> List Property -> List (Html Message)
+viewProperties nodes nodeId dragMode props =
   let
 
     mayStartConnectDrag = case dragMode of
@@ -592,7 +592,7 @@ viewProperties nodeId dragMode props =
     simpleInputProperty property directInput = propertyHTML
       [ Mouse.onLeave (onLeave Nothing property.connectOutput) ] directInput property.name property.description False (leftConnector False) (rightConnector property.connectOutput)
 
-    connectInputProperty property currentSupplier onChange =
+    connectInputProperty property currentSupplier onChange maybePreviewRegex =
       let
         connectOnEnter supplier event =
           DragModeMessage (RealizeConnection { mouse = Vec2.fromTuple event.clientPos, nodeId = nodeId, newNode = onChange (Just supplier) })
@@ -609,19 +609,23 @@ viewProperties nodeId dragMode props =
 
         left = leftConnector True
 
-      in propertyHTML (onEnter ++ onLeaveHandlers) (div[][]) property.name property.description True left (rightConnector property.connectOutput)
+        preview = case maybePreviewRegex of
+          Nothing -> div[][]
+          Just regex -> div[ class "regex-preview" ][ text regex ]
+
+      in propertyHTML (onEnter ++ onLeaveHandlers) preview property.name property.description True left (rightConnector property.connectOutput)
 
     singleProperty property = case property.contents of
       BoolProperty value onChange -> [ simpleInputProperty property (viewBoolInput value (onChange (not value) |> updateNode)) ]
       CharsProperty chars onChange -> [ simpleInputProperty property (viewCharsInput chars (onChange >> updateNode)) ]
       CharProperty char onChange -> [ simpleInputProperty property (viewCharInput char (onChange >> updateNode)) ]
       IntProperty number onChange -> [ simpleInputProperty property (viewPositiveIntInput number (onChange >> updateNode)) ]
-      ConnectingProperty currentSupplier onChange -> [ connectInputProperty property currentSupplier onChange ]
+      ConnectingProperty currentSupplier onChange -> [ connectInputProperty property currentSupplier onChange Nothing ]
 
       ConnectingProperties countThem connectedProps onChange ->
         let
           count index prop = if countThem
-            then { prop | name = prop.name ++ " " ++ String.fromInt (index + 1) }
+            then { prop | name = String.fromInt (index + 1) ++ "." }
             else prop
 
           onChangePropertyAtIndex index newInput = case newInput of
@@ -632,12 +636,18 @@ viewProperties nodeId dragMode props =
             Just newInputId -> onChange (Array.push newInputId connectedProps)
             Nothing -> onChange (removeFromArray ((Array.length connectedProps) - 1) connectedProps)
 
-          realProperties = Array.toList <| Array.indexedMap
-            (\index currentSupplier -> connectInputProperty (count index property) (Just currentSupplier) (onChangePropertyAtIndex index))
-            connectedProps
+          viewRealProperty index supplier =
+            let 
+              baseAttributes = (count index property)
+              nodeExprString = (buildRegex nodes supplier) |> Result.map .expression |> Result.toMaybe
+
+            in connectInputProperty baseAttributes (Just supplier) (onChangePropertyAtIndex index) nodeExprString
+
+          realProperties = Array.toList <| Array.indexedMap viewRealProperty connectedProps
 
           propCount = Array.length connectedProps
-          stubProperty = connectInputProperty (count propCount property) Nothing onChangeStubProperty
+          stubProperty = connectInputProperty (count propCount property) Nothing onChangeStubProperty Nothing
+
         in realProperties ++ [ stubProperty ]
 
 
@@ -647,7 +657,8 @@ viewProperties nodeId dragMode props =
             (div[][])
             property.name property.description
             False
-            (leftConnector False) (rightConnector property.connectOutput)
+            (leftConnector False) 
+            (rightConnector property.connectOutput)
         ]
 
   in

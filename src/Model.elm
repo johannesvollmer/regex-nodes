@@ -423,17 +423,17 @@ nodeProperties node =
           TitleProperty True
 
       , Property "First Char" "The lower range bound char, will not match itself" (CharProperty start (updateNotInCharRangeFirst end)) False
-      , Property "Last Char""The upper range bound char, will not match itself " (CharProperty end (updateNotInCharRangeLast start)) False
+      , Property "Last Char" "The upper range bound char, will not match itself" (CharProperty end (updateNotInCharRangeLast start)) False
       ]
 
     SetNode options ->
       [ Property typeNames.set typeDescriptions.set TitleProperty True
-      , Property "Option" "Match if this or any other option is matched" (ConnectingProperties False options SetNode) False
+      , Property "•" "Match if this or any other option is matched" (ConnectingProperties False options SetNode) False
       ]
 
     SequenceNode members ->
       [ Property typeNames.sequence typeDescriptions.sequence TitleProperty True
-      , Property "Member" "A member of the sequence" (ConnectingProperties True members SequenceNode) False
+      , Property "and then" "A member of the sequence" (ConnectingProperties True members SequenceNode) False
       ]
 
     FlagsNode flagsNode ->

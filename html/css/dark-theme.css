@@ -244,7 +244,7 @@ nav {
 	background-color: #eeeeee22;
 }
 
-.property .chars.input, .property .int.input, .property .char.input {
+.property .chars.input, .property .int.input, .property .char.input, .property .regex-preview {
 	border: 1px solid transparent;
 	background-color: #22222222;
 	font-family: 'Ubuntu Mono', source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
@@ -252,6 +252,10 @@ nav {
 .property .chars.input:focus, .property .int.input:focus,  .property .char.input:focus {
 	border: 1px solid #333;
 	background-color: transparent;
+}
+
+.property .regex-preview {
+  opacity: 0.5;
 }
 
 .connector {
