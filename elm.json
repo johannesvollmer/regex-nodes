@@ -13,16 +13,15 @@
             "elm/regex": "1.0.0",
             "elm/svg": "1.0.1",
             "elm/url": "1.0.0",
-            "mpizenberg/elm-pointer-events": "4.0.0",
-            "rtfeldman/elm-css": "16.0.0",
+            "mpizenberg/elm-pointer-events": "4.0.2",
+            "rtfeldman/elm-css": "16.1.1",
             "truqu/elm-base64": "2.0.4"
         },
         "indirect": {
-            "Skinney/murmur3": "2.0.8",
             "elm/bytes": "1.0.8",
-            "elm/file": "1.0.4",
+            "elm/file": "1.0.5",
             "elm/time": "1.0.0",
-            "elm/virtual-dom": "1.0.2",
+            "elm/virtual-dom": "1.0.3",
             "rtfeldman/elm-hex": "1.0.0"
         }
     },
