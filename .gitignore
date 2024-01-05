@@ -10,3 +10,5 @@ regex-nodes.iml
 
 # file save watcher
 modd.exe
+
+package-lock.json
