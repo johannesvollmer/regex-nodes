@@ -7990,7 +7990,7 @@ var $author$project$Model$nodeProperties = function (node) {
 					A4(
 					$author$project$Model$Property,
 					'Last Char',
-					'The upper range bound char, will not match itself ',
+					'The upper range bound char, will not match itself',
 					A2(
 						$author$project$Model$CharProperty,
 						end,
@@ -8004,7 +8004,7 @@ var $author$project$Model$nodeProperties = function (node) {
 					A4($author$project$Model$Property, $author$project$Model$typeNames.az, $author$project$Model$typeDescriptions.az, $author$project$Model$TitleProperty, true),
 					A4(
 					$author$project$Model$Property,
-					'Option',
+					'•',
 					'Match if this or any other option is matched',
 					A3($author$project$Model$ConnectingProperties, false, options, $author$project$Model$SetNode),
 					false)
@@ -8016,7 +8016,7 @@ var $author$project$Model$nodeProperties = function (node) {
 					A4($author$project$Model$Property, $author$project$Model$typeNames.ay, $author$project$Model$typeDescriptions.ay, $author$project$Model$TitleProperty, true),
 					A4(
 					$author$project$Model$Property,
-					'Member',
+					'and then',
 					'A member of the sequence',
 					A3($author$project$Model$ConnectingProperties, true, members, $author$project$Model$SequenceNode),
 					false)
@@ -11990,8 +11990,8 @@ var $author$project$View$viewPositiveIntInput = F2(
 				]),
 			_List_Nil);
 	});
-var $author$project$View$viewProperties = F3(
-	function (nodeId, dragMode, props) {
+var $author$project$View$viewProperties = F4(
+	function (nodes, nodeId, dragMode, props) {
 		var updateNode = $author$project$Update$UpdateNodeMessage(nodeId);
 		var rightConnector = function (active) {
 			return A2(
@@ -12078,7 +12078,7 @@ var $author$project$View$viewProperties = F3(
 					}());
 			});
 		var mayStartConnectDrag = function () {
-			_v5$2:
+			_v6$2:
 			while (true) {
 				if (!dragMode.$) {
 					switch (dragMode.a.$) {
@@ -12089,10 +12089,10 @@ var $author$project$View$viewProperties = F3(
 							var node = dragMode.a.a.cA;
 							return _Utils_eq(nodeId, node);
 						default:
-							break _v5$2;
+							break _v6$2;
 					}
 				} else {
-					break _v5$2;
+					break _v6$2;
 				}
 			}
 			return false;
@@ -12129,7 +12129,7 @@ var $author$project$View$viewProperties = F3(
 					rightConnector(property.de));
 			});
 		var enableDisconnect = function () {
-			_v4$2:
+			_v5$2:
 			while (true) {
 				if (!dragMode.$) {
 					switch (dragMode.a.$) {
@@ -12138,16 +12138,33 @@ var $author$project$View$viewProperties = F3(
 						case 4:
 							return true;
 						default:
-							break _v4$2;
+							break _v5$2;
 					}
 				} else {
-					break _v4$2;
+					break _v5$2;
 				}
 			}
 			return false;
 		}();
-		var connectInputProperty = F3(
-			function (property, currentSupplier, onChange) {
+		var connectInputProperty = F4(
+			function (property, currentSupplier, onChange, maybePreviewRegex) {
+				var preview = function () {
+					if (maybePreviewRegex.$ === 1) {
+						return A2($elm$html$Html$div, _List_Nil, _List_Nil);
+					} else {
+						var regex = maybePreviewRegex.a;
+						return A2(
+							$elm$html$Html$div,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('regex-preview')
+								]),
+							_List_fromArray(
+								[
+									$elm$html$Html$text(regex)
+								]));
+					}
+				}();
 				var onLeaveHandlers = (enableDisconnect && mayStartConnectDrag) ? _List_fromArray(
 					[
 						$mpizenberg$elm_pointer_events$Html$Events$Extra$Mouse$onLeave(
@@ -12184,7 +12201,7 @@ var $author$project$View$viewProperties = F3(
 				return A7(
 					propertyHTML,
 					_Utils_ap(onEnter, onLeaveHandlers),
-					A2($elm$html$Html$div, _List_Nil, _List_Nil),
+					preview,
 					property.cy,
 					property.b9,
 					true,
@@ -12252,7 +12269,7 @@ var $author$project$View$viewProperties = F3(
 					var onChange = _v0.b;
 					return _List_fromArray(
 						[
-							A3(connectInputProperty, property, currentSupplier, onChange)
+							A4(connectInputProperty, property, currentSupplier, onChange, $elm$core$Maybe$Nothing)
 						]);
 				case 5:
 					var countThem = _v0.a;
@@ -12288,26 +12305,34 @@ var $author$project$View$viewProperties = F3(
 							return countThem ? _Utils_update(
 								prop,
 								{
-									cy: prop.cy + (' ' + $elm$core$String$fromInt(index + 1))
+									cy: $elm$core$String$fromInt(index + 1) + '.'
 								}) : prop;
 						});
-					var realProperties = $elm$core$Array$toList(
-						A2(
-							$elm$core$Array$indexedMap,
-							F2(
-								function (index, currentSupplier) {
-									return A3(
-										connectInputProperty,
-										A2(count, index, property),
-										$elm$core$Maybe$Just(currentSupplier),
-										onChangePropertyAtIndex(index));
-								}),
-							connectedProps));
-					var stubProperty = A3(
+					var stubProperty = A4(
 						connectInputProperty,
 						A2(count, propCount, property),
 						$elm$core$Maybe$Nothing,
-						onChangeStubProperty);
+						onChangeStubProperty,
+						$elm$core$Maybe$Nothing);
+					var viewRealProperty = F2(
+						function (index, supplier) {
+							var nodeExprString = $elm$core$Result$toMaybe(
+								A2(
+									$elm$core$Result$map,
+									function ($) {
+										return $.t;
+									},
+									A2($author$project$Build$buildRegex, nodes, supplier)));
+							var baseAttributes = A2(count, index, property);
+							return A4(
+								connectInputProperty,
+								baseAttributes,
+								$elm$core$Maybe$Just(supplier),
+								onChangePropertyAtIndex(index),
+								nodeExprString);
+						});
+					var realProperties = $elm$core$Array$toList(
+						A2($elm$core$Array$indexedMap, viewRealProperty, connectedProps));
 					return _Utils_ap(
 						realProperties,
 						_List_fromArray(
@@ -12334,8 +12359,8 @@ var $author$project$View$viewProperties = F3(
 		return $author$project$View$flattenList(
 			A2($elm$core$List$map, singleProperty, props));
 	});
-var $author$project$View$viewNodeContent = F6(
-	function (dragMode, selectedNode, outputNode, nodeId, props, nodeView) {
+var $author$project$View$viewNodeContent = F7(
+	function (nodes, dragMode, selectedNode, outputNode, nodeId, props, nodeView) {
 		var preventDefaultAndMayStopPropagation = F2(
 			function (tag, handler) {
 				return A2(
@@ -12453,7 +12478,7 @@ var $author$project$View$viewNodeContent = F6(
 							A2(preventDefaultAndMayStopPropagation, 'mousedown', onMouseDownAndStopPropagation),
 							$author$project$View$preventContextMenu(onContextMenu)
 						]),
-					A3($author$project$View$viewProperties, nodeId, dragMode, props)),
+					A4($author$project$View$viewProperties, nodes, nodeId, dragMode, props)),
 					A2(
 					$elm$html$Html$div,
 					_List_fromArray(
@@ -12526,7 +12551,7 @@ var $author$project$View$viewNode = F5(
 		var props = $author$project$Model$nodeProperties(nodeView.cA);
 		return A2(
 			$author$project$View$NodeView,
-			A6($author$project$View$viewNodeContent, dragMode, selectedNode, outputNode, nodeId, props, nodeView),
+			A7($author$project$View$viewNodeContent, nodes, dragMode, selectedNode, outputNode, nodeId, props, nodeView),
 			A3($author$project$View$viewNodeConnections, nodes, props, nodeView));
 	});
 var $author$project$Update$NoResult = {$: 3};
