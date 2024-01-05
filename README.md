@@ -44,7 +44,7 @@ With elm installed on your system, run
 `elm make src/Main.elm --output=html/built.js`. Also, see 
 [compiling elm with optimization enabled](https://elm-lang.org/0.19.0/optimize).
 
-Alternatively, use [modd](https://github.com/cortesi/modd) 
+Alternatively, use [modd](https://github.com/cortesi/modd) or `npm run watch`
 in this directory to compile on every file save.
 
 

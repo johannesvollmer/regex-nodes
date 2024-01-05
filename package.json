@@ -1,0 +1,15 @@
+{
+    "dependencies": { },
+
+    "scripts": {
+        "watch": "nodemon -x \"elm make src/Main.elm --optimize --output=html/built.js\""
+    },
+    
+    "nodemonConfig": {
+        "verbose": true,
+        "ignore": [
+            "elm-stuff"
+        ],
+        "ext": "elm"
+    }
+}
